@@ -1,0 +1,385 @@
+body 
+{
+  font-family: arial, sans-serif;
+  font-size: 10pt;
+  color: #444;
+  margin: 0;
+}
+
+#header
+{
+  border-bottom: solid 1px #ccc;
+  background-color: #eee;
+  padding: 0.5em 1em;
+}
+
+#header h1
+{
+  font-size: 20pt;
+  margin: 0.25em 0;
+}
+
+#header h2
+{
+  font-size: 9pt;
+  font-weight: normal;
+  color: #777;
+  margin: 0.5em 0;
+}
+
+#reader
+{
+  position: absolute;
+  top: 125px;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  border-top: solid 1px #aaa;
+}
+
+#header .grr
+{
+  color: #990000;
+}
+
+.navbar a
+{
+  color: #0000ee;
+  font-weight: bold;
+  text-decoration: none;
+}
+
+.navbar .admin
+{
+  margin-left: 2em;
+}
+
+.logout
+{
+  float: right;
+}
+
+.feeds-container
+{
+  position: absolute;
+  width: 20em;
+  top: 0px;
+  bottom: 0;
+  overflow: auto;
+}
+
+.entries-container
+{
+  position: absolute;
+  left: 21em;
+  top: 0px;
+  bottom: 0;
+  right: 0;
+  overflow: auto;
+  border-left: solid 1px #ccc;
+}
+
+.entry
+{
+  cursor: pointer;
+  clear: both;
+  border-bottom: solid 1px #ccc;
+  border-left: solid 1px transparent;
+}
+
+.entry.open
+{
+  border-left-color: #4d90f0;
+}
+
+.entry-item,
+.entry.selected.open .entry-item
+{
+  padding-left: 0.5em;
+  padding-right: 0.5em;
+  height: 37px;
+  background-color: #fff;
+  line-height: 37px;
+  position: relative;
+}
+
+.entry.read .entry-item,
+.entry.read.open .entry-item
+{
+  background-color: #eee;
+}
+
+.entry.selected .entry-item
+{
+  background-color: #ffffcc;
+}
+
+.entry-source 
+{
+  overflow: hidden;
+  white-space: nowrap;
+  margin-left: 20px;
+  width: 10em;
+  display: block;
+  position: absolute;
+}
+
+.entry-excerpt
+{
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  margin-left: 12em;
+  margin-right: 7em;
+}
+
+.entry-pubDate
+{
+  display: block;
+  float: right;
+  text-align: right;
+  width: 6em;
+}
+
+.entry-title
+{
+  font-size: 10pt;
+  display: inline;
+  margin: 0;
+}
+
+.entry.read .entry-title
+{
+  font-weight: normal;
+}
+
+.article-title, 
+.article-author a
+{
+  color: rgb(17, 85, 204);
+  text-decoration: none;
+}
+
+.article-title h2
+{
+  font-size: 14pt;
+  margin: 0;
+}
+
+.article-body
+{
+  margin: 0.7em 0;
+}
+
+.entry-summary
+{
+    color: #777;
+}
+
+.entry-content
+{
+  display: block;
+  cursor: default;
+}
+
+.article 
+{
+  margin: 0.5em 1em;
+}
+
+.entry-footer
+{
+  padding: 0.5em 0.5em;
+  border-top: solid 1px #ebebeb;
+  background-color: #fafafa;
+}
+
+.entry-action
+{
+  background-repeat: no-repeat;
+  padding-left: 16px;
+  cursor: pointer;
+}
+
+.action-unread
+{
+  background-image: url(sprites.png);
+  background-position: -15px -15px;
+}
+
+.entry.read .action-unread
+{
+  background-position: 0px 0px;
+}
+
+.action-star
+{
+  display: inline-block;
+  width: 15px;
+  height: 15px;
+  background-image: url(sprites.png);
+  background-position: -30px -30px;
+  cursor: pointer;
+}
+
+.starred .action-star
+{
+  background-position: -45px -45px;
+}
+
+.action-like
+{
+  display: inline-block;
+  width: 15px;
+  height: 15px;
+  background-image: url(sprites.png);
+  background-position: -60px -60px;
+  cursor: pointer;
+}
+
+.liked .action-like
+{
+  background-position: -75px -75px;
+}
+
+.entry-footer .action-star
+{
+  margin-right: 3em;
+}
+
+.entry-item .action-star
+{
+  top: 50%;
+  margin-top: -8px;
+  white-space: nowrap;
+  position: absolute;
+}
+
+.next-page 
+{
+  padding: 1em;
+  text-align: center;
+  cursor: pointer;
+  font-size: 11pt;
+}
+
+.feed
+{
+  margin-left: 1em;
+}
+
+.feed-item
+{
+  overflow: hidden;
+  white-space: nowrap;
+  cursor: pointer;
+  padding: 0.35em 1em;
+}
+
+.feed-item.selected
+{
+  background-color: #cedefa;
+}
+
+.all-feeds
+{
+  font-weight: bold;
+}
+
+.feed-item .has-unread
+{
+  font-weight: bold;
+}
+
+.feed-unread
+{
+  color: #aaa;
+  margin-left: 0.5em;
+}
+
+#navbar
+{
+  padding: 10px 20px;
+}
+
+#navbar .right-aligned
+{
+  float:right;
+}
+
+#navbar .select-article
+{
+  width: 6em;
+}
+
+#navbar button
+{
+  height: 30px;
+}
+
+#navbar select
+{
+  width: 150px;
+}
+
+#navbar button
+{
+  height: 30px;
+  background-color: #eee;
+  border: solid 1px #aaa;
+  border-radius: 2px;
+  box-shadow: 1px 1px 1px #aaa;
+}
+
+#navbar button:active
+{
+  box-shadow: none;
+}
+
+#navbar button:hover
+{
+  border-color: #777;
+}
+
+#navbar .refresh
+{
+  width: 100px;
+}
+
+#navbar .spacer
+{
+  margin-left: 20px;
+}
+
+#toast
+{
+  display: none;
+  position: absolute;
+  top: 1em;
+  left: 0;
+  right: 0;
+  text-align: center;
+}
+
+#toast span
+{
+  border-style: solid;
+  border-width: 2px;
+  border-radius: 3px;
+  padding: 0.5em 2em;
+  box-shadow: 1px 1px 1px #aaa;
+  font-size: 9pt;
+  color: #000;
+}
+
+#toast.info span 
+{
+  border-color: #FDC68A;
+  background-color: #FFF79A;
+}
+
+#toast.error span 
+{
+  border-color: red;
+  background-color: #FFaaaa;
+}
