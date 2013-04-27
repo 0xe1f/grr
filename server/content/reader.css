@@ -383,3 +383,8 @@ body
   border-color: red;
   background-color: #FFaaaa;
 }
+
+.spinner
+{
+  margin: 5px auto;
+}

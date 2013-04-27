@@ -71,6 +71,7 @@ class LoginController extends Controller
 
     if ($authUrl)
     {
+      $this->openId->optional = array('contact/email');
       $this->openId->identity = $authUrl;
       $this->redirectTo($this->openId->authUrl());
     }
@@ -110,9 +111,8 @@ class LoginController extends Controller
       $this->renderNewAccountPage($openIdIdentity, $tokenHash, $emailAddress, l("Cannot create account with this OpenId"));
       return;
     }
-    else if (strlen($emailAddress) < 1)
+    else if (!$this->isValidEmailAddress($emailAddress))
     {
-      // FIXME: validate using a regex
       $this->renderNewAccountPage($openIdIdentity, $tokenHash, $emailAddress, l("Enter a valid email address"));
       return;
     }
@@ -173,9 +173,8 @@ class LoginController extends Controller
       $this->renderCreateAdminAccountPage($openIdIdentity, l("Cannot create account with this OpenId"));
       return;
     }
-    else if (strlen($emailAddress) < 1)
+    else if (!$this->isValidEmailAddress($emailAddress))
     {
-      // FIXME: validate using a regex
       $this->renderCreateAdminAccountPage($openIdIdentity, l("Enter a valid email address"));
       return;
     }
@@ -226,7 +225,9 @@ class LoginController extends Controller
         // Unknown user. Is a welcome token available?
 
         $tokenHash = $_GET["createToken"];
-        $emailAddress = null;
+
+        $openIdAttrs = $this->openId->getAttributes();
+        $emailAddress = $openIdAttrs["contact/email"];
 
         $userCount = $storage->getUserCount();
         if ($userCount !== false && $userCount < 1)
@@ -248,7 +249,8 @@ class LoginController extends Controller
             return;
           }
 
-          $emailAddress = $token["emailAddress"];
+          if (!$emailAddress)
+            $emailAddress = $token["emailAddress"];
         }
 
         $this->renderNewAccountPage($openIdIdentity, $tokenHash, $emailAddress);

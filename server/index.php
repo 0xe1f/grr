@@ -39,6 +39,7 @@ class ReaderController extends Controller
     <script src="content/sprintf.min.js" type="text/javascript"></script>
     <script src="content/jquery-1.9.1.min.js" type="text/javascript"></script>
     <script src="content/jquery.scrollintoview.min.js" type="text/javascript"></script>
+    <script src="content/spin.min.js" type="text/javascript"></script>
     <script src="content/reader.js" type="text/javascript"></script>
     <title>&gt;:(</title>
   </head>
@@ -65,9 +66,9 @@ class ReaderController extends Controller
         <button class="select-article down">Next</button>
       </div>
       <button class="refresh">Refresh</button>
-      <span class="spacer" />
+      <span class="spacer"></span>
       <button class="mark-all-as-read">Mark all as read</button>
-      <span class="spacer" />
+      <span class="spacer"></span>
       <select class="article-filter">
         <option value="all" class="filter-all">All Items</option>
         <option value="new" class="filter-new">New Items</option>

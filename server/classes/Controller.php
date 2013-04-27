@@ -65,6 +65,21 @@ class Controller
     return $this->user;
   }
 
+  function getPublicAppUrl($suffix = null)
+  {
+    $rootUri = "/";
+    $currentUri = $_SERVER['REQUEST_URI'];
+
+    if (strlen($currentUri) > 0)
+    {
+      $rootUri = preg_replace('/\\/[^\\/]+$/', '/', $currentUri);
+      if (substr($rootUri, 0, 1) == '/')
+        $rootUri = substr($rootUri, 1);
+    }
+
+    return "http://{$_SERVER['SERVER_NAME']}/{$rootUri}{$suffix}";
+  }
+
   // Return values: 
   //   false: unauthenticated users OK
   //    true: must be authenticated
@@ -134,6 +149,14 @@ class Controller
   function redirectTo($url)
   {
     header('Location: '.$url);
+  }
+
+  function isValidEmailAddress($emailAddress)
+  {
+    if (!$emailAddress)
+      return false;
+
+    return preg_match('/^[^@\\s]+@[^@\\s]+\\.[^@\\s\\.]{2,}$/', $emailAddress);
   }
 
   function route()

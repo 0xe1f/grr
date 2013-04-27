@@ -44,10 +44,9 @@ class AdminController extends Controller
 
   function createTokenRoute($dummy, $emailAddress)
   {
-    // FIXME: validate email address format
     $emailAddress = trim($emailAddress);
 
-    if (strlen($emailAddress) < 1)
+    if (!$this->isValidEmailAddress($emailAddress))
     {
       $this->renderAdminView(null, l("Enter a valid email address"));
       return;
@@ -73,6 +72,20 @@ class AdminController extends Controller
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
     <link href="content/grr.css" type="text/css" rel="stylesheet"/>
+    <script src="content/jquery-1.9.1.min.js" type="text/javascript"></script>
+    <script src="content/ZeroClipboard.min.js" type="text/javascript"></script>
+    <script type="text/javascript">
+      $().ready(function()
+      {
+        ZeroClipboard.setDefaults( { moviePath: 'content/ZeroClipboard.swf' } );
+
+        var clip = new ZeroClipboard($('.token-link'));
+        clip.on('complete', function (client, args) 
+        {
+          alert("Token URL has been copied to clipboard");
+        });
+      });
+    </script>
     <title>Manage Accounts</title>
   </head>
   <body>
@@ -141,7 +154,9 @@ class AdminController extends Controller
 ?>
         <tr>
           <td><?= h($token["emailAddress"]) ?></td>
-          <td><a href="login.php?createToken=<?= h($token["token"]) ?>"><?= h($token["token"]) ?></a></td>
+          <td><a class="token-link" 
+                 data-clipboard-text="<?= $this->getPublicAppUrl("login.php?createToken={$token["token"]}") ?>"
+                 href="login.php?createToken=<?= h($token["token"]) ?>">http://.../login.php?createToken=<?= $token["token"] ?></a></td>
           <td><?= h($token["createdBy"]) ?></td>
           <td><?= h(date("F j, Y, g:i a", $token["createdOn"])) ?></td>
         </tr>
@@ -150,12 +165,15 @@ class AdminController extends Controller
     }
 ?>
       </table>
-      <span class="directions">Create new token with email address:</span>
+      <span class="directions"><?= l("Create new token with email address:") ?></span>
       <form action="admin.php" method="post">
         <input type="hidden" name="newToken" value="true" />
         <input type="text" name="emailAddress" value="<?= h($_POST["emailAddress"]) ?>" />
         <input type="submit" value="Create" />
       </form>
+      <p>
+        <?= l("Note that tokens aren't actually emailed") ?>
+      </p>
     </div>
     <div id="footer">
       &copy; 2013 Akop Karapetyan | <a href="https://github.com/melllvar/grr">grr</a> is Open and Free Software licensed under GPL

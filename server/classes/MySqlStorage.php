@@ -24,10 +24,9 @@
 
 class MySqlStorage extends Storage
 {
-  private static $instance = null;
   private $db;
 
-  private function __construct()
+  public function __construct()
   {
     $this->db = new mysqli(MYSQL_HOSTNAME, MYSQL_USERNAME, MYSQL_PASSWORD, MYSQL_DATABASE);
     if ($this->db->connect_error)
@@ -38,14 +37,6 @@ class MySqlStorage extends Storage
 
     if (!$this->db->query("SET time_zone = '+0:00'"))
       die('Connection error: '.mysqli_connect_error());
-  }
-
-  public static function getInstance()
-  {
-    if (self::$instance == null)
-      self::$instance = new MySqlStorage();
-
-    return self::$instance;
   }
 
   private function pruneFeedTree(&$feed)

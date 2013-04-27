@@ -24,6 +24,8 @@
 
 abstract class Storage
 {
+  private static $instance = null;
+  
   public abstract function getUserFeeds($user);
   public abstract function markAllAs($user, $feedFolderId, $filter, $isUnread);
   public abstract function addFeedFolder($userId, $feedId = null, $title = null, $parent = null);
@@ -45,8 +47,10 @@ abstract class Storage
 
   public static function getInstance()
   {
-    // FIXME
-    return MySqlStorage::getInstance();
+    if (self::$instance == null)
+      self::$instance = new MySqlStorage();
+
+    return self::$instance;
   }
 }
 

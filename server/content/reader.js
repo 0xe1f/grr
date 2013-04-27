@@ -455,6 +455,9 @@ $().ready(function()
     if (!continueAfter)
       return;
 
+    var spinner = new Spinner({ width: 3, length: 5, lines: 9, radius: 5, corners: 2}).spin();
+    $('.next-page').empty().append(spinner.el);
+    
     $.getJSON('grrp.php',
     {
       continue: continueAfter,
