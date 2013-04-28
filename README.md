@@ -60,7 +60,7 @@ Limitations
 _grr_ is currently in a late-alpha/early-beta stage, and as a result:
 
 * The only way to import feeds is by using the Import subscriptions tool to import data from Google Takeout (or any other OPML-formatted file). There are currently no facilities to add singular feeds/folders.
-* The design of the web application is atrocious, since dammit Kirk, I'm a programmer, not a designer!
+* The design of the web application is atrocious, because _dammit Kirk, I'm a programmer, not a designer!_
 * Administrative features were mostly an afterthought and could certainly do with a redesign/overhaul
 * Authentication without [OpenID] [6] is currently not available
 

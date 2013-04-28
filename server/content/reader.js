@@ -148,8 +148,8 @@ $().ready(function()
     {
       if (!response.error)
       {
-        var affectedFeeds = response.affectedFeeds;
-        var affectedFeedIds = $.map(affectedFeeds, function(v, i) 
+        var unreadCounts = response.unreadCounts;
+        var feedIds = $.map(unreadCounts, function(v, i) 
         {
           return i * 1;
         });
@@ -161,7 +161,7 @@ $().ready(function()
           var entryDom = $(this);
           var entry = entryDom.data('object');
 
-          if ($.inArray(entry.source_id, affectedFeedIds) > -1)
+          if ($.inArray(entry.source_id, feedIds) > -1)
           {
             entry.is_unread = unread;
             entryDom.toggleClass('read', !entry.is_unread);
@@ -170,14 +170,14 @@ $().ready(function()
 
         // Update the feeds
         
-        $.each(affectedFeedIds, function()
+        $.each(feedIds, function()
         {
           var feedId = this;
           var feedDom = $('.feed-' + feedId);
           var feed = feedDom.data('object');
 
           if (feed)
-            feed.unread = affectedFeeds[feed.id];
+            feed.unread = unreadCounts[feed.id];
         });
 
         synchronizeFeedDom();

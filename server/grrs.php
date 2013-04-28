@@ -82,12 +82,12 @@ class ArticleController extends JsonController
     if (!$result)
       throw new JsonError(l("Article not found"));
 
-    // Get the tree of affected feeds, along with unread counts
-    $affectedFeeds = $storage->getUserFeeds($this->user, $feedFolderId);
+    // Get an updated feed count
+    $affectedFeeds = $storage->getUserFeeds($this->user);
     
     // Flatten into an associative array with id => unreadCount
     return array(
-      "affectedFeeds" => $this->flattenFeedTree($affectedFeeds),
+      "unreadCounts" => $this->flattenFeedTree($affectedFeeds),
     );
   }
 }
