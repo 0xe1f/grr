@@ -30,7 +30,31 @@ $().ready(function()
 
   var lastPageRequested = null;
 
- $('button.refresh').click(function()
+  $(document)
+    .bind('keypress', 'j', function()
+    {
+      selectArticle(false);
+    })
+    .bind('keypress', 'k', function()
+    {
+      selectArticle(true);
+    })
+    .bind('keypress', 's', function()
+    {
+      if ($('.entry.selected').length)
+        toggleStarred($('.entry.selected'));
+    })
+    .bind('keypress', 'm', function()
+    {
+      if ($('.entry.selected').length)
+        toggleUnread($('.entry.selected'));
+    })
+    .bind('keypress', 'r', function()
+    {
+      refreshFeeds();
+    });
+
+  $('button.refresh').click(function()
   {
     refreshFeeds();
   });
@@ -80,14 +104,6 @@ $().ready(function()
       return vsprintf(str, args);
 
     return str;
-  }
-
-  var getUnreadCount = function(count)
-  {
-    if (count < 1)
-      return "";
-
-    return "(" + count + ")";
   }
 
   var getPublishedDate = function(unixTimestamp)
@@ -214,16 +230,22 @@ $().ready(function()
 
   var createFeedDom = function(feed)
   {
-    return $('<div />', { 'class' : 'feed feed-' + feed.id })
+    return $('<li />', { 'class' : 'feed feed-' + feed.id })
       .data('object', feed)
       .append($('<div />', { 'class' : 'feed-item' })
+        .append($('<span />', { 'class' : 'chevron' })
+          .click(function(e)
+          {
+            alert('hi!');
+            e.stopPropagation();
+          }))
         .append($('<span />', { 'class' : 'feed-title' })
           .text(feed.source))
-        .append($('<span />', { 'class' : 'feed-unread' }))
+        .append($('<span />', { 'class' : 'feed-unread-count' }))
         .click(function() 
         {
-          $('.feed-item.selected').removeClass('selected');
-          $(this).addClass('selected');
+          $('.feed.selected').removeClass('selected');
+          $(this).closest('.feed').addClass('selected');
 
           reloadItems();
         }));
@@ -231,11 +253,11 @@ $().ready(function()
 
   var updateFeedDom = function(allItems)
   {
-    var selectedFeedDom = $('.feed-item.selected');
+    var selectedFeedDom = $('.feed.selected');
     var selectedFeedId = null;
 
     if (selectedFeedDom.length > 0)
-      selectedFeedId = selectedFeedDom.closest('.feed').data('object').id;
+      selectedFeedId = selectedFeedDom.data('object').id;
 
     $('#feeds').empty();
 
@@ -247,9 +269,9 @@ $().ready(function()
     $('#feeds').append(allItemsDom);
 
     if (selectedFeedId)
-      $('.feed-' + selectedFeedId + ' .feed-item:first').addClass('selected');
+      $('.feed-' + selectedFeedId).addClass('selected');
     else
-      $('#feeds .feed-item:first').addClass('selected');
+      allItemsDom.addClass('selected');
 
     synchronizeFeedDom();
   }
@@ -264,14 +286,14 @@ $().ready(function()
       if (!feed)
         return true;
 
-      feedDom.find('.feed-unread').text(getUnreadCount(feed.unread));
-      feedDom.find('.feed-title').toggleClass('has-unread', feed.unread > 0);
+      feedDom.find('.feed-unread-count').text(l('(%s)', [feed.unread]));
+      feedDom.find('.feed-item').toggleClass('has-unread', feed.unread > 0);
     });
   }
 
   var buildFeedDom = function(feeds)
   {
-    var feedGroupDoms = []
+    var feedGroupDoms = $('<ul />');
 
     $.each(feeds, function(key, feed)
     {
@@ -279,7 +301,7 @@ $().ready(function()
       if (feed.feeds)
         feedGroupDom.append(buildFeedDom(feed.feeds));
 
-      feedGroupDoms.push(feedGroupDom);
+      feedGroupDoms.append(feedGroupDom);
     });
 
     return feedGroupDoms;
@@ -364,6 +386,20 @@ $().ready(function()
     );
   }
 
+  var toggleStarred = function(entryDom)
+  {
+    var entry = entryDom.data('object');
+
+    updateEntry(entryDom, { is_starred: !entry.is_starred });
+  }
+
+  var toggleUnread = function(entryDom)
+  {
+    var entry = entryDom.data('object');
+    
+    updateEntry(entryDom, { is_unread: !entry.is_unread });
+  }
+
   var collapseAllEntries = function()
   {
     $.each($('#entries').find('.entry.open'), function()
@@ -396,13 +432,13 @@ $().ready(function()
           .append($('<span />', { 'class' : 'action-star' })
             .click(function(e)
             {
-              updateEntry(entryDom, { is_starred: !entry.is_starred });
+              toggleStarred(entryDom);
             }))
           .append($('<span />', { 'class' : 'action-unread entry-action'})
             .text(l('Keep unread'))
             .click(function(e)
             {
-              updateEntry(entryDom, { is_unread: !entry.is_unread });
+              toggleUnread(entryDom);
             }))
           /*
           .append($('<span />', { 'class' : 'action-like entry-action'})
@@ -446,7 +482,7 @@ $().ready(function()
 
   var getSelectedFeed = function()
   {
-    return $('.feed-item.selected').closest('.feed').data('object');
+    return $('.feed.selected').data('object');
   }
 
   var loadNextPage = function()

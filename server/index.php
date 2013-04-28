@@ -39,6 +39,7 @@ class ReaderController extends Controller
     <script src="content/sprintf.min.js" type="text/javascript"></script>
     <script src="content/jquery-1.9.1.min.js" type="text/javascript"></script>
     <script src="content/jquery.scrollintoview.min.js" type="text/javascript"></script>
+    <script src="content/jquery.hotkeys.js" type="text/javascript"></script>
     <script src="content/spin.min.js" type="text/javascript"></script>
     <script src="content/reader.js" type="text/javascript"></script>
     <title>&gt;:(</title>
@@ -62,22 +63,22 @@ class ReaderController extends Controller
     </div>
     <div id="navbar">
       <div class="right-aligned">
-        <button class="select-article up">Previous</button>
-        <button class="select-article down">Next</button>
+        <button class="select-article up"><?= l("Previous") ?></button>
+        <button class="select-article down"><?= l("Next") ?></button>
       </div>
-      <button class="refresh">Refresh</button>
+      <button class="refresh"><?= l("Refresh") ?></button>
       <span class="spacer"></span>
-      <button class="mark-all-as-read">Mark all as read</button>
+      <button class="mark-all-as-read"><?= l("Mark all as read") ?></button>
       <span class="spacer"></span>
       <select class="article-filter">
-        <option value="all" class="filter-all">All Items</option>
-        <option value="new" class="filter-new">New Items</option>
-        <option value="star" class="filter-star">Starred</option>
+        <option value="all" class="filter-all"><?= l("All Items") ?></option>
+        <option value="new" class="filter-new"><?= l("New Items") ?></option>
+        <option value="star" class="filter-star"><?= l("Starred") ?></option>
       </select>
     </div>
     <div id="reader">
       <div class="feeds-container">
-        <div id="feeds"></div>
+        <ul id="feeds"></ul>
       </div>
       <div class="entries-container">
         <div id="entries"></div>

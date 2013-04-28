@@ -263,38 +263,91 @@ body
   font-size: 11pt;
 }
 
+ul#feeds,
+#feeds ul
+{
+  margin: 0;
+  padding: 0;
+}
+
+#feeds li
+{
+  margin: 0;
+}
+
+#feeds .feed-item
+{
+  padding-left: 1em;
+}
+
+#feeds > li > ul .feed-item
+{
+  padding-left: 2em;
+}
+
+#feeds > li > ul > li > ul .feed-item
+{
+  padding-left: 3em;
+}
+
+#feeds > li > ul > li > ul > li > ul .feed-item
+{
+  padding-left: 4em;
+}
+
+#feeds > li > ul > li > ul > li > ul > li > ul .feed-item
+{
+  padding-left: 5em;
+}
+
+#feeds > li > ul > li > ul > li > ul > li > ul > li > ul .feed-item
+{
+  padding-left: 6em;
+}
+
 .feed
 {
-  margin-left: 1em;
 }
 
 .feed-item
 {
   overflow: hidden;
   white-space: nowrap;
+  text-overflow: ellipsis;
   cursor: pointer;
   padding: 0.35em 1em;
+  margin-right: 1em;
 }
 
-.feed-item.selected
+.feed-item:hover
+{
+  background-color: #eee;
+}
+
+.feed.selected > .feed-item
 {
   background-color: #cedefa;
 }
 
-.all-feeds
+.feed-title
 {
-  font-weight: bold;
 }
 
-.feed-item .has-unread
-{
-  font-weight: bold;
-}
-
-.feed-unread
+.feed-unread-count
 {
   color: #aaa;
+  display: none;
   margin-left: 0.5em;
+}
+
+.has-unread .feed-title
+{
+  font-weight: bold;
+}
+
+.has-unread .feed-unread-count
+{
+  display: inline;
 }
 
 #navbar
@@ -304,7 +357,7 @@ body
 
 #navbar .right-aligned
 {
-  float:right;
+  float: right;
 }
 
 #navbar .select-article
@@ -387,4 +440,20 @@ body
 .spinner
 {
   margin: 5px auto;
+}
+
+.chevron
+{
+  width: 15px;
+  height: 15px;
+  display: inline-block;
+  float: left;
+  visibility: hidden;
+  background-image: url(sprites.png);
+  background-position: -90px -90px;
+}
+
+.feed-item:hover .chevron
+{
+  visibility: visible;
 }
