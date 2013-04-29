@@ -32,6 +32,7 @@ class ArticleController extends JsonController
   {
     $this->addGetRoute(array("a"), "articleRoute");
     $this->addGetRoute(array("f"), "feedRoute");
+    $this->addGetRoute(array("setTag"), "setTagRoute");
   }
 
   private function flattenFeedTree($feed)
@@ -62,6 +63,24 @@ class ArticleController extends JsonController
         "is_starred" => $isStarred,
         "is_unread"  => $isUnread,
         "is_liked"   => $isLiked,
+      )
+    );
+  }
+
+  function setTagRoute($userArticleId)
+  {
+    $tagsAsString = trim($_GET["tags"]);
+
+    $tags = empty($tagsAsString) ? array() : explode(',', $tagsAsString); // Split the comma-delimited tags
+    $tags = array_map('trim', $tags); // Trim each tag
+    $tags = array_unique($tags); // Remove all but unique tags 
+
+    $storage = Storage::getInstance();
+    // FIXME: modify the tag
+
+    return array(
+      "entry" => array(
+        "tags" => $tags,
       )
     );
   }

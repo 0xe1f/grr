@@ -218,13 +218,25 @@ $().ready(function()
     entryDom.toggleClass('open', entry.is_expanded);
 
     var content = entryDom.find('.entry-content');
-    if (entry.is_expanded && content.length < 1)
-    {
-      expandEntry(entryDom);
-    }
-    else if (!entry.is_expanded && content.length > 0)
+
+    if (!entry.is_expanded && content.length > 0)
     {
       collapseEntry(entryDom);
+    }
+
+    // Update the tags
+    entryDom.find('.action-tag')
+      .text(entry.tags.length ? l('Edit tags: %s', [ entry.tags.join(', ') ]) : l('Add tags'));
+
+    if (entry.is_expanded)
+    {
+      if (content.length < 1)
+        expandEntry(entryDom);
+    }
+    else // if (!entry.is_expanded)
+    {
+      if (content.length > 0)
+        collapseEntry(entryDom);
     }
   }
 
@@ -241,6 +253,7 @@ $().ready(function()
           }))
         .append($('<span />', { 'class' : 'feed-title' })
           .text(feed.source))
+        .attr('title', feed.source)
         .append($('<span />', { 'class' : 'feed-unread-count' }))
         .click(function() 
         {
@@ -400,6 +413,31 @@ $().ready(function()
     updateEntry(entryDom, { is_unread: !entry.is_unread });
   }
 
+  var editTags = function(entryDom, tags)
+  {
+    var entry = entryDom.data('object');
+    
+    $.getJSON('grrs.php',
+      { 
+        setTag : entry.id, 
+        tags : tags
+      },
+      function(response)
+      {
+        if (!response.error)
+        {
+          entry.tags = response.entry.tags;
+
+          refreshEntry(entryDom);
+        }
+        else
+        {
+          showToast(response.error.message, true);
+        }
+      }
+    );
+  }
+
   var collapseAllEntries = function()
   {
     $.each($('#entries').find('.entry.open'), function()
@@ -439,6 +477,14 @@ $().ready(function()
             .click(function(e)
             {
               toggleUnread(entryDom);
+            }))
+          .append($('<span />', { 'class' : 'action-tag entry-action'})
+            .text(entry.tags.length ? l('Edit tags: %s', [ entry.tags.join(', ') ]) : l('Add tags'))
+            .click(function(e)
+            {
+                var tags = prompt(l('Separate multiple tags with commas'), entry.tags.join(', '));
+                if (tags != null)
+                  editTags(entryDom, tags);
             }))
           /*
           .append($('<span />', { 'class' : 'action-like entry-action'})

@@ -197,7 +197,8 @@ body
 .entry-action
 {
   background-repeat: no-repeat;
-  padding-left: 16px;
+  padding-left: 20px;
+  margin-left: 1em;
   cursor: pointer;
 }
 
@@ -205,6 +206,12 @@ body
 {
   background-image: url(sprites.png);
   background-position: -15px -15px;
+}
+
+.action-tag
+{
+  background-image: url(sprites.png);
+  background-position: -105px -105px;
 }
 
 .entry.read .action-unread

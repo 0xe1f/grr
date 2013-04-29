@@ -1008,8 +1008,10 @@ class MySqlStorage extends Storage
                       f.html_url source_www,
                       ua.is_unread,
                       ua.is_starred,
-                      ua.is_liked
+                      ua.is_liked,
+                      GROUP_CONCAT(uat.tag SEPARATOR ',') tags
                  FROM user_articles ua
+            LEFT JOIN user_article_tags uat ON uat.user_article_id = ua.id
            INNER JOIN articles a ON a.id = ua.article_id
            INNER JOIN feeds f ON f.id = a.feed_id
            INNER JOIN feed_folders ff ON ff.feed_id = f.id
@@ -1017,6 +1019,7 @@ class MySqlStorage extends Storage
                 WHERE fft.ancestor_id = ? 
                       AND ua.user_id = ?
                       {$filterClause}
+             GROUP BY ua.id
              ORDER BY a.published DESC, f.title
                 LIMIT ?
                                  ");
@@ -1040,8 +1043,10 @@ class MySqlStorage extends Storage
                       f.html_url source_www,
                       ua.is_unread,
                       ua.is_starred,
-                      ua.is_liked
+                      ua.is_liked,
+                      GROUP_CONCAT(uat.tag SEPARATOR ',') tags
                  FROM user_articles ua
+            LEFT JOIN user_article_tags uat ON uat.user_article_id = ua.id
            INNER JOIN articles a ON a.id = ua.article_id
            INNER JOIN feeds f ON f.id = a.feed_id
            INNER JOIN feed_folders ff ON ff.feed_id = f.id
@@ -1055,6 +1060,7 @@ class MySqlStorage extends Storage
                 WHERE fft.ancestor_id = ? 
                       AND ua.user_id = ?
                       {$filterClause}
+             GROUP BY ua.id
              ORDER BY a.published DESC, f.title
                 LIMIT ?
                                  ");
@@ -1084,7 +1090,8 @@ class MySqlStorage extends Storage
                          $feedWwwUrl,
                          $isArticleUnread,
                          $isArticleStarred,
-                         $isArticleLiked);
+                         $isArticleLiked,
+                         $articleTags);
 
       $articles = array();
 
@@ -1104,6 +1111,7 @@ class MySqlStorage extends Storage
           "is_unread"  => ($isArticleUnread > 0),
           "is_starred" => ($isArticleStarred > 0),
           "is_liked"   => ($isArticleLiked > 0),
+          "tags"       => empty($articleTags) ? array() : explode(',', $articleTags),
         );
       }
     }
