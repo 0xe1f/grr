@@ -211,6 +211,11 @@ body
 .action-tag
 {
   background-image: url(sprites.png);
+  background-position: -120px -120px;
+}
+
+.action-tag.has-tags
+{
   background-position: -105px -105px;
 }
 
@@ -404,6 +409,15 @@ ul#feeds,
 #navbar .refresh
 {
   width: 100px;
+}
+
+#navbar .subscribe
+{
+  background-color: #D14836;
+  color: white;
+  text-transform: uppercase;
+  width: 100px;
+  font-size: 9pt;
 }
 
 #navbar .spacer

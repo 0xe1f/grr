@@ -1142,5 +1142,51 @@ class MySqlStorage extends Storage
 
     return $result;
   }  
+
+  public function setArticleTags($userId, $userArticleId, $tags)
+  {
+    // Delete existing tags
+
+    $stmt = $this->db->prepare("
+                DELETE uat
+                  FROM user_article_tags uat
+            INNER JOIN user_articles ua ON ua.id = uat.user_article_id 
+                 WHERE uat.user_article_id = ? 
+                   AND ua.user_id = ?
+                         ");
+
+    $stmt->bind_param('ii', $userArticleId, $userId);
+
+    $result = $stmt->execute();
+    $stmt->close();
+
+    if ($result)
+    {
+      // Add new tags
+
+      $stmt = $this->db->prepare("
+              INSERT INTO user_article_tags (id, user_article_id, tag)
+                   SELECT NULL,
+                          ua.id,
+                          ?
+                     FROM user_articles ua
+                    WHERE ua.id = ?
+                          AND ua.user_id = ?
+                           ");
+
+      $stmt->bind_param('sii', $userArticleTag, $userArticleId, $userId);
+
+      foreach ($tags as $tag)
+      {
+        $userArticleTag = $tag;
+        if (!$stmt->execute())
+          $result = false;
+      }
+
+      $stmt->close();
+    }
+
+    return $result;
+  }  
 }
 ?>

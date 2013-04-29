@@ -66,6 +66,8 @@ class ReaderController extends Controller
         <button class="select-article up"><?= l("Previous") ?></button>
         <button class="select-article down"><?= l("Next") ?></button>
       </div>
+      <button class="subscribe"><?= l("Subscribe") ?></button>
+      <span class="spacer"></span>
       <button class="refresh"><?= l("Refresh") ?></button>
       <span class="spacer"></span>
       <button class="mark-all-as-read"><?= l("Mark all as read") ?></button>

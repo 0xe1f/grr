@@ -28,6 +28,19 @@ require("classes/JsonController.php");
 
 class FeedController extends JsonController
 {
+  function initRoutes()
+  {
+    $this->addGetRoute(array("subscribeTo"), "subscribeRoute");
+  }
+
+  function subscribeRoute($feedUrl)
+  {
+    // $storage = Storage::getInstance();
+    // return array(
+    //   "allItems" => $storage->getUserFeeds($this->user),
+    // );
+  }
+
   function defaultRoute()
   {
     $storage = Storage::getInstance();

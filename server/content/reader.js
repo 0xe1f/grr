@@ -59,6 +59,13 @@ $().ready(function()
     refreshFeeds();
   });
 
+  $('button.subscribe').click(function()
+  {
+    var feedUrl = prompt(l('Enter a feed URL'));
+    if (feedUrl != null)
+      subscribe(feedUrl);
+  });
+
   $('.article-filter').change(function()
   {
     reloadItems();
@@ -152,6 +159,27 @@ $().ready(function()
       .fadeOut('slow'); 
   }
 
+  var subscribe = function(feedUrl)
+  {
+    $.getJSON('grrf.php', 
+    {
+      subscribeTo : feedUrl
+    },
+    function(response)
+    {
+      if (!response.error)
+      {
+
+        // updateFeedDom(response.allItems);
+        // reloadItems();
+      }
+      else
+      {
+        showToast(response.error.message, true);
+      }
+    });
+  }
+
   var markAllAs = function(unread)
   {
     $.getJSON('grrs.php', 
@@ -206,7 +234,7 @@ $().ready(function()
         showToast(response.error.message, true);
       }
     });
-  };
+  }
 
   var refreshEntry = function(entryDom)
   {
@@ -226,7 +254,8 @@ $().ready(function()
 
     // Update the tags
     entryDom.find('.action-tag')
-      .text(entry.tags.length ? l('Edit tags: %s', [ entry.tags.join(', ') ]) : l('Add tags'));
+      .text(entry.tags.length ? l('Edit tags: %s', [ entry.tags.join(', ') ]) : l('Add tags'))
+      .toggleClass('has-tags', entry.tags.length > 0);
 
     if (entry.is_expanded)
     {
@@ -480,6 +509,7 @@ $().ready(function()
             }))
           .append($('<span />', { 'class' : 'action-tag entry-action'})
             .text(entry.tags.length ? l('Edit tags: %s', [ entry.tags.join(', ') ]) : l('Add tags'))
+            .toggleClass('has-tags', entry.tags.length > 0)
             .click(function(e)
             {
                 var tags = prompt(l('Separate multiple tags with commas'), entry.tags.join(', '));

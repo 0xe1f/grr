@@ -76,7 +76,8 @@ class ArticleController extends JsonController
     $tags = array_unique($tags); // Remove all but unique tags 
 
     $storage = Storage::getInstance();
-    // FIXME: modify the tag
+    if (!$storage->setArticleTags($this->user->id, $userArticleId, $tags))
+      throw new JsonError(l("Article not found"));
 
     return array(
       "entry" => array(
