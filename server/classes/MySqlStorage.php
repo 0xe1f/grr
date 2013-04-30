@@ -416,6 +416,67 @@ class MySqlStorage extends Storage
     return $feedFolderId;
   }
 
+  public function importFeed($userId, $feed)
+  {
+    // Stage the feed
+
+    $stmt = $this->db->prepare("
+        INSERT INTO staged_feeds(user_id, feed_hash, feed_url, html_url, title, last_updated, staged)
+             VALUES (?, ?, ?, ?, ?, UTC_TIMESTAMP(), ?)
+                         ");
+
+    $stmt->bind_param('issssi', $userId,
+                                $feedUrlHash,
+                                $feedUrl,
+                                $htmlUrl,
+                                $feedTitle,
+                                $importStarted);
+
+    $success = true;
+
+    $feedUrl = $feed->url;
+    $feedUrlHash = sha1($feedUrl);
+    $htmlUrl = $feed->link;
+    $feedTitle = $feed->title;
+    $importStarted = time();
+
+    $success = $stmt->execute();
+    $stmt->close();
+
+    if ($success)
+    {
+      // Import the feed
+
+      $stmt = $this->db->prepare("
+          INSERT INTO feeds(feed_url, html_url, feed_hash, title, added, last_updated)
+               SELECT sf.feed_url,
+                      sf.html_url,
+                      sf.feed_hash,
+                      sf.title,
+                      UTC_TIMESTAMP(),
+                      sf.last_updated
+                 FROM staged_feeds sf
+            LEFT JOIN feeds f ON f.feed_hash = sf.feed_hash
+                WHERE f.id IS NULL 
+                      AND sf.user_id = ? 
+                      AND sf.staged = ?
+                                 ");
+
+      $stmt->bind_param('ii', $userId, $importStarted);
+
+      if ($stmt->execute())
+      {
+        $success = $this->db->insert_id;
+        if (!$success) // Recover from possible race condition
+          $success = $this->getFeedId($feed->url);
+      }
+
+      $stmt->close();
+    }
+
+    return $success;
+  }
+
   public function importFeeds($userId, $feeds, $selection)
   {
     $importStarted = time();
@@ -448,7 +509,9 @@ class MySqlStorage extends Storage
                     sf.last_updated
                FROM staged_feeds sf
           LEFT JOIN feeds f ON f.feed_hash = sf.feed_hash
-              WHERE f.id IS NULL AND sf.user_id = ? AND sf.staged = ?
+              WHERE f.id IS NULL 
+                    AND sf.user_id = ? 
+                    AND sf.staged = ?
                          ");
 
     $stmt->bind_param('ii', $userId, $importStarted);
@@ -533,6 +596,121 @@ class MySqlStorage extends Storage
     }
 
     return $folderId;
+  }
+
+  public function getFeed($feedOrHomeUrl)
+  {
+    $stmt = $this->db->prepare("
+             SELECT id,
+                    title,
+                    feed_url,
+                    html_url
+               FROM feeds 
+              WHERE feed_url = ?
+                    OR html_url = ?
+                         ");
+
+    $stmt->bind_param('ss', $feedOrHomeUrl, $feedOrHomeUrl);
+
+    $feed = null;
+
+    if ($stmt->execute())
+    {
+      $stmt->bind_result($feedId, $feedTitle, $feedUrl, $feedLink);
+      if ($stmt->fetch())
+      {
+        $feed = new Feed();
+        $feed->url = $feedUrl;
+        $feed->link = $feedLink;
+        $feed->title = $feedTitle;
+        $feed->id = $feedId;
+      }
+    }
+
+    return $feed;
+  }
+
+  public function getFeedId($feedOrHomeUrl)
+  {
+    $feed = $this->getFeed($feedOrHomeUrl);
+    if (!$feed)
+      return false;
+
+    return $feed->id;
+  }
+
+  public function subscribeToFeed($userId, $feedId, $parentFeedFolderId = null)
+  {
+    if ($parentFeedFolderId == null) // 'All items' by default
+      $parentFeedFolderId = $this->getUserFeedRoot($userId);
+
+    if (!$parentFeedFolderId)
+      return false;
+
+    $stmt = $this->db->prepare("
+      INSERT INTO feed_folders (user_id, feed_id, title) 
+                        SELECT ?,
+                               f.id,
+                               f.title
+                          FROM feeds f
+                     LEFT JOIN feed_folders ff ON ff.feed_id = f.id AND ff.user_id = ?
+                         WHERE f.id = ?
+                               AND ff.feed_id IS NULL
+                               ");
+
+    $stmt->bind_param('iis', $userId, $userId, $feedId);
+
+    $success = $stmt->execute();
+    $feedFolderId = $this->db->insert_id;
+
+    $stmt->close();
+
+    if (!$success)
+      return false;
+
+    if (!$feedFolderId)
+      return true; // Nothing was added - likely already subscribed
+
+    // Set up the tree relationship
+
+    $stmt = $this->db->prepare("
+      INSERT INTO feed_folder_trees (ancestor_id, descendant_id, distance)
+           SELECT ancestor_id,
+                  ?,
+                  distance + 1
+             FROM feed_folder_trees
+            WHERE descendant_id = ?
+            UNION ALL
+           SELECT ?, ?, 0
+                               ");
+
+    $stmt->bind_param('iiii', $feedFolderId, $parentFeedFolderId, 
+      $feedFolderId, $feedFolderId);
+
+    $success = $stmt->execute();
+
+    $stmt->close();
+
+    if ($success)
+    {
+      // Personalize any existing articles
+
+      $stmt = $this->db->prepare("
+            INSERT INTO user_articles (user_id, article_id) 
+                 SELECT ?, 
+                        a.id article_id
+                   FROM articles a 
+             INNER JOIN feeds f ON f.id = a.feed_id
+              LEFT JOIN user_articles ua ON ua.article_id = a.id AND ua.user_id = ?
+                  WHERE ua.id IS NULL
+                                 ");
+
+      $stmt->bind_param('ii', $userId, $userId);
+
+      $success = $stmt->execute();
+    }
+
+    return $success;
   }
 
   // Welcome Tokens
@@ -637,7 +815,8 @@ class MySqlStorage extends Storage
 
       return false;
     }
-      $affectedRows = $this->db->affected_rows;
+
+    $affectedRows = $this->db->affected_rows;
 
     // Add new token
     

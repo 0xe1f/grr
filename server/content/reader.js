@@ -169,9 +169,8 @@ $().ready(function()
     {
       if (!response.error)
       {
-
-        // updateFeedDom(response.allItems);
-        // reloadItems();
+        updateFeedDom(response.allItems);
+        showToast(l('Successfully subscribed to "%s"', [response.feed.title]), false);
       }
       else
       {

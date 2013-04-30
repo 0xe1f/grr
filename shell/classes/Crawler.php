@@ -293,13 +293,13 @@ class Crawler
 
     echo "  (-) parsing (".get_class($parser).") ... ";
 
-    $articles = $parser->parse();
+    $feed = $parser->parse();
     $secondsSpentParsingFeed = (microtime(true) - $now);
     $this->secondsSpentParsing += $secondsSpentParsingFeed;
 
     echo sprintf("done! (%.04fs)\n", $secondsSpentParsingFeed);
 
-    return $articles;
+    return $feed;
   }
 
   public function crawl()

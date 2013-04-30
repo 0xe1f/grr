@@ -24,6 +24,7 @@
 
 require("include/common.php");
 require("classes/Core.php");
+require("classes/FeedParser.php");
 require("classes/JsonController.php");
 
 class FeedController extends JsonController
@@ -35,10 +36,58 @@ class FeedController extends JsonController
 
   function subscribeRoute($feedUrl)
   {
-    // $storage = Storage::getInstance();
-    // return array(
-    //   "allItems" => $storage->getUserFeeds($this->user),
-    // );
+    // Check to see if the system already has the feed
+
+    $storage = Storage::getInstance();
+    $feed = $storage->getFeed($feedUrl);
+
+    if (!$feed)
+    {
+      // Not in the system. Fetch it from www
+
+      // Check URL for validity
+
+      if (!filter_var($feedUrl, FILTER_VALIDATE_URL))
+        throw new JsonError(l("Incorrect or unrecognized URL"));
+
+      // Fetch and parse the feed
+
+      try
+      {
+        $parser = FeedParser::create($feedUrl);
+      }
+      catch(Exception $e)
+      {
+        throw new JsonError(l("Could not determine feed format"));
+      }
+
+      try
+      {
+        $feed = $parser->parse();
+      }
+      catch(Exception $e)
+      {
+        throw new JsonError(l("Could not parse the contents of the feed"));
+      }
+
+      // Import the feed contents
+
+      $feed->id = $storage->importFeed($this->user->id, $feed);
+      if ($feed->id === false)
+        throw new JsonError(l("An error occurred while adding feed"));
+    }
+
+    // Subscribe to feed
+
+    if (!$storage->subscribeToFeed($this->user->id, $feed->id))
+      throw new JsonError(l("Could not subscribe to feed"));
+
+    return array(
+      "feed" => array(
+        "title" => $feed->title,
+      ),
+      "allItems" => $storage->getUserFeeds($this->user),
+    );
   }
 
   function defaultRoute()
