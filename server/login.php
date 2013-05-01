@@ -24,6 +24,7 @@
 
 require("include/openid.php");
 require("include/common.php");
+require("include/PasswordHash.php");
 require("classes/Core.php");
 
 class LoginController extends Controller
@@ -42,6 +43,7 @@ class LoginController extends Controller
     $this->addGetRoute(array("newAccount"), "newAccountRoute");
     $this->addGetRoute(array("newAdminAccount"), "newAdminAccountRoute");
     $this->addGetRoute(array("createToken"), "createTokenRoute");
+    $this->addGetRoute(array("logIn"), "localLoginRoute");
   }
 
   function defaultRoute()
@@ -75,6 +77,43 @@ class LoginController extends Controller
       $this->openId->identity = $authUrl;
       $this->redirectTo($this->openId->authUrl());
     }
+  }
+
+  function localLoginRoute()
+  {
+    $username = $_POST["username"];
+    $password = $_POST["password"];
+
+    if (!preg_match('/^\\w+$/', $username))
+    {
+      $this->renderLogInPage(null, l("Enter a valid username"));
+      return;
+    }
+    else if (!preg_match('/^\\w+$/', $password))
+    {
+      $this->renderLogInPage(null, l("Enter a valid password"));
+      return;
+    }
+
+    $storage = Storage::getInstance();
+    $user = $storage->findUserWithUsername($username, $hash);
+
+    if ($this->shouldThrottleLogin($user))
+    {
+      $this->renderLogInPage(null, l("Too many bad login attempts. Please try again shortly"));
+      return;
+    }
+
+    if ($user === false || !$this->getHasher()->CheckPassword($password, $hash))
+    {
+      if ($user !== false) // Record the failed login attempt
+        $storage->reportFailedLogin($user->id);
+
+      $this->renderLogInPage(null, l("Incorrect username or password"));
+      return;
+    }
+
+    $this->authorizeUser($user);
   }
 
   function logOutRoute()
@@ -143,7 +182,7 @@ class LoginController extends Controller
     }
 
     if (($user = $storage->createUser($openIdIdentity, $username, $emailAddress, $tokenId, $roleId)) !== false)
-      $this->authorizeUser($user, $openIdIdentity);
+      $this->authorizeUser($user);
     else
       $this->renderNewAccountPage($openIdIdentity, $tokenHash, $emailAddress, l("That username is already taken. Try another one"));
   }
@@ -206,7 +245,7 @@ class LoginController extends Controller
     }
 
     if (($user = $storage->createUser($openIdIdentity, $username, $emailAddress, null, $roleId)) !== false)
-      $this->authorizeUser($user, $openIdIdentity);
+      $this->authorizeUser($user);
     else
       $this->renderCreateAdminAccountPage($openIdIdentity, l("Cannot create account at the moment"));
   }
@@ -258,7 +297,7 @@ class LoginController extends Controller
       else
       {
         // Already a member
-        $this->authorizeUser($user, $openIdIdentity);
+        $this->authorizeUser($user);
       }
     }
     else
@@ -277,19 +316,19 @@ class LoginController extends Controller
       parent::route();
   }
 
-  function saltAndHashOpenId($openId)
+  private function saltAndHashOpenId($openId)
   {
     return hash('sha256', hash('sha256', 
       sprintf("%s,%s", SALT_VOPENID, $openId)));
   }
 
-  function authorizeUser($user, $secret)
+  private function authorizeUser($user)
   {
-    $hash = hash('sha256', hash('sha256', sprintf("%s,%s,%s,%s,%s", 
-      SALT_SESSION, $secret, $user->id, mt_rand(), time())));
+    $hash = hash('sha256', hash('sha256', sprintf("%s,%s,%s,%s", 
+      SALT_SESSION, $user->id, mt_rand(), time())));
 
     $storage = Storage::getInstance();
-    $sessionId = $storage->createSession($user, $hash, $_SERVER["REMOTE_ADDR"]);
+    $sessionId = $storage->createSession($user->id, $hash, $_SERVER["REMOTE_ADDR"]);
 
     if ($sessionId !== false)
     {
@@ -300,13 +339,13 @@ class LoginController extends Controller
       setcookie(COOKIE_AUTH, $hash, time() + SESSION_DURATION);
       setcookie(COOKIE_VAUTH, $vhash, time() + SESSION_DURATION);
 
-      header('Location: index.php');
+      $this->redirectTo('index.php');
     }
 
     return $sessionId;
   }
 
-  function renderLogInPage($createToken = null, $errorMessage = null)
+  private function renderLogInPage($createToken = null, $errorMessage = null)
   {
 ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
@@ -329,7 +368,22 @@ class LoginController extends Controller
 <?
     }
 ?>
-      <span class="directions">Log in with an existing OpenId account:</span>
+      <form action="login.php?logIn=true" method="post">
+<?
+    if ($tokenHash)
+    {
+?>
+        <input type="hidden" name="createToken" value="<?= h($tokenHash) ?>" />
+<?
+    }
+?>
+        <span class="directions">Username:</span>
+        <input type="text" name="username" value="<?= h($_POST["username"]) ?>" />
+        <span class="directions">Password:</span>
+        <input type="password" name="password" value="<?= h($_POST["password"]) ?>" />
+        <input type="submit" value="Log In" />
+      </form>
+      <span class="directions">Log in with an OpenId account:</span>
       <div class="openid-providers">
         <a href="?logInWith=google<?= $createToken ? "&createToken={$createToken}" : "" ?>" class="google large-button" title="Log in with Google"></a>
         <a href="?logInWith=yahoo<?= $createToken ? "&createToken={$createToken}" : "" ?>" class="yahoo large-button" title="Log in with Yahoo!"></a>
@@ -343,7 +397,7 @@ class LoginController extends Controller
 <?
   }
 
-  function renderNewAccountPage($openIdIdentity, $tokenHash, $emailAddress, $errorMessage = null)
+  private function renderNewAccountPage($openIdIdentity, $tokenHash, $emailAddress, $errorMessage = null)
   {
 ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
@@ -392,7 +446,7 @@ class LoginController extends Controller
 <?
   }
 
-  function renderCreateAdminAccountPage($openIdIdentity, $errorMessage = null)
+  private function renderCreateAdminAccountPage($openIdIdentity, $errorMessage = null)
   {
 ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
@@ -434,6 +488,18 @@ class LoginController extends Controller
   </body>
 </html>
 <?
+  }
+
+  private function shouldThrottleLogin($user)
+  {
+    if ($user->failedLoginCount < 3)
+      return false; // No need to throttle yet
+
+    $delay = pow(2, $user->failedLoginCount - 3);
+    if ($delay > 8)
+      $delay = 8; // Once every 8 seconds should be sufficient
+
+    return time() < $user->lastFailedLogin + $delay;
   }
 }
 

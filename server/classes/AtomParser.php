@@ -44,6 +44,9 @@ class AtomParser extends FeedParser
       $feed->link = (string)$link->href;
     }
 
+    if (!$feed->link)
+      $feed->link = $feed->url; // Default link is the URL to the feed itself
+
     foreach ($this->xml->xpath('/atom:feed/atom:entry') as $entry) 
     {
       $entry->registerXPathNamespace('atom', 'http://www.w3.org/2005/Atom');

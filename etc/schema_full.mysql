@@ -195,8 +195,8 @@ CREATE TABLE `user_article_tags` (
   `user_article_id` int(11) NOT NULL,
   `tag` varchar(256) NOT NULL,
   PRIMARY KEY (`id`),
-  KEY `fk_user_article_tags_article_id` (`user_article_id`),
-  CONSTRAINT `fk_user_article_tags_article_id` FOREIGN KEY (`user_article_id`) REFERENCES `user_articles` (`id`)
+  KEY `fk_user_article_tags_user_article_id` (`user_article_id`),
+  CONSTRAINT `fk_user_article_tags_user_article_id` FOREIGN KEY (`user_article_id`) REFERENCES `user_articles` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -233,10 +233,13 @@ DROP TABLE IF EXISTS `users`;
 CREATE TABLE `users` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `username` varchar(32) NOT NULL,
+  `password` varchar(60) DEFAULT NULL,
   `email_address` varchar(128) NOT NULL,
   `open_id_identity` varchar(512) DEFAULT NULL,
   `role_id` int(11) NOT NULL,
   `welcome_token_id` int(11) DEFAULT NULL,
+  `failed_login_count` int(11) NOT NULL,
+  `last_failed_login` datetime DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `username` (`username`),
   UNIQUE KEY `ux_users_email_address` (`email_address`),
@@ -280,7 +283,7 @@ CREATE TABLE `welcome_tokens` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2013-04-29 12:07:03
+-- Dump completed on 2013-05-01  1:27:14
 -- MySQL dump 10.13  Distrib 5.6.10, for osx10.7 (x86_64)
 --
 -- Host: localhost    Database: grr
@@ -304,7 +307,7 @@ CREATE TABLE `welcome_tokens` (
 
 LOCK TABLES `roles` WRITE;
 /*!40000 ALTER TABLE `roles` DISABLE KEYS */;
-INSERT INTO `roles` VALUES (1,'user','User'),(2,'admin','Administrator');
+INSERT INTO `roles` VALUES (1,'admin','Administrator'),(2,'user','User');
 /*!40000 ALTER TABLE `roles` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -317,4 +320,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2013-04-29 12:07:03
+-- Dump completed on 2013-05-01  1:27:14

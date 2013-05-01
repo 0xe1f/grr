@@ -41,10 +41,12 @@ class Controller
   private $routes;
   protected $user;
   protected $returnValue;
+  protected $hasher = null;
 
   function __construct()
   {
     $this->user = null;
+    $this->hasher = null;
     $this->returnValue = null;
     $this->routes = array();
     
@@ -63,6 +65,14 @@ class Controller
   function getCurrentUser()
   {
     return $this->user;
+  }
+
+  function getHasher()
+  {
+    if (!$this->hasher)
+      $this->hasher = new PasswordHash(8, FALSE);
+
+    return $this->hasher;
   }
 
   function getPublicAppUrl($suffix = null)

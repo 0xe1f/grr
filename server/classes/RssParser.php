@@ -41,6 +41,9 @@ class RssParser extends FeedParser
     $sy = $this->xml->channel->children('http://purl.org/rss/1.0/modules/syndication/');
     $feed->setUpdateInformation((string)$sy->updatePeriod, (string)$sy->updateFrequency);
 
+    if (!$feed->link)
+      $feed->link = $feed->url; // Default link is the URL to the feed itself
+
     $rss1 = false;
     if ($this->xml->channel->items)
     {

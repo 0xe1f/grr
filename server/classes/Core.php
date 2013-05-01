@@ -41,7 +41,7 @@ abstract class Storage
   public abstract function getUserWithSessionHash($sessionHash, $receivedVHash);
   public abstract function createUser($openIdIdentity, $username, $emailAddress, $welcomeTokenId, $roleId);
   public abstract function getRoleId($roleCode);
-  public abstract function createSession($user, $hash, $remoteAddress);
+  public abstract function createSession($userId, $hash, $remoteAddress);
   public abstract function getArticlePage($userId, $feedFolderId, $filter, $pageSize, $continueAfterId = null);
   public abstract function setArticleStatus($userId, $userArticleId, $isUnread, $isStarred, $isLiked);
 
@@ -60,6 +60,8 @@ class User
   var $username;
   var $role;
   var $sessionId;
+  var $lastFailedLogin;
+  var $failedLoginCount;
 
   public static function getCurrent()
   {

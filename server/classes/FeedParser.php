@@ -27,12 +27,6 @@ abstract class FeedParser
   protected $url;
   protected $document;
   protected $xml;
-  protected $enableLogging;
-
-  public function enableLogging($enableLogging)
-  {
-    $this->enableLogging = $enableLogging;
-  }
 
   public static function create($url)
   {
@@ -41,6 +35,7 @@ abstract class FeedParser
     curl_setopt($curlSession, CURLOPT_URL, $url);
     curl_setopt($curlSession, CURLOPT_BINARYTRANSFER, true);
     curl_setopt($curlSession, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($curlSession, CURLOPT_FOLLOWLOCATION, true);
 
     $content = curl_exec($curlSession);
 
@@ -55,6 +50,8 @@ abstract class FeedParser
     if (!$content)
       throw new Exception('Document is empty');
 
+    $parser = null;
+
     try
     {
       $xml = @new SimpleXMLElement($content);
@@ -62,19 +59,15 @@ abstract class FeedParser
     catch(Exception $e)
     {
       // In case there are invalid control characters...
-      if ($this->enableLogging)
-        echo "  (i) Attempting to strip out control characters\n";
-
+      
       $content = preg_replace('/[\x00-\x1f\x80-\xff]/', '', $content);
       $xml = @new SimpleXMLElement($content);
     }
 
-    $namespaces = $xml->getDocNamespaces();
-
-    $parser = null;
-    if ($namespaces[""] == "http://www.w3.org/2005/Atom")
+    $rootName = $xml->getName();
+    if ($rootName == 'feed')
       $parser = new AtomParser();
-    else
+    else if ($rootName == 'rss' || $rootName == 'RDF')
       $parser = new RssParser();
 
     if ($parser != null)

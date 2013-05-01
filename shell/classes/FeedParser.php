@@ -30,10 +30,27 @@ abstract class FeedParser
 
   public static function create($url)
   {
-    $content = file_get_contents($url);
+    $curlSession = curl_init();
+
+    curl_setopt($curlSession, CURLOPT_URL, $url);
+    curl_setopt($curlSession, CURLOPT_BINARYTRANSFER, true);
+    curl_setopt($curlSession, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($curlSession, CURLOPT_FOLLOWLOCATION, true);
+
+    $content = curl_exec($curlSession);
+
+    $errorCode = curl_errno($curlSession);
+    $errorMessage = curl_error($curlSession);
+
+    curl_close($curlSession);
+
+    if ($errorCode != CURLE_OK)
+      throw new Exception("Error reading document ({$errorCode}: '{$errorMessage}')");
 
     if (!$content)
       throw new Exception('Document is empty');
+
+    $parser = null;
 
     try
     {
@@ -42,18 +59,15 @@ abstract class FeedParser
     catch(Exception $e)
     {
       // In case there are invalid control characters...
-      echo "  (i) Attempting to strip out control characters\n";
-
+      
       $content = preg_replace('/[\x00-\x1f\x80-\xff]/', '', $content);
       $xml = @new SimpleXMLElement($content);
     }
 
-    $namespaces = $xml->getDocNamespaces();
-
-    $parser = null;
-    if ($namespaces[""] == "http://www.w3.org/2005/Atom")
+    $rootName = $xml->getName();
+    if ($rootName == 'feed')
       $parser = new AtomParser();
-    else
+    else if ($rootName == 'rss' || $rootName == 'RDF')
       $parser = new RssParser();
 
     if ($parser != null)
@@ -75,6 +89,7 @@ class Feed
   private $updatePeriod;
   private $updateFrequency;
 
+  public $id;
   public $url;
   public $articles;
   public $title;

@@ -413,6 +413,7 @@ ul#feeds,
 
 #navbar .subscribe
 {
+  border-color: #D14836;
   background-color: #D14836;
   color: white;
   text-transform: uppercase;

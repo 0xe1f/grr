@@ -917,6 +917,70 @@ class MySqlStorage extends Storage
     return $user;
   }
 
+  public function findUserWithUsername($username, &$password = null)
+  {
+    if (strlen($username) < 1)
+      return false;
+
+    $user = false; // Error by default
+    
+    $stmt = $this->db->prepare("
+             SELECT u.id,
+                    u.username,
+                    u.password,
+                    r.id,
+                    r.code,
+                    UNIX_TIMESTAMP(last_failed_login) last_failed_login,
+                    failed_login_count
+               FROM users u
+         INNER JOIN roles r ON r.id = u.role_id
+              WHERE username = ?
+                         ");
+
+    $stmt->bind_param('s', $username);
+
+    if ($stmt->execute())
+    {
+      $stmt->bind_result($userId, $username, $password, $roleId, $roleCode, 
+        $lastFailedLogin, $failedLoginCount);
+
+      if ($stmt->fetch())
+      {
+        $user = new User();
+
+        $user->id = $userId;
+        $user->username = $username;
+        $user->role = $roleCode;
+        $user->roleId = $roleId;
+        $user->lastFailedLogin = $lastFailedLogin;
+        $user->failedLoginCount = $failedLoginCount;
+      }
+    }
+    
+    $stmt->close();
+
+    return $user;
+  }
+
+  public function reportFailedLogin($userId)
+  {
+    $stmt = $this->db->prepare("
+                 UPDATE users
+                    SET failed_login_count = failed_login_count + 1,
+                        last_failed_login = FROM_UNIXTIME(?)
+                  WHERE id = ?
+                         ");
+
+    $now = time();
+    $stmt->bind_param('ii', $now, $userId);
+
+    $success = $stmt->execute();
+
+    $stmt->close();
+
+    return $success;
+  }
+
   public function getUserCount()
   {
     $stmt = $this->db->prepare("
@@ -1135,20 +1199,41 @@ class MySqlStorage extends Storage
     return $roleId;
   }
 
-  public function createSession($user, $hash, $remoteAddress)
+  public function createSession($userId, $hash, $remoteAddress)
   {
+    // Reset failed logins
+
     $stmt = $this->db->prepare("
-        INSERT INTO sessions (user_id, hash, source_ip, created)
-             VALUES (?, ?, ?, UTC_TIMESTAMP())
+                 UPDATE users
+                    SET failed_login_count = 0,
+                        last_failed_login = NULL
+                  WHERE id = ?
                          ");
 
-    $stmt->bind_param('iss', $user->id, $hash, $remoteAddress);
+    $stmt->bind_param('i', $userId);
 
-    $sessionId = false;
-    if ($stmt->execute())
-      $sessionId = $this->db->insert_id;
+    $success = $stmt->execute();
 
     $stmt->close();
+
+    // Create session
+
+    $sessionId = false;
+    
+    if ($success)
+    {
+      $stmt = $this->db->prepare("
+          INSERT INTO sessions (user_id, hash, source_ip, created)
+               VALUES (?, ?, ?, UTC_TIMESTAMP())
+                           ");
+
+      $stmt->bind_param('iss', $userId, $hash, $remoteAddress);
+
+      if ($stmt->execute())
+        $sessionId = $this->db->insert_id;
+
+      $stmt->close();
+    }
 
     return $sessionId;
   }

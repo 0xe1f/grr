@@ -58,8 +58,11 @@ class FeedController extends JsonController
       }
       catch(Exception $e)
       {
-        throw new JsonError(l("Could not determine feed format"));
+        throw new JsonError(l("Could not read contents of feed"));
       }
+
+      if (!$parser)
+        throw new JsonError(l("Could not determine type of feed"));
 
       try
       {
