@@ -84,7 +84,7 @@ class LoginController extends Controller
     $username = $_POST["username"];
     $password = $_POST["password"];
 
-    if (!preg_match('/^\\w+$/', $username))
+    if (strlen($username) < 1)
     {
       $this->renderLogInPage(null, l("Enter a valid username"));
       return;
@@ -98,7 +98,7 @@ class LoginController extends Controller
     $storage = Storage::getInstance();
     $user = $storage->findUserWithUsername($username, $hash);
 
-    if ($this->shouldThrottleLogin($user))
+    if ($this->shouldThrottleLogin())
     {
       $this->renderLogInPage(null, l("Too many bad login attempts. Please try again shortly"));
       return;
@@ -106,8 +106,7 @@ class LoginController extends Controller
 
     if ($user === false || !$this->getHasher()->CheckPassword($password, $hash))
     {
-      if ($user !== false) // Record the failed login attempt
-        $storage->reportFailedLogin($user->id);
+      $storage->reportFailedLogin($user ? $user->id : null, $_SERVER["REMOTE_ADDR"]);
 
       $this->renderLogInPage(null, l("Incorrect username or password"));
       return;
@@ -125,35 +124,93 @@ class LoginController extends Controller
     $this->redirectTo("login.php");
   }
 
-  function newAccountRoute()
+  function newAccountRoute($type)
   {
     $tokenHash = $_POST["createToken"];
     $username = $_POST["username"];
     $emailAddress = $_POST["emailAddress"];
-    $openIdIdentity = $_POST["oid"];
+    $openIdIdentity = null;
+    $hashedPassword = null;
 
-    $receivedOpenIdHash = $_POST["v"];
-    $computedOpenIdHash = $this->saltAndHashOpenId($openIdIdentity);
-
-    if ($computedOpenIdHash != $receivedOpenIdHash)
+    if ($type == "local")
     {
-      $this->renderNewAccountPage($openIdIdentity, $tokenHash, $emailAddress, l("Could not log in - try again"));
+      if (count($_POST) < 1)
+      {
+        $this->renderNewAccountPage($openIdIdentity, $_GET["createToken"], null);
+        return;
+      }
+    }
+    else if ($type == "openId")
+    {
+      $openIdIdentity = $_POST["oid"];
+
+      $receivedOpenIdHash = $_POST["v"];
+      $computedOpenIdHash = $this->saltAndHashOpenId($openIdIdentity);
+
+      if ($computedOpenIdHash != $receivedOpenIdHash)
+      {
+        $this->renderNewAccountPage($openIdIdentity, $tokenHash, $emailAddress, 
+          l("Could not log in - try again"));
+        return;
+      }
+    }
+    else
+    {
+      $this->renderLogInPage(null, l("Cannot create account - try again"));
       return;
     }
-    else if (!preg_match('/^\\w+$/', $username))
+
+    if (!preg_match('/^\\w+$/', $username))
     {
-      $this->renderNewAccountPage($openIdIdentity, $tokenHash, $emailAddress, l("Enter a valid username"));
+      $this->renderNewAccountPage($openIdIdentity, $tokenHash, $emailAddress, 
+        l("Enter a valid username"));
       return;
     }
     else if (strlen($openIdIdentity) >= 512)
     {
-      $this->renderNewAccountPage($openIdIdentity, $tokenHash, $emailAddress, l("Cannot create account with this OpenId"));
+      $this->renderNewAccountPage($openIdIdentity, $tokenHash, $emailAddress, 
+        l("Cannot create account with this OpenId"));
       return;
     }
     else if (!$this->isValidEmailAddress($emailAddress))
     {
-      $this->renderNewAccountPage($openIdIdentity, $tokenHash, $emailAddress, l("Enter a valid email address"));
+      $this->renderNewAccountPage($openIdIdentity, $tokenHash, $emailAddress, 
+        l("Enter a valid email address"));
       return;
+    }
+
+    if ($type == "local")
+    {
+      $password = $_POST["password"];
+      $confirmPassword = $_POST["confirmPassword"];
+
+      // Verify password length
+
+      if (!$password || strlen(trim($password)) < SHORTEST_PASSWORD_LENGTH)
+      {
+        $this->renderNewAccountPage($openIdIdentity, $tokenHash, $emailAddress, 
+          l("Passwords should be at least %s characters long", SHORTEST_PASSWORD_LENGTH));
+        return;
+      }
+
+      // Check if passwords match
+
+      if ($password != $confirmPassword)
+      {
+        $this->renderNewAccountPage($openIdIdentity, $tokenHash, $emailAddress, 
+          l("Passwords don't match"));
+        return;
+      }
+
+      // Generate a password
+
+      $hashedPassword = $this->getHasher()->HashPassword($password);
+      if (strlen($hashedPassword) < 20)
+      {
+        $this->renderNewAccountPage($openIdIdentity, $tokenHash, $emailAddress, 
+          l("Cannot create account. Try again later"));
+        return;
+      }
     }
 
     $storage = Storage::getInstance();
@@ -167,7 +224,8 @@ class LoginController extends Controller
       {
         // Missing or unknown token 
 
-        $this->renderNewAccountPage($openIdIdentity, $tokenHash, $emailAddress, l("Account creation offer is expired or invalid"));
+        $this->renderNewAccountPage($openIdIdentity, $tokenHash, $emailAddress, 
+          l("Account creation offer is expired or invalid"));
         return;
       }
 
@@ -177,14 +235,16 @@ class LoginController extends Controller
     $roleId = $storage->getRoleId(ROLE_USER);
     if ($roleId === false)
     {
-      $this->renderNewAccountPage($openIdIdentity, $tokenHash, $emailAddress, l("Cannot create account. Try again later"));
+      $this->renderNewAccountPage($openIdIdentity, $tokenHash, $emailAddress, 
+        l("Cannot create account. Try again later"));
       return;
     }
 
-    if (($user = $storage->createUser($openIdIdentity, $username, $emailAddress, $tokenId, $roleId)) !== false)
+    if (($user = $storage->createUser($username, $hashedPassword, $openIdIdentity, $emailAddress, $tokenId, $roleId)) !== false)
       $this->authorizeUser($user);
     else
-      $this->renderNewAccountPage($openIdIdentity, $tokenHash, $emailAddress, l("That username is already taken. Try another one"));
+      $this->renderNewAccountPage($openIdIdentity, $tokenHash, $emailAddress, 
+        l("Username or email address are already taken. Try another one"));
   }
 
   function newAdminAccountRoute()
@@ -244,7 +304,7 @@ class LoginController extends Controller
       return;
     }
 
-    if (($user = $storage->createUser($openIdIdentity, $username, $emailAddress, null, $roleId)) !== false)
+    if (($user = $storage->createUser($username, null, $openIdIdentity, $emailAddress, null, $roleId)) !== false)
       $this->authorizeUser($user);
     else
       $this->renderCreateAdminAccountPage($openIdIdentity, l("Cannot create account at the moment"));
@@ -383,6 +443,22 @@ class LoginController extends Controller
         <input type="password" name="password" value="<?= h($_POST["password"]) ?>" />
         <input type="submit" value="Log In" />
       </form>
+<?
+    if (CREATE_UNKNOWN_ACCOUNTS)
+    {
+?>
+        <span class="directions"><a href="login.php?newAccount=local">Create a new account</a></span>
+<?
+    }
+    else if ($createToken)
+    {
+?>
+        <span class="directions"><a href="login.php?newAccount=local&amp;createToken=<?= $createToken ?>">Create a new account</a></span>
+<?
+    }
+?>
+      <hr />
+
       <span class="directions">Log in with an OpenId account:</span>
       <div class="openid-providers">
         <a href="?logInWith=google<?= $createToken ? "&createToken={$createToken}" : "" ?>" class="google large-button" title="Log in with Google"></a>
@@ -420,7 +496,7 @@ class LoginController extends Controller
 <?
     }
 ?>
-      <form action="login.php?newAccount=true" method="post">
+      <form action="login.php?newAccount=<?= ($openIdIdentity) ? "openId" : "local" ?>" method="post">
 <?
     if ($tokenHash)
     {
@@ -428,13 +504,30 @@ class LoginController extends Controller
         <input type="hidden" name="createToken" value="<?= h($tokenHash) ?>" />
 <?
     }
+
+    if ($openIdIdentity)
+    {
 ?>
         <input type="hidden" name="oid" value="<?= h($openIdIdentity) ?>" />
         <input type="hidden" name="v" value="<?= h($this->saltAndHashOpenId($openIdIdentity)) ?>" />
+<?
+    }
+?>
         <span class="directions">Username:</span>
         <input type="text" name="username" value="<?= h($_POST["username"]) ?>" />
         <span class="directions">Email Address:</span>
         <input type="text" name="emailAddress" value="<?= h($emailAddress) ?>" />
+<?
+    if (!$openIdIdentity)
+    {
+?>
+        <span class="directions">Password:</span>
+        <input type="password" name="password" />
+        <span class="directions">Confirm Password:</span>
+        <input type="password" name="confirmPassword" />
+<?
+    }
+?>
         <input type="submit" value="Create new account" />
       </form>
     </div>
@@ -490,16 +583,22 @@ class LoginController extends Controller
 <?
   }
 
-  private function shouldThrottleLogin($user)
+  private function shouldThrottleLogin()
   {
-    if ($user->failedLoginCount < 3)
-      return false; // No need to throttle yet
+    // Get number of failed logins in the last 16 seconds
 
-    $delay = pow(2, $user->failedLoginCount - 3);
-    if ($delay > 8)
-      $delay = 8; // Once every 8 seconds should be sufficient
+    $storage = Storage::getInstance();
+    $failedLogin = $storage->getFailedLoginStatistics($_SERVER["REMOTE_ADDR"], 60);
 
-    return time() < $user->lastFailedLogin + $delay;
+    if ($failedLogin == null)
+      return false;
+
+    if ($failedLogin->failedLoginCount < 2)
+      return false;
+
+    $delay = pow(2, $failedLogin->failedLoginCount - 2);
+    
+    return time() < $failedLogin->lastFailedAttempt + $delay;
   }
 }
 

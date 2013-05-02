@@ -1,2 +1,1 @@
-ALTER TABLE users ADD COLUMN failed_login_count INT NOT NULL, ADD COLUMN last_failed_login DATETIME;
 ALTER TABLE users ADD COLUMN password VARCHAR(60) AFTER username;

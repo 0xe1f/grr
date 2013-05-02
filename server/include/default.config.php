@@ -57,6 +57,9 @@
   // This section includes default values which can be customized
   //
 
+  // Shortest allowed password length
+  define('SHORTEST_PASSWORD_LENGTH', 8);
+
   // Maximum number of articles to load each time
   define('PAGE_SIZE', 40);
 

@@ -432,6 +432,7 @@ class MySqlStorage extends Storage
                                 $feedTitle,
                                 $importStarted);
 
+    $feedId = false;
     $success = true;
 
     $feedUrl = $feed->url;
@@ -466,15 +467,38 @@ class MySqlStorage extends Storage
 
       if ($stmt->execute())
       {
-        $success = $this->db->insert_id;
-        if (!$success) // Recover from possible race condition
-          $success = $this->getFeedId($feed->url);
+        $feedId = $this->db->insert_id;
+        if (!$feedId) // Recover from possible race condition
+          $feedId = $this->getFeedId($feed->url);
       }
 
       $stmt->close();
+
+      if ($feedId !== false)
+      {
+        // Personalize feed contents
+
+        $stmt = $this->db->prepare("
+              INSERT INTO user_articles (user_id, article_id) 
+                   SELECT u.id user_id, 
+                          a.id article_id
+                     FROM articles a 
+               INNER JOIN users u ON u.id = ?
+                LEFT JOIN user_articles ua ON ua.article_id = a.id AND ua.user_id = u.id
+                    WHERE a.feed_id = ?
+                          AND ua.id IS NULL
+                                   ");
+
+        $stmt->bind_param('ii', $userId, $feedId);
+
+        if (!$stmt->execute())
+          $feedId = false;
+
+        $stmt->close();
+      }
     }
 
-    return $success;
+    return $feedId;
   }
 
   public function importFeeds($userId, $feeds, $selection)
@@ -929,9 +953,7 @@ class MySqlStorage extends Storage
                     u.username,
                     u.password,
                     r.id,
-                    r.code,
-                    UNIX_TIMESTAMP(last_failed_login) last_failed_login,
-                    failed_login_count
+                    r.code
                FROM users u
          INNER JOIN roles r ON r.id = u.role_id
               WHERE username = ?
@@ -941,8 +963,7 @@ class MySqlStorage extends Storage
 
     if ($stmt->execute())
     {
-      $stmt->bind_result($userId, $username, $password, $roleId, $roleCode, 
-        $lastFailedLogin, $failedLoginCount);
+      $stmt->bind_result($userId, $username, $password, $roleId, $roleCode);
 
       if ($stmt->fetch())
       {
@@ -952,33 +973,12 @@ class MySqlStorage extends Storage
         $user->username = $username;
         $user->role = $roleCode;
         $user->roleId = $roleId;
-        $user->lastFailedLogin = $lastFailedLogin;
-        $user->failedLoginCount = $failedLoginCount;
       }
     }
     
     $stmt->close();
 
     return $user;
-  }
-
-  public function reportFailedLogin($userId)
-  {
-    $stmt = $this->db->prepare("
-                 UPDATE users
-                    SET failed_login_count = failed_login_count + 1,
-                        last_failed_login = FROM_UNIXTIME(?)
-                  WHERE id = ?
-                         ");
-
-    $now = time();
-    $stmt->bind_param('ii', $now, $userId);
-
-    $success = $stmt->execute();
-
-    $stmt->close();
-
-    return $success;
   }
 
   public function getUserCount()
@@ -1055,12 +1055,26 @@ class MySqlStorage extends Storage
     return $user;
   }
 
-  public function createUser($openIdIdentity, $username, $emailAddress, $welcomeTokenId, $roleId)
+  public function createUser($username, $password, $openIdIdentity, $emailAddress, $welcomeTokenId, $roleId)
   {
-    if (strlen($openIdIdentity) < 1 || strlen($openIdIdentity) >= 512)
+    if (strlen($username) < 1)
       return false;
 
-    if (!preg_match('/^\\w+$/', $username))
+    if ($password)
+    {
+      if (strlen(trim($password)) < 1)
+        return false;
+    }
+
+    if ($openIdIdentity)
+    {
+      // DB column size restriction
+      if (strlen($openIdIdentity) < 1 || strlen($openIdIdentity) >= 512)
+        return false;
+    }
+
+    // One or the other is required
+    if (!$password && !$openIdIdentity)
       return false;
 
     $this->db->autocommit(false);
@@ -1068,11 +1082,11 @@ class MySqlStorage extends Storage
     // Create user
 
     $stmt = $this->db->prepare("
-         INSERT INTO users (username, email_address, open_id_identity, welcome_token_id, role_id)
-                    VALUES (?, ?, ?, ?, ?)
+         INSERT INTO users (username, password, email_address, open_id_identity, welcome_token_id, role_id)
+                    VALUES (?, ?, ?, ?, ?, ?)
                          ");
 
-    $stmt->bind_param('sssii', $username, $emailAddress, $openIdIdentity, $welcomeTokenId, $roleId);
+    $stmt->bind_param('ssssii', $username, $password, $emailAddress, $openIdIdentity, $welcomeTokenId, $roleId);
 
     $userId = false;
     if ($stmt->execute())
@@ -1236,6 +1250,57 @@ class MySqlStorage extends Storage
     }
 
     return $sessionId;
+  }
+
+  public function reportFailedLogin($userId, $remoteAddress)
+  {
+    $now = time();
+
+    $stmt = $this->db->prepare("
+                INSERT INTO failed_logins (source_ip, attempt_time, user_id) 
+                     VALUES (?, FROM_UNIXTIME(?), ?) 
+                               ");
+
+    $stmt->bind_param('sii', $remoteAddress, $now, $userId);
+
+    $success = $stmt->execute();
+
+    $stmt->close();
+
+    return $success;
+  }
+
+  public function getFailedLoginStatistics($remoteAddress, $timeWindowInSeconds)
+  {
+    $failedLogin = null;
+    $now = time();
+
+    $stmt = $this->db->prepare("
+             SELECT COUNT(*) failed_login_count,
+                    UNIX_TIMESTAMP(MAX(attempt_time)) last_failed_attempt
+               FROM failed_logins 
+              WHERE source_ip = ? 
+                    AND attempt_time > DATE_SUB(FROM_UNIXTIME(?), INTERVAL ? SECOND)
+                         ");
+
+    $stmt->bind_param('sii', $remoteAddress, $now, $timeWindowInSeconds);
+
+    if ($stmt->execute())
+    {
+      $stmt->bind_result($failedLoginCount, $lastFailedAttempt);
+
+      if ($stmt->fetch())
+      {
+        $failedLogin = new stdClass();
+
+        $failedLogin->failedLoginCount = $failedLoginCount;
+        $failedLogin->lastFailedAttempt = $lastFailedAttempt;
+      }
+    }
+    
+    $stmt->close();
+
+    return $failedLogin;
   }
 
   // Articles
