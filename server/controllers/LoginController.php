@@ -22,10 +22,10 @@
  ******************************************************************************
  */
 
+require("classes/Controller.php");
+
 require("include/openid.php");
-require("include/common.php");
 require("include/PasswordHash.php");
-require("classes/Core.php");
 
 class LoginController extends Controller
 {
@@ -42,24 +42,16 @@ class LoginController extends Controller
     $this->addGetRoute(array("logout"), "logOutRoute");
     $this->addGetRoute(array("newAccount"), "newAccountRoute");
     $this->addGetRoute(array("newAdminAccount"), "newAdminAccountRoute");
-    $this->addGetRoute(array("createToken"), "createTokenRoute");
     $this->addGetRoute(array("logIn"), "localLoginRoute");
   }
 
   function defaultRoute()
   {
-    if ($this->isAuthenticated())
-      $this->redirectTo("index.php");
-    else
-      $this->renderLogInPage();
-  }
+    if (isset($_GET["createToken"]))
+      $this->createToken = $_GET["createToken"];
 
-  function createTokenRoute($tokenHash)
-  {
     if ($this->isAuthenticated())
-      $this->redirectTo("index.php");
-    else
-      $this->renderLogInPage($tokenHash);
+      $this->redirectTo("reader");
   }
 
   function logInRoute($provider)
@@ -75,7 +67,7 @@ class LoginController extends Controller
     {
       $this->openId->optional = array('contact/email');
       $this->openId->identity = $authUrl;
-      $this->redirectTo($this->openId->authUrl());
+      $this->redirectToUrl($this->openId->authUrl());
     }
   }
 
@@ -84,34 +76,41 @@ class LoginController extends Controller
     $username = $_POST["username"];
     $password = $_POST["password"];
 
+    $this->errorMessage = null;
+    $this->setTemplate("default");
+
     if (strlen($username) < 1)
     {
-      $this->renderLogInPage(null, l("Enter a valid username"));
+      $this->errorMessage = l("Enter a valid username");
       return;
     }
     else if (!preg_match('/^\\w+$/', $password))
     {
-      $this->renderLogInPage(null, l("Enter a valid password"));
+      $this->errorMessage = l("Enter a valid username");
       return;
     }
-
-    $storage = Storage::getInstance();
-    $user = $storage->findUserWithUsername($username, $hash);
 
     if ($this->shouldThrottleLogin())
     {
-      $this->renderLogInPage(null, l("Too many bad login attempts. Please try again shortly"));
+      $this->errorMessage = l("Enter a valid username");
       return;
     }
 
-    if ($user === false || !$this->getHasher()->CheckPassword($password, $hash))
+    if (!$this->errorMessage)
     {
-      $storage->reportFailedLogin($user ? $user->id : null, $_SERVER["REMOTE_ADDR"]);
+      $storage = Storage::getInstance();
+      $user = $storage->findUserWithUsername($username, $hash);
 
-      $this->renderLogInPage(null, l("Incorrect username or password"));
-      return;
+      if ($user === false || !$this->getHasher()->CheckPassword($password, $hash))
+      {
+        $storage->reportFailedLogin($user ? $user->id : null, $_SERVER["REMOTE_ADDR"]);
+
+        $this->errorMessage = l("Incorrect username or password");
+        return;
+      }
     }
 
+    $this->setTemplate(null); // render nothing
     $this->authorizeUser($user);
   }
 
@@ -121,7 +120,7 @@ class LoginController extends Controller
     setcookie(COOKIE_VAUTH, "", time() - 3600);
 
     $this->unsetUser();
-    $this->redirectTo("login.php");
+    $this->redirectTo("login");
   }
 
   function newAccountRoute($type)
@@ -156,7 +155,9 @@ class LoginController extends Controller
     }
     else
     {
-      $this->renderLogInPage(null, l("Cannot create account - try again"));
+      $this->errorMessage = l("Cannot create account - try again");
+      $this->setTemplate("default");
+
       return;
     }
 
@@ -293,7 +294,7 @@ class LoginController extends Controller
     }
     else if ($userCount > 0)
     {
-      $this->redirectTo("login.php");
+      $this->redirectTo("login");
       return;
     }
 
@@ -331,7 +332,7 @@ class LoginController extends Controller
         $userCount = $storage->getUserCount();
         if ($userCount !== false && $userCount < 1)
         {
-          // No users in the database yet. Create a temporary file with a random hash
+          // No users in the database yet
           $this->renderCreateAdminAccountPage($openIdIdentity);
           return;
         }
@@ -344,7 +345,9 @@ class LoginController extends Controller
           {
             // Missing or unknown token 
 
-            $this->renderLogInPage(null, l("There are no users registered under that account"));
+            $this->errorMessage = l("There are no users registered under that account");
+            $this->setTemplate("default");
+
             return;
           }
 
@@ -362,11 +365,11 @@ class LoginController extends Controller
     }
     else
     {
-      $this->redirectTo("login.php");
+      $this->redirectTo("login");
     }
   }
 
-  function route()
+  protected function route()
   {
     $this->openId = new LightOpenID(HOSTNAME);
 
@@ -399,78 +402,10 @@ class LoginController extends Controller
       setcookie(COOKIE_AUTH, $hash, time() + SESSION_DURATION);
       setcookie(COOKIE_VAUTH, $vhash, time() + SESSION_DURATION);
 
-      $this->redirectTo('index.php');
+      $this->redirectTo("reader");
     }
 
     return $sessionId;
-  }
-
-  private function renderLogInPage($createToken = null, $errorMessage = null)
-  {
-?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
-  <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
-    <link href="content/grr.css" type="text/css" rel="stylesheet"/>
-    <title>Log In</title>
-  </head>
-  <body>
-    <div id="header">
-      <h1>grr <span class="grr">&gt;:(</span></h1>
-    </div>
-    <div id="content" class="login">
-<?
-    if ($errorMessage)
-    {
-?>
-      <div class="error"><?= h($errorMessage) ?></div>
-<?
-    }
-?>
-      <form action="login.php?logIn=true" method="post">
-<?
-    if ($tokenHash)
-    {
-?>
-        <input type="hidden" name="createToken" value="<?= h($tokenHash) ?>" />
-<?
-    }
-?>
-        <span class="directions">Username:</span>
-        <input type="text" name="username" value="<?= h($_POST["username"]) ?>" />
-        <span class="directions">Password:</span>
-        <input type="password" name="password" value="<?= h($_POST["password"]) ?>" />
-        <input type="submit" value="Log In" />
-      </form>
-<?
-    if (CREATE_UNKNOWN_ACCOUNTS)
-    {
-?>
-        <span class="directions"><a href="login.php?newAccount=local">Create a new account</a></span>
-<?
-    }
-    else if ($createToken)
-    {
-?>
-        <span class="directions"><a href="login.php?newAccount=local&amp;createToken=<?= $createToken ?>">Create a new account</a></span>
-<?
-    }
-?>
-      <hr />
-
-      <span class="directions">Log in with an OpenId account:</span>
-      <div class="openid-providers">
-        <a href="?logInWith=google<?= $createToken ? "&createToken={$createToken}" : "" ?>" class="google large-button" title="Log in with Google"></a>
-        <a href="?logInWith=yahoo<?= $createToken ? "&createToken={$createToken}" : "" ?>" class="yahoo large-button" title="Log in with Yahoo!"></a>
-      </div>
-    </div>
-    <div id="footer">
-      &copy; 2013 Akop Karapetyan | <a href="https://github.com/melllvar/grr">grr</a> is Open and Free Software licensed under GPL
-    </div>
-  </body>
-</html>
-<?
   }
 
   private function renderNewAccountPage($openIdIdentity, $tokenHash, $emailAddress, $errorMessage = null)
@@ -496,7 +431,7 @@ class LoginController extends Controller
 <?
     }
 ?>
-      <form action="login.php?newAccount=<?= ($openIdIdentity) ? "openId" : "local" ?>" method="post">
+      <form action="<?= $this->url("login", array("newAccount" => ($openIdIdentity) ? "openId" : "local")) ?>" method="post">
 <?
     if ($tokenHash)
     {
@@ -562,7 +497,7 @@ class LoginController extends Controller
 <?
     }
 ?>
-      <form action="login.php?newAdminAccount=true" method="post">
+      <form action="<?= $this->url("login", array("newAdminAccount" => "true")) ?>" method="post">
         <input type="hidden" name="oid" value="<?= h($openIdIdentity) ?>" />
         <input type="hidden" name="v" value="<?= h($this->saltAndHashOpenId($openIdIdentity)) ?>" />
         <span class="directions">Please check the configuration file ('config.php') on the server. Copy the 
@@ -585,10 +520,14 @@ class LoginController extends Controller
 
   private function shouldThrottleLogin()
   {
-    // Get number of failed logins in the last 16 seconds
+    if (LOGIN_THROTTLING_WINDOW === false)
+      return false;
+
+    // Get number of recent failed logins
 
     $storage = Storage::getInstance();
-    $failedLogin = $storage->getFailedLoginStatistics($_SERVER["REMOTE_ADDR"], 60);
+    $failedLogin = $storage->getFailedLoginStatistics($_SERVER["REMOTE_ADDR"], 
+      LOGIN_THROTTLING_WINDOW);
 
     if ($failedLogin == null)
       return false;
@@ -601,8 +540,5 @@ class LoginController extends Controller
     return time() < $failedLogin->lastFailedAttempt + $delay;
   }
 }
-
-$ctrlr = new LoginController();
-$ctrlr->execute();
 
 ?>

@@ -22,77 +22,27 @@
  ******************************************************************************
  */
 
-require("include/common.php");
 require("classes/Core.php");
+require("classes/Router.php");
 
-class ReaderController extends Controller
+require("include/config.php");
+require("include/common.php");
+
+class Grr extends Router
 {
-  function defaultRoute()
+  protected function initRoutes()
   {
-    $user = $this->getCurrentUser();
-?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
-  <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
-    <link href="content/reader.css" type="text/css" rel="stylesheet"/>
-    <script src="content/sprintf.min.js" type="text/javascript"></script>
-    <script src="content/jquery-1.9.1.min.js" type="text/javascript"></script>
-    <script src="content/jquery.scrollintoview.min.js" type="text/javascript"></script>
-    <script src="content/jquery.hotkeys.js" type="text/javascript"></script>
-    <script src="content/spin.min.js" type="text/javascript"></script>
-    <script src="content/reader.js" type="text/javascript"></script>
-    <title>&gt;:(</title>
-  </head>
-  <body>
-    <div id="toast"><span></span></div>
-    <div id="header">
-      <h1>grr <span class="grr">&gt;:(</span></h1>
-      <div class="navbar">
-        <span class="logout">Signed in as <span class="username"><?= h($user->username) ?></span> <a href="login.php?logout=true">Sign out</a></span>
-        <a class="import-subs" href="import.php">Import subscriptions</a>
-<?
-    if ($user->isAdmin())
-    {
-?>
-        <a class="admin" href="admin.php">Admin</a>
-<?
-    }
-?>
-      </div>
-    </div>
-    <div id="navbar">
-      <div class="right-aligned">
-        <button class="select-article up"><?= l("Previous") ?></button>
-        <button class="select-article down"><?= l("Next") ?></button>
-      </div>
-      <button class="subscribe"><?= l("Subscribe") ?></button>
-      <span class="spacer"></span>
-      <button class="refresh"><?= l("Refresh") ?></button>
-      <span class="spacer"></span>
-      <button class="mark-all-as-read"><?= l("Mark all as read") ?></button>
-      <span class="spacer"></span>
-      <select class="article-filter">
-        <option value="all" class="filter-all"><?= l("All Items") ?></option>
-        <option value="new" class="filter-new"><?= l("New Items") ?></option>
-        <option value="star" class="filter-star"><?= l("Starred") ?></option>
-      </select>
-    </div>
-    <div id="reader">
-      <div class="feeds-container">
-        <ul id="feeds"></ul>
-      </div>
-      <div class="entries-container">
-        <div id="entries"></div>
-      </div>
-    </div>
-  </body>
-</html>
-<?
-  }  
+    $this->addRoute('admin', 'AdminController');
+    $this->addRoute('article', 'ArticleController');
+    $this->addRoute('feed', 'FeedController');
+    $this->addRoute('import', 'ImportController');
+    $this->addRoute('login', 'LoginController');
+    $this->addRoute('paging', 'PagingController');
+    $this->addRoute('reader', 'ReaderController', true);
+  }
 }
 
-$ctrlr = new ReaderController();
-$ctrlr->execute();
+$router = new Grr();
+$router->start();
 
 ?>

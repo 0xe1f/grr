@@ -81,6 +81,5 @@ class User
 }
 
 require("MySqlStorage.php");
-require("Controller.php");
 
 ?>

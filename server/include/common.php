@@ -22,8 +22,6 @@
  ******************************************************************************
  */
 
-require("config.php");
-
 define('ERROR_UNAUTHENTICATED', 100);
 define('ERROR_UNAUTHORIZED',    101);
 

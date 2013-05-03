@@ -1,0 +1,36 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <link href="content/grr.css" type="text/css" rel="stylesheet"/>
+    <title><?= l("Import Successful") ?></title>
+  </head>
+  <body>
+    <div id="header">
+      <h1>grr <span class="grr">&gt;:(</span></h1>
+    </div>
+    <div id="content">
+      <p>
+<?
+    if ($this->rowsImported < 1)
+    {
+?>
+        <span class="directions"><?= l("No new feeds have been imported") ?></span>
+<?
+    }
+    else
+    {
+?>
+        <span class="directions"><?= l("Success! Imported %s new feed(s)", $this->rowsImported) ?></span>
+<?
+    }
+?>
+      </p>
+      <p><?= l("Note that it may be a while before new articles appear in Reader.") ?></p>
+      <p><a href="<?= $this->url("reader") ?>"><?= l("Return to Reader") ?></a></p>
+    </div>
+    <div id="footer">
+      &copy; 2013 Akop Karapetyan | <a href="https://github.com/melllvar/grr">grr</a> is Open and Free Software licensed under GPL
+    </div>
+  </body>
+</html>

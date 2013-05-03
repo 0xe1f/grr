@@ -22,49 +22,10 @@
  ******************************************************************************
  */
 
-require('classes/Controller.php');
+require("classes/Controller.php");
 
-class JsonError extends Exception
+class ReaderController extends Controller
 {
 }
 
-class JsonController extends Controller
-{
-  protected function reauthenticate()
-  {
-    throw new JsonError(l("Your session has timed out. Please sign in."), ERROR_REAUTHENTICATE);
-  }
-
-  protected function onError($e)
-  {
-    $message = null;
-    $code = 0;
-
-    if ($e instanceof JsonError)
-    {
-      $message = $e->getMessage();
-      $code = $e->getCode();
-    }
-    else
-    {
-      $message = l("An unexpected error has occurred");
-    }
-
-    $error = array("message" => $message);
-    if ($code != 0) 
-      $error["code"] = $code;
-
-    header('Content-type: application/json');
-    echo json_encode(array("error"   => $error));
-  }
-
-  protected function renderView()
-  {
-    if ($this->returnValue !== null)
-    {
-      header('Content-type: application/json');
-      echo json_encode($this->returnValue);
-    }
-  }
-}
 ?>

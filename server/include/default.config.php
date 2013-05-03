@@ -57,6 +57,10 @@
   // This section includes default values which can be customized
   //
 
+  // Window of time (in seconds) within which unsuccessful login attempts will be
+  // throttled, or 'false' to disable failed login throttling.
+  define('LOGIN_THROTTLING_WINDOW', 60);
+
   // Shortest allowed password length
   define('SHORTEST_PASSWORD_LENGTH', 8);
 

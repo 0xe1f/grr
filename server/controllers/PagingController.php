@@ -22,8 +22,6 @@
  ******************************************************************************
  */
 
-require("include/common.php");
-require("classes/Core.php");
 require("classes/JsonController.php");
 
 class PagingController extends JsonController
@@ -84,8 +82,5 @@ class PagingController extends JsonController
     return $response;
   }
 }
-
-$ctrlr = new PagingController();
-$ctrlr->execute();
 
 ?>

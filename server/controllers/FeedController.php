@@ -22,10 +22,8 @@
  ******************************************************************************
  */
 
-require("include/common.php");
-require("classes/Core.php");
-require("classes/FeedParser.php");
 require("classes/JsonController.php");
+require("classes/FeedParser.php");
 
 class FeedController extends JsonController
 {
@@ -101,8 +99,5 @@ class FeedController extends JsonController
     );
   }
 }
-
-$ctrlr = new FeedController();
-$ctrlr->execute();
 
 ?>

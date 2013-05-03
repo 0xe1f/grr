@@ -22,26 +22,17 @@
  ******************************************************************************
  */
 
-class Route
-{
-  public $source;
-  public $args;
-  public $callback;
-
-  function __construct($source, $args, $callback)
-  {
-    $this->source = $source;
-    $this->args = $args;
-    $this->callback = $callback;
-  }
-}
+require('classes/View.php');
 
 class Controller
 {
   private $routes;
   protected $user;
   protected $returnValue;
-  protected $hasher = null;
+  protected $hasher;
+  protected $routeTemplate;
+  protected $scriptName;
+  protected $undefined;
 
   function __construct()
   {
@@ -49,34 +40,33 @@ class Controller
     $this->hasher = null;
     $this->returnValue = null;
     $this->routes = array();
+    $this->routeTemplate = null;
+    $this->undefined = array();
+    $this->scriptName = null;
     
     date_default_timezone_set(TIMEZONE);
   }
 
-  function onStarted()
+  function __get($name)
   {
-    $this->user = User::getCurrent();
+    if (array_key_exists($name, $this->undefined))
+      return $this->undefined[$name];
+
+    return null;
   }
 
-  function onInitialized()
+  function __set($name, $value)
   {
+    $this->undefined[$name] = $value;
   }
 
-  function getCurrentUser()
-  {
-    return $this->user;
-  }
+  // Public methods
 
-  function getHasher()
+  public function url($controller, $args = array())
   {
-    if (!$this->hasher)
-      $this->hasher = new PasswordHash(8, FALSE);
+    $args["c"] = $controller;
+    $queryString = http_build_query($args);
 
-    return $this->hasher;
-  }
-
-  function getPublicAppUrl($suffix = null)
-  {
     $rootUri = "/";
     $currentUri = $_SERVER['REQUEST_URI'];
 
@@ -87,16 +77,12 @@ class Controller
         $rootUri = substr($rootUri, 1);
     }
 
-    return "http://{$_SERVER['SERVER_NAME']}/{$rootUri}{$suffix}";
+    return "http://{$_SERVER['SERVER_NAME']}/{$rootUri}?{$queryString}";
   }
 
-  // Return values: 
-  //   false: unauthenticated users OK
-  //    true: must be authenticated
-  //  <role>: must be authenticated AND authorized
-  function mustBeAuthorized()
+  function getCurrentUser()
   {
-    return true;
+    return $this->user;
   }
 
   function isAuthenticated()
@@ -123,44 +109,6 @@ class Controller
     return $this->user->role === $authorization;
   }
 
-  function unsetUser()
-  {
-    $this->user = false;
-  }
-
-  function initRoutes()
-  {
-  }
-  
-  function addRoute($source, $args, $callback)
-  {
-    $this->routes[] = new Route($source, $args, $callback);
-  }
-
-  function addGetRoute($args, $callback)
-  {
-    $this->addRoute("get", $args, $callback);
-  }
-
-  function addPostRoute($args, $callback)
-  {
-    $this->addRoute("post", $args, $callback);
-  }
-
-  function addFileRoute($args, $callback)
-  {
-    $this->addRoute("file", $args, $callback);
-  }
-
-  function defaultRoute()
-  {
-  }
-
-  function redirectTo($url)
-  {
-    header('Location: '.$url);
-  }
-
   function isValidEmailAddress($emailAddress)
   {
     if (!$emailAddress)
@@ -169,7 +117,125 @@ class Controller
     return preg_match('/^[^@\\s]+@[^@\\s]+\\.[^@\\s\\.]{2,}$/', $emailAddress);
   }
 
-  function route()
+  function getTemplate()
+  {
+    return $this->routeTemplate;
+  }
+
+  function getScriptName()
+  {
+    return $this->scriptName;
+  }
+
+  function setScriptName($scriptName)
+  {
+    $this->scriptName = $scriptName;
+  }
+
+  function execute()
+  {
+    try
+    {
+      $this->onStarted();
+
+      if (!$this->isAuthorized())
+      {
+        $this->reauthenticate();
+        return;
+      }
+
+      $this->onInitialized();
+
+      $this->initRoutes();
+      $this->returnValue = $this->route();
+
+      $this->onPreRender();
+      $this->renderView();
+    }
+    catch(Exception $e)
+    {
+      $this->onError($e);
+    }
+  }
+
+  function getStorage()
+  {
+    return Storage::getInstance();
+  }
+
+  // Events
+
+  protected function onStarted()
+  {
+    $this->user = User::getCurrent();
+  }
+
+  protected function onInitialized()
+  {
+  }
+
+  protected function onError($e)
+  {
+    throw $e;
+  }
+
+  protected function onPreRender()
+  {
+  }
+
+  // Protected methods
+
+  protected function getHasher()
+  {
+    if (!$this->hasher)
+      $this->hasher = new PasswordHash(8, FALSE);
+
+    return $this->hasher;
+  }
+
+  // Return values: 
+  //   false: unauthenticated users OK
+  //    true: must be authenticated
+  //  <role>: must be authenticated AND authorized
+  protected function mustBeAuthorized()
+  {
+    return true;
+  }
+
+  protected function unsetUser()
+  {
+    $this->user = false;
+  }
+
+  protected function initRoutes()
+  {
+  }
+  
+  protected function addGetRoute($args, $callback)
+  {
+    $this->addRoute("get", $args, $callback);
+  }
+
+  protected function addPostRoute($args, $callback)
+  {
+    $this->addRoute("post", $args, $callback);
+  }
+
+  protected function addFileRoute($args, $callback)
+  {
+    $this->addRoute("file", $args, $callback);
+  }
+
+  protected function defaultRoute()
+  {
+  }
+
+  protected function setTemplate($template)
+  {
+    $this->routeTemplate = $template;
+  }
+
+  protected function route()
   {
     $controllerCallback = null;
     $controllerCallbackArgs = null;
@@ -205,12 +271,22 @@ class Controller
         $controllerCallback = array($this, $route->callback);
         $controllerCallbackArgs = $callbackArgs;
 
+        // Set the name of the route template
+        $this->routeTemplate = $route->callback;
+
+        // Strip 'route' from the end, if present
+        if (stripos(strrev($this->routeTemplate), "etuor") === 0)
+          $this->routeTemplate = substr($this->routeTemplate, 0, -5);
+
         break;
       }
     }
     
     if ($controllerCallback == null)
+    {
+      $this->routeTemplate = "default";
       return $this->defaultRoute();
+    }
     else
     {
       if (!is_callable($controllerCallback))
@@ -220,42 +296,41 @@ class Controller
     }
   }
 
-  function reauthenticate()
+  protected function redirectTo($controller, $args = null)
   {
-    $this->redirectTo("login.php");
+    header("Location: {$this->url($controller, $args)}");
   }
 
-  function execute()
+  protected function redirectToUrl($url)
   {
-    try
+    header("Location: $url");
+  }
+
+  protected function reauthenticate()
+  {
+    $this->redirectTo("login");
+  }
+
+  protected function renderView()
+  {
+    if ($this->getTemplate())
     {
-      $this->onStarted();
-
-      if (!$this->isAuthorized())
-      {
-        $this->reauthenticate();
-        return;
-      }
-
-      $this->onInitialized();
-
-      $this->initRoutes();
-      $this->returnValue = $this->route();
-    }
-    catch(Exception $e)
-    {
-      $this->onError($e);
+      $view = new View($this);
+      $view->render();
     }
   }
 
-  function onError($e)
-  {
-    throw $e;
-  }
+  // Private methods
 
-  function getStorage()
+  private function addRoute($source, $args, $callback)
   {
-    return Storage::getInstance();
+    $route = new stdClass();
+
+    $route->source = $source;
+    $route->args = $args;
+    $route->callback = $callback;
+
+    $this->routes[] = $route;
   }
 }
 

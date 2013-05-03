@@ -1,0 +1,21 @@
+      <div class="feed-group">
+<?
+    foreach ($feeds as $feed)
+    {
+      $id = $feed["id"];
+      $isSelected = ($selection === null) || in_array($id, $selection);
+?>
+        <div class="feed">
+          <input type="checkbox" name="selection[]" value="<?= $id ?>" class="feed-option" id="cb<?= $id ?>" <?= $isSelected ? ' checked="checked"' : '' ?> />
+          <label for="cb<?= $id ?>"><?= h($feed["title"]) ?></label>
+<?
+      $children = &$feed["children"];
+      if (!empty($children))
+        $this->renderPartial("feedGroup", 
+          array("feeds" => $children, "selection" => $selection));
+?>
+        </div>
+<?
+    }
+?>
+      </div>

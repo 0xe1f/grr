@@ -1215,39 +1215,21 @@ class MySqlStorage extends Storage
 
   public function createSession($userId, $hash, $remoteAddress)
   {
-    // Reset failed logins
-
-    $stmt = $this->db->prepare("
-                 UPDATE users
-                    SET failed_login_count = 0,
-                        last_failed_login = NULL
-                  WHERE id = ?
-                         ");
-
-    $stmt->bind_param('i', $userId);
-
-    $success = $stmt->execute();
-
-    $stmt->close();
-
     // Create session
 
     $sessionId = false;
     
-    if ($success)
-    {
-      $stmt = $this->db->prepare("
-          INSERT INTO sessions (user_id, hash, source_ip, created)
-               VALUES (?, ?, ?, UTC_TIMESTAMP())
-                           ");
+    $stmt = $this->db->prepare("
+        INSERT INTO sessions (user_id, hash, source_ip, created)
+             VALUES (?, ?, ?, UTC_TIMESTAMP())
+                         ");
 
-      $stmt->bind_param('iss', $userId, $hash, $remoteAddress);
+    $stmt->bind_param('iss', $userId, $hash, $remoteAddress);
 
-      if ($stmt->execute())
-        $sessionId = $this->db->insert_id;
+    if ($stmt->execute())
+      $sessionId = $this->db->insert_id;
 
-      $stmt->close();
-    }
+    $stmt->close();
 
     return $sessionId;
   }

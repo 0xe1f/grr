@@ -1,0 +1,54 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <link href="content/grr.css" type="text/css" rel="stylesheet"/>
+    <title>Log In</title>
+  </head>
+  <body>
+    <div id="header">
+      <h1>grr <span class="grr">&gt;:(</span></h1>
+    </div>
+    <div id="content" class="login">
+<?
+    if ($this->errorMessage)
+    {
+?>
+      <div class="error"><?= h($this->errorMessage) ?></div>
+<?
+    }
+?>
+      <form action="<?= $this->url("login", array("logIn" => "true")) ?>" method="post">
+        <span class="directions">Username:</span>
+        <input type="text" name="username" value="<?= h($_POST["username"]) ?>" />
+        <span class="directions">Password:</span>
+        <input type="password" name="password" value="<?= h($_POST["password"]) ?>" />
+        <input type="submit" value="Log In" />
+      </form>
+<?
+    if (CREATE_UNKNOWN_ACCOUNTS)
+    {
+?>
+        <span class="directions"><a href="<?= $this->url("login", array("newAccount" => "local")) ?>">Create a new account</a></span>
+<?
+    }
+    else if ($this->createToken)
+    {
+?>
+        <span class="directions"><a href="<?= $this->url("login", array("newAccount" => "local", "createToken" => $this->createToken)) ?>">Create a new account</a></span>
+<?
+    }
+?>
+      <hr />
+
+      <span class="directions">Log in with an OpenId account:</span>
+      <div class="openid-providers">
+        <a href="<?= $this->url("login", array("logInWith" => "google", "createToken" => $this->createToken)) ?>" class="google large-button" title="Log in with Google"></a>
+        <a href="<?= $this->url("login", array("logInWith" => "yahoo", "createToken" => $this->createToken)) ?>" class="yahoo large-button" title="Log in with Yahoo!"></a>
+      </div>
+    </div>
+    <div id="footer">
+      &copy; 2013 Akop Karapetyan | <a href="https://github.com/melllvar/grr">grr</a> is Open and Free Software licensed under GPL
+    </div>
+  </body>
+</html>

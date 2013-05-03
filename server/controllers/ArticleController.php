@@ -112,7 +112,4 @@ class ArticleController extends JsonController
   }
 }
 
-$ctrlr = new ArticleController();
-$ctrlr->execute();
-
 ?>

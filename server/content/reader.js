@@ -161,7 +161,7 @@ $().ready(function()
 
   var subscribe = function(feedUrl)
   {
-    $.getJSON('grrf.php', 
+    $.getJSON('?c=feed', 
     {
       subscribeTo : feedUrl
     },
@@ -181,7 +181,7 @@ $().ready(function()
 
   var markAllAs = function(unread)
   {
-    $.getJSON('grrs.php', 
+    $.getJSON('?c=article', 
     { 
       f: getSelectedFeedId(),
       is_unread: unread,
@@ -350,7 +350,7 @@ $().ready(function()
 
   var refreshFeeds = function()
   {
-    $.getJSON('grrf.php', 
+    $.getJSON('?c=feed', 
     {
     },
     function(response)
@@ -371,7 +371,7 @@ $().ready(function()
   {
     var entry = entryDom.data('object');
 
-    $.getJSON('grrs.php', $.extend({ }, 
+    $.getJSON('?c=article', $.extend({ }, 
       { 
         a : entry.id, 
         is_starred : entry.is_starred, 
@@ -445,7 +445,7 @@ $().ready(function()
   {
     var entry = entryDom.data('object');
     
-    $.getJSON('grrs.php',
+    $.getJSON('?c=article',
       { 
         setTag : entry.id, 
         tags : tags
@@ -569,7 +569,7 @@ $().ready(function()
     var spinner = new Spinner({ width: 3, length: 5, lines: 9, radius: 5, corners: 2}).spin();
     $('.next-page').empty().append(spinner.el);
     
-    $.getJSON('grrp.php',
+    $.getJSON('?c=paging',
     {
       continue: continueAfter,
       feed: getSelectedFeedId(),
@@ -595,7 +595,7 @@ $().ready(function()
   {
     lastPageRequested = null;
     
-    $.getJSON('grrp.php', 
+    $.getJSON('?c=paging', 
     {
       feed: getSelectedFeedId(),
       filter: $('.article-filter').val(),

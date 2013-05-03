@@ -1,0 +1,40 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <link href="content/grr.css" type="text/css" rel="stylesheet"/>
+    <script src="content/jquery-1.9.1.min.js" type="text/javascript"></script>
+    <script src="content/import.js" type="text/javascript"></script>
+    <title><?= l("Select Feeds") ?></title>
+  </head>
+  <body>
+    <div id="header">
+      <h1>grr <span class="grr">&gt;:(</span></h1>
+    </div>
+    <div id="content">
+<?
+    if ($this->errorMessage)
+    {
+?>
+      <div class="error"><?= h($this->errorMessage) ?></div>
+<?
+    }
+?>
+      <span class="directions"><?= l("Select the feeds you'd like to import:") ?></span>
+      <div class="options">
+        <a class="select-all"><?= l("Select all") ?></a> | <a class="select-none"><?= l("Select none") ?></a>
+      </div>
+      <form action="<?= $this->url("import") ?>" method="post">
+        <input type="hidden" name="feeds" value="<?= h(json_encode($this->feeds)) ?>" />
+<?
+      $this->renderPartial("feedGroup", 
+        array("feeds" => $this->feeds, "selection" => $this->selection));
+?>
+        <input type="submit" value="<?= l("Import") ?>" />
+      </form>
+    </div>
+    <div id="footer">
+      &copy; 2013 Akop Karapetyan | <a href="https://github.com/melllvar/grr">grr</a> is Open and Free Software licensed under GPL
+    </div>
+  </body>
+</html>
