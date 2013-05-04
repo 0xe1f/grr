@@ -32,13 +32,33 @@ class FeedController extends JsonController
     $this->addGetRoute(array("subscribeTo"), "subscribeRoute");
     $this->addPostRoute(array("renameSubscription", "newName"), "renameSubscriptionRoute");
     $this->addPostRoute(array("unsubscribeFrom"), "unsubscribeRoute");
+    $this->addPostRoute(array("createFolderUnder", "folderName"), "createSubfolderRoute");
+  }
+
+  function createSubfolderRoute($parentFolderId, $folderName)
+  {
+    $folderName = trim($folderName);
+    if (strlen($folderName) < 1)
+      throw new JsonError(l("Specify a valid name"));
+
+    $storage = Storage::getInstance();
+    $newFolderId = $storage->addFeedFolder($this->user->id, null, $folderName, $parentFolderId);
+
+    if ($newFolderId === false)
+      throw new JsonError(l("Could not add folder"));
+
+    return array(
+      "folder" => array(
+        "id"    => $newFolderId,
+        "title" => $folderName,
+      ),
+      "allItems" => $storage->getUserFeeds($this->user),
+    );
   }
 
   function renameSubscriptionRoute($feedFolderId, $newName)
   {
     $storage = Storage::getInstance();
-    $feed = $storage->getFeed($feedUrl);
-
     if (!$storage->renameSubscription($this->user->id, $feedFolderId, $newName))
       throw new JsonError(l("Could not rename feed"));
 
@@ -53,8 +73,6 @@ class FeedController extends JsonController
   function unsubscribeRoute($feedFolderId)
   {
     $storage = Storage::getInstance();
-    $feed = $storage->getFeed($feedUrl);
-
     if (!$storage->unsubscribe($this->user->id, $feedFolderId))
       throw new JsonError(l("Could not unsubscribe"));
 

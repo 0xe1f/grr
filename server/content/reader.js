@@ -286,7 +286,7 @@ $().ready(function()
         .append($('<span />', { 'class' : 'chevron' })
           .click(function(e)
           {
-            $('#feed-menu')
+            $('#menu-' + feed.type)
               .css( { top: e.pageY, left: e.pageX })
               .data('object', feedCopy)
               .show();
@@ -752,6 +752,31 @@ $().ready(function()
     }
   };
 
+  var createFolder = function(feed)
+  {
+    var folderName = prompt(l('Name of folder:'));
+    if (folderName)
+    {
+      $.post('?c=feed', 
+      {
+        createFolderUnder : feed.id,
+        folderName : folderName,
+      },
+      function(response)
+      {
+        if (!response.error)
+        {
+          updateFeedDom(response.allItems);
+          showToast(l('"%s" successfully added', [response.folder.title]), false);
+        }
+        else
+        {
+          showToast(response.error.message, true);
+        }
+      }, 'json');
+    }
+  };
+
   var unsubscribe = function(feed)
   {
     var message = (feed.type == 'folder')
@@ -779,12 +804,14 @@ $().ready(function()
     }
   };
 
-  var onMenuItemClick = function(contextObject, menuId, menuItemId)
+  var onMenuItemClick = function(contextObject, menuItem)
   {
-    if (menuItemId == 'menu-rename-sub')
+    if (menuItem.hasClass('menu-rename-sub'))
       renameSubscription(contextObject);
-    else if (menuItemId == 'menu-unsub')
+    else if (menuItem.hasClass('menu-unsub'))
       unsubscribe(contextObject);
+    else if (menuItem.hasClass('menu-new-folder'))
+      createFolder(contextObject);
   };
 
   // Schedule routine updates (also handles initial feed update)
@@ -815,8 +842,6 @@ $().ready(function()
 
   // Menus
 
-  // $('.menu').hide(); // Hide all by default
-
   $('html').click(function() 
   {
     $('.menu').hide();
@@ -833,6 +858,6 @@ $().ready(function()
     var menu = item.closest('ul');
 
     menu.hide();
-    onMenuItemClick(menu.data('object'), menu.attr('id'), item.attr('id'));
+    onMenuItemClick(menu.data('object'), item);
   });
 });

@@ -359,6 +359,9 @@ class MySqlStorage extends Storage
 
   public function addFeedFolder($userId, $feedId = null, $title = null, $parent = null)
   {
+    // TODO: No check is currently performed to make sure a folder isn't added under
+    // a feed. May want to perform such a check in the future
+
     $this->db->autocommit(false);
 
     // Add the folder itself
@@ -429,7 +432,7 @@ class MySqlStorage extends Storage
 
     $stmt->bind_param('sii', $newName, $feedFolderId, $userId);
 
-    $success = $stmt->execute();
+    $success = $stmt->execute() && $this->db->affected_rows > 0;
 
     $stmt->close();
 
@@ -438,17 +441,20 @@ class MySqlStorage extends Storage
 
   public function unsubscribe($userId, $feedFolderId)
   {
-    // $stmt = $this->db->prepare("
-    //       UPDATE feed_folders
-    //          SET title = ?
-    //        WHERE id = ? AND user_id = ?
-    //                            ");
+    $stmt = $this->db->prepare("
+          DELETE 
+            FROM feed_folders 
+           WHERE user_id = ?
+                 AND id IN (SELECT descendant_id 
+                              FROM feed_folder_trees 
+                             WHERE ancestor_id = ?)
+                               ");
 
-    // $stmt->bind_param('sii', $newName, $feedFolderId, $userId);
+    $stmt->bind_param('ii', $userId, $feedFolderId);
 
-    // $success = $stmt->execute();
+    $success = $stmt->execute() && $this->db->affected_rows > 0;
 
-    // $stmt->close();
+    $stmt->close();
 
     return $success;
   }
