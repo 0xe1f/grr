@@ -30,6 +30,37 @@ class FeedController extends JsonController
   function initRoutes()
   {
     $this->addGetRoute(array("subscribeTo"), "subscribeRoute");
+    $this->addPostRoute(array("renameSubscription", "newName"), "renameSubscriptionRoute");
+    $this->addPostRoute(array("unsubscribeFrom"), "unsubscribeRoute");
+  }
+
+  function renameSubscriptionRoute($feedFolderId, $newName)
+  {
+    $storage = Storage::getInstance();
+    $feed = $storage->getFeed($feedUrl);
+
+    if (!$storage->renameSubscription($this->user->id, $feedFolderId, $newName))
+      throw new JsonError(l("Could not rename feed"));
+
+    return array(
+      "feed" => array(
+        "title" => $newName,
+      ),
+      "allItems" => $storage->getUserFeeds($this->user),
+    );
+  }
+
+  function unsubscribeRoute($feedFolderId)
+  {
+    $storage = Storage::getInstance();
+    $feed = $storage->getFeed($feedUrl);
+
+    if (!$storage->unsubscribe($this->user->id, $feedFolderId))
+      throw new JsonError(l("Could not unsubscribe"));
+
+    return array(
+      "allItems" => $storage->getUserFeeds($this->user),
+    );
   }
 
   function subscribeRoute($feedUrl)

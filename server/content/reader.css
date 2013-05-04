@@ -497,3 +497,28 @@ ul#feeds,
 {
   visibility: visible;
 }
+
+ul.menu
+{
+  position: absolute;
+  display: none;
+  margin: 0;
+  padding-left: 0;
+  background-color: #eee;
+  list-style-type: none;
+  border: solid 1px #ccc;
+  border-radius: 2px;
+  box-shadow: 2px 2px 2px #ddd;
+}
+
+.menu li
+{
+  cursor: pointer;
+  padding: 0.5em 1em;
+}
+
+.menu li:hover
+{
+  background-color: #ccc;
+}
+

@@ -31,6 +31,8 @@ $().ready(function()
 
   var lastPageRequested = null;
 
+  // Key bindings
+
   $(document)
     .bind('keypress', 'j', function()
     {
@@ -54,6 +56,8 @@ $().ready(function()
     {
       refreshFeeds();
     });
+
+  // Buttons
 
   $('button.refresh').click(function()
   {
@@ -103,6 +107,8 @@ $().ready(function()
   {
     selectArticle(false);
   });
+
+  // Functions
 
   var l = function(str, args)
   {
@@ -271,13 +277,20 @@ $().ready(function()
 
   var createFeedDom = function(feed)
   {
+    var feedCopy = jQuery.extend({}, feed);
+    delete feedCopy.feeds; // No need to carry the entire tree around
+
     return $('<li />', { 'class' : 'feed feed-' + feed.id })
-      .data('object', feed)
+      .data('object', feedCopy)
       .append($('<div />', { 'class' : 'feed-item' })
         .append($('<span />', { 'class' : 'chevron' })
           .click(function(e)
           {
-            alert('TODO');
+            $('#feed-menu')
+              .css( { top: e.pageY, left: e.pageX })
+              .data('object', feedCopy)
+              .show();
+
             e.stopPropagation();
           }))
         .append($('<div />', { 'class' : 'feed-icon ' + feed.type }))
@@ -713,6 +726,69 @@ $().ready(function()
     $('#entries').append(entriesDom);
   };
 
+  var renameSubscription = function(feed)
+  {
+    var newName = prompt(l('New name:'), feed.source);
+
+    if (newName && newName != feed.source)
+    {
+      $.post('?c=feed', 
+      {
+        renameSubscription : feed.id,
+        newName : newName,
+      },
+      function(response)
+      {
+        if (!response.error)
+        {
+          updateFeedDom(response.allItems);
+          showToast(l('Subscription successfully renamed to "%s"', [response.feed.title]), false);
+        }
+        else
+        {
+          showToast(response.error.message, true);
+        }
+      }, 'json');
+    }
+  };
+
+  var unsubscribe = function(feed)
+  {
+    var message = (feed.type == 'folder')
+      ? l('Unsubscribe from all feeds in "%s"?', [feed.source])
+      : l('Unsubscribe from "%s"?', [feed.source]);
+
+    if (confirm(message))
+    {
+      $.post('?c=feed', 
+      {
+        unsubscribeFrom : feed.id,
+      },
+      function(response)
+      {
+        if (!response.error)
+        {
+          updateFeedDom(response.allItems);
+          showToast(l('Successfully unsubscribed from "%s"', [feed.source]), false);
+        }
+        else
+        {
+          showToast(response.error.message, true);
+        }
+      }, 'json');
+    }
+  };
+
+  var onMenuItemClick = function(contextObject, menuId, menuItemId)
+  {
+    if (menuItemId == 'menu-rename-sub')
+      renameSubscription(contextObject);
+    else if (menuItemId == 'menu-unsub')
+      unsubscribe(contextObject);
+  };
+
+  // Schedule routine updates (also handles initial feed update)
+
   (function feedUpdater() 
   {
     $.ajax(
@@ -736,4 +812,27 @@ $().ready(function()
       }
     });
   })();
+
+  // Menus
+
+  // $('.menu').hide(); // Hide all by default
+
+  $('html').click(function() 
+  {
+    $('.menu').hide();
+  });
+
+  $('.menu').click(function(event)
+  {
+    event.stopPropagation();
+  });
+
+  $('.menu li').click(function()
+  {
+    var item = $(this);
+    var menu = item.closest('ul');
+
+    menu.hide();
+    onMenuItemClick(menu.data('object'), menu.attr('id'), item.attr('id'));
+  });
 });

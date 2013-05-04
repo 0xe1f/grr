@@ -419,6 +419,40 @@ class MySqlStorage extends Storage
     return $feedFolderId;
   }
 
+  public function renameSubscription($userId, $feedFolderId, $newName)
+  {
+    $stmt = $this->db->prepare("
+          UPDATE feed_folders
+             SET title = ?
+           WHERE id = ? AND user_id = ?
+                               ");
+
+    $stmt->bind_param('sii', $newName, $feedFolderId, $userId);
+
+    $success = $stmt->execute();
+
+    $stmt->close();
+
+    return $success;
+  }
+
+  public function unsubscribe($userId, $feedFolderId)
+  {
+    // $stmt = $this->db->prepare("
+    //       UPDATE feed_folders
+    //          SET title = ?
+    //        WHERE id = ? AND user_id = ?
+    //                            ");
+
+    // $stmt->bind_param('sii', $newName, $feedFolderId, $userId);
+
+    // $success = $stmt->execute();
+
+    // $stmt->close();
+
+    return $success;
+  }
+
   public function importFeed($userId, $feed)
   {
     // Stage the feed
