@@ -1,0 +1,38 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <link href="content/grr.css" type="text/css" rel="stylesheet"/>
+    <title><?= l("Create New Administrator") ?></title>
+  </head>
+  <body>
+    <div id="header">
+      <h1>grr <span class="grr">&gt;:(</span></h1>
+    </div>
+    <div id="content" class="login">
+<?
+    if ($this->errorMessage)
+    {
+?>
+      <div class="error"><?= h($this->errorMessage) ?></div>
+<?
+    }
+?>
+      <form action="<?= $this->url("login", array("newAdminAccount" => "true")) ?>" method="post">
+        <input type="hidden" name="oid" value="<?= h($this->openIdIdentity) ?>" />
+        <input type="hidden" name="v" value="<?= h($this->saltAndHashOpenId($this->openIdIdentity)) ?>" />
+        <span class="directions"><?= l("Please check the configuration file ('config.php') on the server. Copy the 
+          value of 'ADMIN_SECRET' (without quotes) and paste it in the field below:") ?></span>
+        <input type="text" name="createToken" value="<?= h($_POST["createToken"]) ?>" />
+        <span class="directions"><?= l("Username:") ?></span>
+        <input type="text" name="username" value="<?= h($_POST["username"]) ?>" />
+        <span class="directions"><?= l("Email Address:") ?></span>
+        <input type="text" name="emailAddress" value="<?= h($_POST["emailAddress"]) ?>" />
+        <input type="submit" value="<?= l("Create new account") ?>" />
+      </form>
+    </div>
+    <div id="footer">
+      &copy; 2013 Akop Karapetyan | <a href="https://github.com/melllvar/grr">grr</a> is Open and Free Software licensed under GPL
+    </div>
+  </body>
+</html>
