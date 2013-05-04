@@ -22,8 +22,6 @@
  ******************************************************************************
  */
 
-require("include/common.php");
-require("classes/Core.php");
 require("classes/JsonController.php");
 
 class ArticleController extends JsonController

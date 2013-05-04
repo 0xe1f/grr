@@ -246,6 +246,7 @@ class MySqlStorage extends Storage
 
     $stmt = $this->db->prepare("
              SELECT ff.id, 
+                    ff.feed_id,
                     fft.ancestor_id,
                     ff.title source,
                     SUM(ua.is_unread) unread_count
@@ -264,13 +265,14 @@ class MySqlStorage extends Storage
 
     if ($stmt->execute())
     {
-      $stmt->bind_result($userFeedId, $ancestorId, $feedTitle, $unreadCount);
+      $stmt->bind_result($userFeedId, $feedId, $ancestorId, $feedTitle, $unreadCount);
 
       while ($stmt->fetch())
       {
         $feedOrGroup = array(
           "id"     => (int)$userFeedId,
           "source" => $feedTitle,
+          "type"   => $feedId ? "feed" : "folder",
           "unread" => (int)$unreadCount,
           "feeds"  => array(),
           "parent" => (int)$ancestorId,
@@ -305,6 +307,7 @@ class MySqlStorage extends Storage
     $this->pruneFeedTree($feeds);
     $feeds["id"] = $rootId;
     $feeds["source"] = l("All Items");
+    $feeds["type"] = "folder";
 
     if ($matchingFeed != null && $restrictToFolderId != $rootId)
       $feeds = $matchingFeed;

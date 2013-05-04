@@ -149,8 +149,11 @@ class Controller
       $this->initRoutes();
       $this->returnValue = $this->route();
 
-      $this->onPreRender();
-      $this->renderView();
+      if (!headers_sent())
+      {
+        $this->onPreRender();
+        $this->renderView();
+      }
     }
     catch(Exception $e)
     {
@@ -211,19 +214,19 @@ class Controller
   {
   }
   
-  protected function addGetRoute($args, $callback)
+  protected function addGetRoute($args, $callback, $template = null)
   {
-    $this->addRoute("get", $args, $callback);
+    $this->addRoute("get", $args, $callback, $template);
   }
 
-  protected function addPostRoute($args, $callback)
+  protected function addPostRoute($args, $callback, $template = null)
   {
-    $this->addRoute("post", $args, $callback);
+    $this->addRoute("post", $args, $callback, $template);
   }
 
-  protected function addFileRoute($args, $callback)
+  protected function addFileRoute($args, $callback, $template = null)
   {
-    $this->addRoute("file", $args, $callback);
+    $this->addRoute("file", $args, $callback, $template);
   }
 
   protected function defaultRoute()
@@ -272,7 +275,7 @@ class Controller
         $controllerCallbackArgs = $callbackArgs;
 
         // Set the name of the route template
-        $this->routeTemplate = $route->callback;
+        $this->routeTemplate = $route->template;
 
         // Strip 'route' from the end, if present
         if (stripos(strrev($this->routeTemplate), "etuor") === 0)
@@ -322,13 +325,14 @@ class Controller
 
   // Private methods
 
-  private function addRoute($source, $args, $callback)
+  private function addRoute($source, $args, $callback, $template)
   {
     $route = new stdClass();
 
     $route->source = $source;
     $route->args = $args;
     $route->callback = $callback;
+    $route->template = $template ? $template : $callback;
 
     $this->routes[] = $route;
   }

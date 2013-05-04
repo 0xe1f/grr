@@ -23,6 +23,7 @@
 
 $().ready(function()
 {
+  var itemsLoaded = false;
   var prefs = 
   {
     singleItemMode: true,
@@ -62,7 +63,7 @@ $().ready(function()
   $('button.subscribe').click(function()
   {
     var feedUrl = prompt(l('Enter a feed URL'));
-    if (feedUrl != null)
+    if (feedUrl)
       subscribe(feedUrl);
   });
 
@@ -111,7 +112,7 @@ $().ready(function()
       return vsprintf(str, args);
 
     return str;
-  }
+  };
 
   var getPublishedDate = function(unixTimestamp)
   {
@@ -124,7 +125,7 @@ $().ready(function()
       return then.toLocaleTimeString();
     else 
       return then.toLocaleDateString();
-  }
+  };
 
   var selectArticle = function(selectPrevious)
   {
@@ -147,7 +148,7 @@ $().ready(function()
     }
 
     $('.entry.selected').scrollintoview();
-  }
+  };
 
   var showToast = function(message, isError)
   {
@@ -157,7 +158,7 @@ $().ready(function()
       .fadeIn()
       .delay(8000)
       .fadeOut('slow'); 
-  }
+  };
 
   var subscribe = function(feedUrl)
   {
@@ -177,7 +178,7 @@ $().ready(function()
         showToast(response.error.message, true);
       }
     });
-  }
+  };
 
   var markAllAs = function(unread)
   {
@@ -233,7 +234,7 @@ $().ready(function()
         showToast(response.error.message, true);
       }
     });
-  }
+  };
 
   var refreshEntry = function(entryDom)
   {
@@ -266,7 +267,7 @@ $().ready(function()
       if (content.length > 0)
         collapseEntry(entryDom);
     }
-  }
+  };
 
   var createFeedDom = function(feed)
   {
@@ -276,9 +277,10 @@ $().ready(function()
         .append($('<span />', { 'class' : 'chevron' })
           .click(function(e)
           {
-            alert('hi!');
+            alert('TODO');
             e.stopPropagation();
           }))
+        .append($('<div />', { 'class' : 'feed-icon ' + feed.type }))
         .append($('<span />', { 'class' : 'feed-title' })
           .text(feed.source))
         .attr('title', feed.source)
@@ -290,7 +292,7 @@ $().ready(function()
 
           reloadItems();
         }));
-  }
+  };
 
   var updateFeedDom = function(allItems)
   {
@@ -303,7 +305,7 @@ $().ready(function()
     $('#feeds').empty();
 
     var allItemsDom = createFeedDom(allItems);
-    allItemsDom.addClass('.all-items');
+    allItemsDom.addClass('all-items');
     if (allItems.feeds)
       allItemsDom.append(buildFeedDom(allItems.feeds));
 
@@ -315,7 +317,7 @@ $().ready(function()
       allItemsDom.addClass('selected');
 
     synchronizeFeedDom();
-  }
+  };
 
   var synchronizeFeedDom = function()
   {
@@ -330,7 +332,15 @@ $().ready(function()
       feedDom.find('.feed-unread-count').text(l('(%s)', [feed.unread]));
       feedDom.find('.feed-item').toggleClass('has-unread', feed.unread > 0);
     });
-  }
+
+    var allItems = $('.all-items').data('object');
+
+    var title = '>:(';
+    if (allItems.unread > 0)
+      title += ' (' + allItems.unread + ')';
+
+    document.title = title;
+  };
 
   var buildFeedDom = function(feeds)
   {
@@ -346,7 +356,7 @@ $().ready(function()
     });
 
     return feedGroupDoms;
-  }
+  };
 
   var refreshFeeds = function()
   {
@@ -365,7 +375,7 @@ $().ready(function()
         showToast(response.error.message, true);
       }
     });
-  }
+  };
 
   var updateEntry = function(entryDom, args)
   {
@@ -425,21 +435,21 @@ $().ready(function()
         }
       }
     );
-  }
+  };
 
   var toggleStarred = function(entryDom)
   {
     var entry = entryDom.data('object');
 
     updateEntry(entryDom, { is_starred: !entry.is_starred });
-  }
+  };
 
   var toggleUnread = function(entryDom)
   {
     var entry = entryDom.data('object');
     
     updateEntry(entryDom, { is_unread: !entry.is_unread });
-  }
+  };
 
   var editTags = function(entryDom, tags)
   {
@@ -464,7 +474,7 @@ $().ready(function()
         }
       }
     );
-  }
+  };
 
   var collapseAllEntries = function()
   {
@@ -476,7 +486,7 @@ $().ready(function()
       entry.is_expanded = false;
       refreshEntry(entryDom);
     });
-  }
+  };
 
   var expandEntry = function(entryDom)
   {
@@ -539,12 +549,12 @@ $().ready(function()
     content.find('.article-body a').attr('target', '_blank');
 
     entryDom.append(content);
-  }
+  };
 
   var collapseEntry = function(entryDom)
   {
     entryDom.find('.entry-content').remove();
-  }
+  };
 
   var getSelectedFeedId = function()
   {
@@ -553,12 +563,12 @@ $().ready(function()
       return null;
 
     return feed.id;
-  }
+  };
 
   var getSelectedFeed = function()
   {
     return $('.feed.selected').data('object');
-  }
+  };
 
   var loadNextPage = function()
   {
@@ -589,7 +599,7 @@ $().ready(function()
     });
 
     return continueAfter;
-  }
+  };
 
   var reloadItems = function()
   {
@@ -627,7 +637,7 @@ $().ready(function()
         showToast(response.error.message, true);
       }
     });
-  }
+  };
 
   var appendEntries = function(entries, canContinue)
   {
@@ -701,7 +711,29 @@ $().ready(function()
     }
     
     $('#entries').append(entriesDom);
-  }
+  };
 
-  refreshFeeds();
+  (function feedUpdater() 
+  {
+    $.ajax(
+    {
+      url: '?c=feed', 
+      success: function(response) 
+      {
+        if (!response.error)
+        {
+          updateFeedDom(response.allItems);
+          if (!itemsLoaded)
+          {
+            itemsLoaded = true;
+            reloadItems();
+          }
+        }
+      },
+      complete: function() 
+      {
+        setTimeout(feedUpdater, 300000);
+      }
+    });
+  })();
 });

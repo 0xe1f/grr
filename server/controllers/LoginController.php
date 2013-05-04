@@ -41,8 +41,8 @@ class LoginController extends Controller
     $this->addGetRoute(array("logInWith"), "logInRoute");
     $this->addGetRoute(array("logout"), "logOutRoute");
     $this->addGetRoute(array("newAccount"), "newAccountRoute");
-    $this->addGetRoute(array("newAdminAccount"), "newAdminAccountRoute");
-    $this->addGetRoute(array("logIn"), "localLoginRoute");
+    $this->addGetRoute(array("newAdminAccount"), "newAdminRoute");
+    $this->addGetRoute(array("logIn"), "localLoginRoute", "default");
   }
 
   function defaultRoute()
@@ -67,6 +67,7 @@ class LoginController extends Controller
     {
       $this->openId->optional = array('contact/email');
       $this->openId->identity = $authUrl;
+
       $this->redirectToUrl($this->openId->authUrl());
     }
   }
@@ -77,7 +78,6 @@ class LoginController extends Controller
     $password = $_POST["password"];
 
     $this->errorMessage = null;
-    $this->setTemplate("default");
 
     if (strlen($username) < 1)
     {
@@ -110,7 +110,6 @@ class LoginController extends Controller
       }
     }
 
-    $this->setTemplate(null); // render nothing
     $this->authorizeUser($user);
   }
 
@@ -125,31 +124,33 @@ class LoginController extends Controller
 
   function newAccountRoute($type)
   {
-    $tokenHash = $_POST["createToken"];
+    $this->welcomeToken = $_POST["createToken"];
+    $this->openIdIdentity = null;
+    $this->errorMessage = null;
+    $this->emailAddress = $_POST["emailAddress"];
+
     $username = $_POST["username"];
-    $emailAddress = $_POST["emailAddress"];
-    $openIdIdentity = null;
+
     $hashedPassword = null;
 
     if ($type == "local")
     {
       if (count($_POST) < 1)
       {
-        $this->renderNewAccountPage($openIdIdentity, $_GET["createToken"], null);
+        $this->welcomeToken = $_GET["createToken"];
         return;
       }
     }
     else if ($type == "openId")
     {
-      $openIdIdentity = $_POST["oid"];
+      $this->openIdIdentity = $_POST["oid"];
+      $this->computedOpenIdHash = $this->saltAndHashOpenId($this->openIdIdentity);
 
       $receivedOpenIdHash = $_POST["v"];
-      $computedOpenIdHash = $this->saltAndHashOpenId($openIdIdentity);
 
-      if ($computedOpenIdHash != $receivedOpenIdHash)
+      if ($this->computedOpenIdHash != $receivedOpenIdHash)
       {
-        $this->renderNewAccountPage($openIdIdentity, $tokenHash, $emailAddress, 
-          l("Could not log in - try again"));
+        $this->errorMessage = l("Could not log in - try again");
         return;
       }
     }
@@ -163,20 +164,17 @@ class LoginController extends Controller
 
     if (!preg_match('/^\\w+$/', $username))
     {
-      $this->renderNewAccountPage($openIdIdentity, $tokenHash, $emailAddress, 
-        l("Enter a valid username"));
+      $this->errorMessage = l("Enter a valid username");
       return;
     }
-    else if (strlen($openIdIdentity) >= 512)
+    else if (strlen($this->openIdIdentity) >= 512)
     {
-      $this->renderNewAccountPage($openIdIdentity, $tokenHash, $emailAddress, 
-        l("Cannot create account with this OpenId"));
+      $this->errorMessage = l("Cannot create account with this OpenId");
       return;
     }
-    else if (!$this->isValidEmailAddress($emailAddress))
+    else if (!$this->isValidEmailAddress($this->emailAddress))
     {
-      $this->renderNewAccountPage($openIdIdentity, $tokenHash, $emailAddress, 
-        l("Enter a valid email address"));
+      $this->errorMessage = l("Enter a valid email address");
       return;
     }
 
@@ -189,8 +187,7 @@ class LoginController extends Controller
 
       if (!$password || strlen(trim($password)) < SHORTEST_PASSWORD_LENGTH)
       {
-        $this->renderNewAccountPage($openIdIdentity, $tokenHash, $emailAddress, 
-          l("Passwords should be at least %s characters long", SHORTEST_PASSWORD_LENGTH));
+        $this->errorMessage = l("Passwords should be at least %s characters long", SHORTEST_PASSWORD_LENGTH);
         return;
       }
 
@@ -198,8 +195,7 @@ class LoginController extends Controller
 
       if ($password != $confirmPassword)
       {
-        $this->renderNewAccountPage($openIdIdentity, $tokenHash, $emailAddress, 
-          l("Passwords don't match"));
+        $this->errorMessage = l("Passwords don't match");
         return;
       }
 
@@ -208,8 +204,7 @@ class LoginController extends Controller
       $hashedPassword = $this->getHasher()->HashPassword($password);
       if (strlen($hashedPassword) < 20)
       {
-        $this->renderNewAccountPage($openIdIdentity, $tokenHash, $emailAddress, 
-          l("Cannot create account. Try again later"));
+        $this->errorMessage = l("Cannot create account. Try again later");
         return;
       }
     }
@@ -221,12 +216,11 @@ class LoginController extends Controller
     {
       // Account creation is disabled - is there a token?
 
-      if (!$tokenHash || ($token = $storage->getWelcomeToken($tokenHash)) === false)
+      if (!$this->welcomeToken || ($token = $storage->getWelcomeToken($this->welcomeToken)) === false)
       {
         // Missing or unknown token 
 
-        $this->renderNewAccountPage($openIdIdentity, $tokenHash, $emailAddress, 
-          l("Account creation offer is expired or invalid"));
+        $this->errorMessage = l("Account creation offer is expired or invalid");
         return;
       }
 
@@ -236,51 +230,54 @@ class LoginController extends Controller
     $roleId = $storage->getRoleId(ROLE_USER);
     if ($roleId === false)
     {
-      $this->renderNewAccountPage($openIdIdentity, $tokenHash, $emailAddress, 
-        l("Cannot create account. Try again later"));
+      $this->errorMessage = l("Cannot create account. Try again later");
       return;
     }
 
-    if (($user = $storage->createUser($username, $hashedPassword, $openIdIdentity, $emailAddress, $tokenId, $roleId)) !== false)
-      $this->authorizeUser($user);
-    else
-      $this->renderNewAccountPage($openIdIdentity, $tokenHash, $emailAddress, 
-        l("Username or email address are already taken. Try another one"));
+    if (($user = $storage->createUser($username, $hashedPassword, $this->openIdIdentity, $this->emailAddress, $tokenId, $roleId)) === false)
+    {
+      $this->errorMessage = l("Username or email address already taken. Try again");
+      return;
+    }
+
+    $this->authorizeUser($user);
   }
 
-  function newAdminAccountRoute()
+  function newAdminRoute()
   {
+    $this->openIdIdentity = $_POST["oid"];
+    $this->computedOpenIdHash = $this->saltAndHashOpenId($this->openIdIdentity);
+    $this->errorMessage = null;
+
     $tokenHash = $_POST["createToken"];
     $username = $_POST["username"];
     $emailAddress = $_POST["emailAddress"];
-    $openIdIdentity = $_POST["oid"];
 
     $receivedOpenIdHash = $_POST["v"];
-    $computedOpenIdHash = $this->saltAndHashOpenId($openIdIdentity);
 
-    if ($computedOpenIdHash != $receivedOpenIdHash)
+    if ($this->computedOpenIdHash != $receivedOpenIdHash)
     {
-      $this->renderCreateAdminAccountPage($openIdIdentity, l("Could not log in - try again"));
+      $this->errorMessage = l("Could not log in - try again");
       return;
     }
     else if (!preg_match('/^\\w+$/', $username))
     {
-      $this->renderCreateAdminAccountPage($openIdIdentity, l("Enter a valid username"));
+      $this->errorMessage = l("Enter a valid username");
       return;
     }
-    else if (strlen($openIdIdentity) >= 512)
+    else if (strlen($this->openIdIdentity) >= 512)
     {
-      $this->renderCreateAdminAccountPage($openIdIdentity, l("Cannot create account with this OpenId"));
+      $this->errorMessage = l("Cannot create account with this OpenId");
       return;
     }
     else if (!$this->isValidEmailAddress($emailAddress))
     {
-      $this->renderCreateAdminAccountPage($openIdIdentity, l("Enter a valid email address"));
+      $this->errorMessage = l("Enter a valid email address");
       return;
     }
     else if (ADMIN_SECRET === null || trim($tokenHash) !== ADMIN_SECRET)
     {
-      $this->renderCreateAdminAccountPage($openIdIdentity, l("ADMIN_SECRET is incorrect. Try again"));
+      $this->errorMessage = l("ADMIN_SECRET is incorrect. Try again");
       return;
     }
 
@@ -289,7 +286,7 @@ class LoginController extends Controller
     $userCount = $storage->getUserCount();
     if ($userCount === false)
     {
-      $this->renderCreateAdminAccountPage($openIdIdentity, l("Cannot verify number of users"));
+      $this->errorMessage = l("Cannot verify number of users");
       return;
     }
     else if ($userCount > 0)
@@ -301,72 +298,76 @@ class LoginController extends Controller
     $roleId = $storage->getRoleId(ROLE_ADMIN);
     if ($roleId === false)
     {
-      $this->renderCreateAdminAccountPage($openIdIdentity, l("Cannot create account. Try again later"));
+      $this->errorMessage = l("Cannot create account. Try again later");
       return;
     }
 
-    if (($user = $storage->createUser($username, null, $openIdIdentity, $emailAddress, null, $roleId)) !== false)
-      $this->authorizeUser($user);
-    else
-      $this->renderCreateAdminAccountPage($openIdIdentity, l("Cannot create account at the moment"));
+    if (($user = $storage->createUser($username, null, $this->openIdIdentity, $emailAddress, null, $roleId)) === false)
+    {
+      $this->errorMessage = l("Cannot create account at the moment");
+      return;
+    }
+
+    $this->authorizeUser($user);
   }
 
   function openIdModeRoute($mode)
   {
-    if ($mode != "cancel" && $this->openId->validate())
-    {
-      // User has signed in via openID
-
-      $storage = Storage::getInstance();
-      $openIdIdentity = $this->openId->identity;
-
-      if (($user = $storage->findUserWithOpenId($openIdIdentity)) === false)
-      {
-        // Unknown user. Is a welcome token available?
-
-        $tokenHash = $_GET["createToken"];
-
-        $openIdAttrs = $this->openId->getAttributes();
-        $emailAddress = $openIdAttrs["contact/email"];
-
-        $userCount = $storage->getUserCount();
-        if ($userCount !== false && $userCount < 1)
-        {
-          // No users in the database yet
-          $this->renderCreateAdminAccountPage($openIdIdentity);
-          return;
-        }
-
-        if (!CREATE_UNKNOWN_ACCOUNTS)
-        {
-          // Account creation is disabled - is there a token?
-
-          if (!$tokenHash || ($token = $storage->getWelcomeToken($tokenHash)) === false)
-          {
-            // Missing or unknown token 
-
-            $this->errorMessage = l("There are no users registered under that account");
-            $this->setTemplate("default");
-
-            return;
-          }
-
-          if (!$emailAddress)
-            $emailAddress = $token["emailAddress"];
-        }
-
-        $this->renderNewAccountPage($openIdIdentity, $tokenHash, $emailAddress);
-      }
-      else
-      {
-        // Already a member
-        $this->authorizeUser($user);
-      }
-    }
-    else
+    if ($mode == "cancel" || !$this->openId->validate())
     {
       $this->redirectTo("login");
+      return;
     }
+
+    $this->openIdIdentity = $this->openId->identity;
+    $this->computedOpenIdHash = $this->saltAndHashOpenId($this->openIdIdentity);
+    $this->errorMessage = null;
+
+    // User has signed in via openID
+
+    $storage = Storage::getInstance();
+
+    if (($user = $storage->findUserWithOpenId($this->openIdIdentity)) !== false)
+    {
+      // Already a member
+      $this->authorizeUser($user);
+      return;
+    }
+
+    // Unknown user. Is a welcome token available?
+
+    $this->welcomeToken = $_GET["createToken"];
+
+    $openIdAttrs = $this->openId->getAttributes();
+    $this->emailAddress = $openIdAttrs["contact/email"];
+
+    $userCount = $storage->getUserCount();
+    if ($userCount !== false && $userCount < 1)
+    {
+      // No users in the database yet
+      $this->setTemplate("newAdmin");
+      return;
+    }
+
+    if (!CREATE_UNKNOWN_ACCOUNTS)
+    {
+      // Account creation is disabled - is there a token?
+
+      if (!$this->welcomeToken || ($token = $storage->getWelcomeToken($this->welcomeToken)) === false)
+      {
+        // Missing or unknown token 
+
+        $this->errorMessage = l("There are no users registered under that account");
+        $this->setTemplate("default");
+
+        return;
+      }
+
+      if (!$this->emailAddress)
+        $this->emailAddress = $token["emailAddress"];
+    }
+
+    $this->setTemplate("newAccount");
   }
 
   protected function route()
@@ -406,116 +407,6 @@ class LoginController extends Controller
     }
 
     return $sessionId;
-  }
-
-  private function renderNewAccountPage($openIdIdentity, $tokenHash, $emailAddress, $errorMessage = null)
-  {
-?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
-  <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
-    <link href="content/grr.css" type="text/css" rel="stylesheet"/>
-    <title>Create New Account</title>
-  </head>
-  <body>
-    <div id="header">
-      <h1>grr <span class="grr">&gt;:(</span></h1>
-    </div>
-    <div id="content" class="login">
-<?
-    if ($errorMessage)
-    {
-?>
-      <div class="error"><?= h($errorMessage) ?></div>
-<?
-    }
-?>
-      <form action="<?= $this->url("login", array("newAccount" => ($openIdIdentity) ? "openId" : "local")) ?>" method="post">
-<?
-    if ($tokenHash)
-    {
-?>
-        <input type="hidden" name="createToken" value="<?= h($tokenHash) ?>" />
-<?
-    }
-
-    if ($openIdIdentity)
-    {
-?>
-        <input type="hidden" name="oid" value="<?= h($openIdIdentity) ?>" />
-        <input type="hidden" name="v" value="<?= h($this->saltAndHashOpenId($openIdIdentity)) ?>" />
-<?
-    }
-?>
-        <span class="directions">Username:</span>
-        <input type="text" name="username" value="<?= h($_POST["username"]) ?>" />
-        <span class="directions">Email Address:</span>
-        <input type="text" name="emailAddress" value="<?= h($emailAddress) ?>" />
-<?
-    if (!$openIdIdentity)
-    {
-?>
-        <span class="directions">Password:</span>
-        <input type="password" name="password" />
-        <span class="directions">Confirm Password:</span>
-        <input type="password" name="confirmPassword" />
-<?
-    }
-?>
-        <input type="submit" value="Create new account" />
-      </form>
-    </div>
-    <div id="footer">
-      &copy; 2013 Akop Karapetyan | <a href="https://github.com/melllvar/grr">grr</a> is Open and Free Software licensed under GPL
-    </div>
-  </body>
-</html>
-<?
-  }
-
-  private function renderCreateAdminAccountPage($openIdIdentity, $errorMessage = null)
-  {
-?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
-  <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
-    <link href="content/grr.css" type="text/css" rel="stylesheet"/>
-    <title>Create New Account</title>
-  </head>
-  <body>
-    <div id="header">
-      <h1>grr <span class="grr">&gt;:(</span></h1>
-    </div>
-    <div id="content" class="login">
-<?
-    if ($errorMessage)
-    {
-?>
-      <div class="error"><?= h($errorMessage) ?></div>
-<?
-    }
-?>
-      <form action="<?= $this->url("login", array("newAdminAccount" => "true")) ?>" method="post">
-        <input type="hidden" name="oid" value="<?= h($openIdIdentity) ?>" />
-        <input type="hidden" name="v" value="<?= h($this->saltAndHashOpenId($openIdIdentity)) ?>" />
-        <span class="directions">Please check the configuration file ('config.php') on the server. Copy the 
-          value of 'ADMIN_SECRET' (without quotes) and paste it in the field below:</span>
-        <input type="text" name="createToken" value="<?= h($_POST["createToken"]) ?>" />
-        <span class="directions">Username:</span>
-        <input type="text" name="username" value="<?= h($_POST["username"]) ?>" />
-        <span class="directions">Email Address:</span>
-        <input type="text" name="emailAddress" value="<?= h($_POST["emailAddress"]) ?>" />
-        <input type="submit" value="Create new account" />
-      </form>
-    </div>
-    <div id="footer">
-      &copy; 2013 Akop Karapetyan | <a href="https://github.com/melllvar/grr">grr</a> is Open and Free Software licensed under GPL
-    </div>
-  </body>
-</html>
-<?
   }
 
   private function shouldThrottleLogin()

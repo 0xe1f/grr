@@ -287,34 +287,53 @@ ul#feeds,
   margin: 0;
 }
 
+.feed-icon
+{
+  width: 15px;
+  height: 15px;
+  float: left;
+  margin-right: 5px;
+  background-image: url(sprites.png);
+}
+
+.feed-icon.folder
+{
+  background-position: -135px -135px;
+}
+
+.feed-icon.feed
+{
+  background-position: -150px -150px;
+}
+
 #feeds .feed-item
 {
-  padding-left: 1em;
+  padding-left: 0;
 }
 
 #feeds > li > ul .feed-item
 {
-  padding-left: 2em;
+  padding-left: 20px;
 }
 
 #feeds > li > ul > li > ul .feed-item
 {
-  padding-left: 3em;
+  padding-left: 40px;
 }
 
 #feeds > li > ul > li > ul > li > ul .feed-item
 {
-  padding-left: 4em;
+  padding-left: 60px;
 }
 
 #feeds > li > ul > li > ul > li > ul > li > ul .feed-item
 {
-  padding-left: 5em;
+  padding-left: 80px;
 }
 
 #feeds > li > ul > li > ul > li > ul > li > ul > li > ul .feed-item
 {
-  padding-left: 6em;
+  padding-left: 100px;
 }
 
 .feed
@@ -377,11 +396,6 @@ ul#feeds,
   width: 6em;
 }
 
-#navbar button
-{
-  height: 30px;
-}
-
 #navbar select
 {
   width: 150px;
@@ -392,8 +406,12 @@ ul#feeds,
   height: 30px;
   background-color: #eee;
   border: solid 1px #aaa;
-  border-radius: 2px;
+  border-radius: 3px;
   box-shadow: 1px 1px 1px #aaa;
+  font-family: arial, sans-serif;
+  font-size: 9pt;
+  font-weight: bold;
+  height: 30px;
 }
 
 #navbar button:active
@@ -418,7 +436,7 @@ ul#feeds,
   color: white;
   text-transform: uppercase;
   width: 100px;
-  font-size: 9pt;
+  font-weight: bold;
 }
 
 #navbar .spacer
