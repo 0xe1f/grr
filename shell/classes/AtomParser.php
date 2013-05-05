@@ -65,12 +65,21 @@ class AtomParser extends FeedParser
           $article->published = $timestamp;
       }
 
+      $article->link_url = null;
+
       $links = $entry->xpath('atom:link[@rel="alternate"]');
       if ($links)
       {
         $link = $links[0]->attributes();
         $article->link_url = (string)$link->href;
       }
+
+      // If a post has no GUID, use its link as a GUID instead
+      if (!$article->guid)
+        $article->guid = $article->link_url;
+
+      if (!$article->guid)
+        continue;
 
       if ((string)$entry->content)
         $article->text = (string)$entry->content;

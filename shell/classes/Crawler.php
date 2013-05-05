@@ -102,18 +102,6 @@ class Crawler
     {
       $articleGuid = $article->guid;
       $articleLinkUrl = $article->link_url;
-
-      // If a post has no GUID, use its link instead
-      if (!$articleGuid)
-        $articleGuid = $articleLinkUrl;
-
-      if (!$articleGuid)
-      {
-        // Don't add posts without GUID's
-        echo "  Error: Post titled '{$article->getTitle()}' has no GUID; skipping\n";
-        continue;
-      }
-      
       $articleTitle = $article->getTitle();
       $articleAuthor = $article->getAuthor();
       $articleSummary = $article->getSummary();
@@ -265,7 +253,7 @@ class Crawler
            INNER JOIN feed_folders ff ON ff.feed_id = a.feed_id AND ff.user_id = u.id 
             LEFT JOIN user_articles ua ON ua.article_id = a.id AND ua.user_id = u.id 
                 WHERE ua.id IS NULL
-                                          ");
+                                               ");
 
     if (!$personalizeStatement->execute())
     {

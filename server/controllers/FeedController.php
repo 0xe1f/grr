@@ -29,7 +29,7 @@ class FeedController extends JsonController
 {
   function initRoutes()
   {
-    $this->addGetRoute(array("subscribeTo"), "subscribeRoute");
+    $this->addPostRoute(array("subscribeTo", "createUnder"), "subscribeRoute");
     $this->addPostRoute(array("renameSubscription", "newName"), "renameSubscriptionRoute");
     $this->addPostRoute(array("unsubscribeFrom"), "unsubscribeRoute");
     $this->addPostRoute(array("createFolderUnder", "folderName"), "createSubfolderRoute");
@@ -81,7 +81,7 @@ class FeedController extends JsonController
     );
   }
 
-  function subscribeRoute($feedUrl)
+  function subscribeRoute($feedUrl, $parentFolderId)
   {
     // Check to see if the system already has the feed
 
@@ -129,7 +129,7 @@ class FeedController extends JsonController
 
     // Subscribe to feed
 
-    if (!$storage->subscribeToFeed($this->user->id, $feed->id))
+    if (!$storage->subscribeToFeed($this->user->id, $feed->id, $parentFolderId))
       throw new JsonError(l("Could not subscribe to feed"));
 
     return array(

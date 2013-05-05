@@ -41,6 +41,9 @@ class RssParser extends FeedParser
     $sy = $this->xml->channel->children('http://purl.org/rss/1.0/modules/syndication/');
     $feed->setUpdateInformation((string)$sy->updatePeriod, (string)$sy->updateFrequency);
 
+    if (!$feed->link)
+      $feed->link = $feed->url; // Default link is the URL to the feed itself
+
     $rss1 = false;
     if ($this->xml->channel->items)
     {
@@ -69,7 +72,6 @@ class RssParser extends FeedParser
 
       $article = new Article();
       $article->guid = (string)$item->guid;
-      
       $article->published = time();
 
       if ($rss1)
@@ -87,6 +89,13 @@ class RssParser extends FeedParser
       $article->title = (string)$item->title;
       $article->author = current($item->xpath('dc:creator'));
 
+      // If a post has no GUID, use its link as a GUID instead
+      if (!$article->guid)
+        $article->guid = $article->link_url;
+      
+      if (!$article->guid)
+        continue;
+      
       $encoded = $item->xpath('content:encoded');
       if ($encoded)
         $article->text = (string)current($encoded);

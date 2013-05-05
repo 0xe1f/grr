@@ -179,7 +179,7 @@ body
 .entry-content
 {
   display: block;
-  cursor: default;
+  cursor: auto;
 }
 
 .article 
@@ -306,6 +306,11 @@ ul#feeds,
   background-position: -150px -150px;
 }
 
+.feed-icon.root
+{
+  background-image: none;
+}
+
 #feeds .feed-item
 {
   padding-left: 0;
@@ -391,11 +396,6 @@ ul#feeds,
   float: right;
 }
 
-#navbar .select-article
-{
-  width: 6em;
-}
-
 #navbar select
 {
   width: 150px;
@@ -403,7 +403,7 @@ ul#feeds,
 
 #navbar button
 {
-  height: 30px;
+  padding: 0.5em 1.5em;
   background-color: #eee;
   border: solid 1px #aaa;
   border-radius: 3px;
@@ -411,7 +411,22 @@ ul#feeds,
   font-family: arial, sans-serif;
   font-size: 9pt;
   font-weight: bold;
-  height: 30px;
+}
+
+#navbar button.select-article.up
+{
+  margin-right: 0;
+  box-shadow: 0 1px 1px #aaa;
+  border-right: none;
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+#navbar button.select-article.down
+{
+  margin-left: 0;
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
 }
 
 #navbar button:active
@@ -435,7 +450,6 @@ ul#feeds,
   background-color: #D14836;
   color: white;
   text-transform: uppercase;
-  width: 100px;
   font-weight: bold;
 }
 

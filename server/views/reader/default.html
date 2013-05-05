@@ -31,8 +31,7 @@
     </div>
     <div id="navbar">
       <div class="right-aligned">
-        <button class="select-article up"><?= l("Previous") ?></button>
-        <button class="select-article down"><?= l("Next") ?></button>
+        <button class="select-article up">&lt;</button><button class="select-article down">&gt;</button>
       </div>
       <button class="subscribe"><?= l("Subscribe") ?></button>
       <span class="spacer"></span>
@@ -54,12 +53,17 @@
         <div id="entries"></div>
       </div>
     </div>
+    <ul id="menu-root" class="menu">
+      <li class="menu-new-folder"><?= l("New folder...") ?></li>
+      <li class="menu-sub"><?= l("Subscribe...") ?></li>
+    </ul>
     <ul id="menu-feed" class="menu">
       <li class="menu-rename-sub"><?= l("Rename subscription...") ?></li>
       <li class="menu-unsub"><?= l("Unsubscribe") ?></li>
     </ul>
     <ul id="menu-folder" class="menu">
       <li class="menu-new-folder"><?= l("New folder...") ?></li>
+      <li class="menu-sub"><?= l("Subscribe...") ?></li>
       <hr/>
       <li class="menu-rename-sub"><?= l("Rename subscription...") ?></li>
       <li class="menu-unsub"><?= l("Unsubscribe from all") ?></li>

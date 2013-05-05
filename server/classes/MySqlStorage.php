@@ -307,7 +307,7 @@ class MySqlStorage extends Storage
     $this->pruneFeedTree($feeds);
     $feeds["id"] = $rootId;
     $feeds["source"] = l("All Items");
-    $feeds["type"] = "folder";
+    $feeds["type"] = "root";
 
     if ($matchingFeed != null && $restrictToFolderId != $rootId)
       $feeds = $matchingFeed;
@@ -424,6 +424,10 @@ class MySqlStorage extends Storage
 
   public function renameSubscription($userId, $feedFolderId, $newName)
   {
+    $rootFolderId = $this->getUserFeedRoot($userId);
+    if ($rootFolderId === false || $rootFolderId == $feedFolderId)
+      return false; // Don't remove the root folder
+
     $stmt = $this->db->prepare("
           UPDATE feed_folders
              SET title = ?
@@ -441,6 +445,10 @@ class MySqlStorage extends Storage
 
   public function unsubscribe($userId, $feedFolderId)
   {
+    $rootFolderId = $this->getUserFeedRoot($userId);
+    if ($rootFolderId === false || $rootFolderId == $feedFolderId)
+      return false; // Don't remove the root folder
+
     $stmt = $this->db->prepare("
           DELETE 
             FROM feed_folders 
@@ -461,19 +469,27 @@ class MySqlStorage extends Storage
 
   public function importFeed($userId, $feed)
   {
+    // FIXME: 
+
+    // There is a small possibility that the crawler might interfere with 
+    // this process (e.g. by committing data staged by the web app) 
+    // if the staging takes place at the exact moment as the feed import.
+    // See usage of $importStarted
+
     // Stage the feed
 
     $stmt = $this->db->prepare("
         INSERT INTO staged_feeds(user_id, feed_hash, feed_url, html_url, title, last_updated, staged)
-             VALUES (?, ?, ?, ?, ?, UTC_TIMESTAMP(), ?)
+             VALUES (?, ?, ?, ?, ?, FROM_UNIXTIME(?), ?)
                          ");
 
-    $stmt->bind_param('issssi', $userId,
-                                $feedUrlHash,
-                                $feedUrl,
-                                $htmlUrl,
-                                $feedTitle,
-                                $importStarted);
+    $stmt->bind_param('issssii', $userId,
+                                 $feedUrlHash,
+                                 $feedUrl,
+                                 $htmlUrl,
+                                 $feedTitle,
+                                 $crawled,
+                                 $importStarted);
 
     $feedId = false;
     $success = true;
@@ -482,9 +498,11 @@ class MySqlStorage extends Storage
     $feedUrlHash = sha1($feedUrl);
     $htmlUrl = $feed->link;
     $feedTitle = $feed->title;
-    $importStarted = time();
+    $crawled = time();
+    $importStarted = round(microtime(true) * 1000);
 
     $success = $stmt->execute();
+
     $stmt->close();
 
     if ($success)
@@ -519,6 +537,85 @@ class MySqlStorage extends Storage
 
       if ($feedId !== false)
       {
+        // Stage the articles
+
+        $stmt = $this->db->prepare("
+               INSERT INTO staged_articles (feed_id,
+                                            guid,
+                                            link_url,
+                                            title,
+                                            author,
+                                            summary,
+                                            content,
+                                            published,
+                                            crawled,
+                                            staged)
+                    VALUES (?,?,?,?,?,?,?,FROM_UNIXTIME(?),FROM_UNIXTIME(?),?)
+                                   ");
+
+        $stmt->bind_param('issssssiii',
+          $feedId,
+          $articleGuid,
+          $articleLinkUrl, 
+          $articleTitle,
+          $articleAuthor,
+          $articleSummary,
+          $articleText,
+          $articlePublished,
+          $crawled,
+          $importStarted);
+
+        foreach ($feed->articles as $article)
+        {
+          $articleGuid = $article->guid;
+          $articleLinkUrl = $article->link_url;
+          $articleTitle = $article->getTitle();
+          $articleAuthor = $article->getAuthor();
+          $articleSummary = $article->getSummary();
+          $articleText = $article->text;
+          $articlePublished = $article->published;
+
+          if (!$stmt->execute())
+            continue;
+        }
+
+        $stmt->close();
+
+        // Write the articles
+
+        $stmt = $this->db->prepare("
+                 INSERT INTO articles (feed_id,
+                                       guid,
+                                       link_url,
+                                       title,
+                                       author,
+                                       summary,
+                                       content,
+                                       published,
+                                       crawled)
+                      SELECT sa.feed_id,
+                             sa.guid,
+                             sa.link_url,
+                             sa.title,
+                             sa.author,
+                             sa.summary,
+                             sa.content,
+                             sa.published,
+                             sa.crawled
+                        FROM staged_articles sa
+                   LEFT JOIN articles a ON a.feed_id = sa.feed_id 
+                             AND a.guid = sa.guid
+                       WHERE a.id IS NULL
+                             AND staged = ?
+                                   ");
+
+        // It's fine if unstaging fails - the crawler should catch it later
+
+        $stmt->bind_param('i', $importStarted);
+        $stmt->execute();
+
+        $stmt->close();
+
         // Personalize feed contents
 
         $stmt = $this->db->prepare("
@@ -708,6 +805,8 @@ class MySqlStorage extends Storage
 
   public function subscribeToFeed($userId, $feedId, $parentFeedFolderId = null)
   {
+    // FIXME: verify that the parent folder belongs to the same user
+    
     if ($parentFeedFolderId == null) // 'All items' by default
       $parentFeedFolderId = $this->getUserFeedRoot($userId);
 
@@ -1358,7 +1457,7 @@ class MySqlStorage extends Storage
                       a.content,
                       UNIX_TIMESTAMP(a.published) published,
                       ff.id source_id,
-                      f.title source,
+                      ff.title source,
                       f.html_url source_www,
                       ua.is_unread,
                       ua.is_starred,
@@ -1393,7 +1492,7 @@ class MySqlStorage extends Storage
                       a.content,
                       UNIX_TIMESTAMP(a.published) published,
                       ff.id source_id,
-                      f.title source,
+                      ff.title source,
                       f.html_url source_www,
                       ua.is_unread,
                       ua.is_starred,

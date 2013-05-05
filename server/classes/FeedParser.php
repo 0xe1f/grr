@@ -37,7 +37,8 @@ abstract class FeedParser
     curl_setopt($curlSession, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($curlSession, CURLOPT_FOLLOWLOCATION, true);
 
-    $content = curl_exec($curlSession);
+    $content = @curl_exec($curlSession);
+    $effectiveUrl = @curl_getinfo($curlSession, CURLINFO_EFFECTIVE_URL);
 
     $errorCode = curl_errno($curlSession);
     $errorMessage = curl_error($curlSession);
@@ -72,6 +73,9 @@ abstract class FeedParser
 
     if ($parser != null)
     {
+      if ($effectiveUrl)
+        $url = $effectiveUrl; // Use the final redirected URL
+
       $parser->url = $url;
       $parser->document = $content;
       $parser->xml = $xml;

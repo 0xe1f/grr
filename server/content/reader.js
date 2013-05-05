@@ -55,6 +55,10 @@ $().ready(function()
     .bind('keypress', 'r', function()
     {
       refreshFeeds();
+    })
+    .bind('keypress', 'a', function()
+    {
+      subscribe();
     });
 
   // Buttons
@@ -66,9 +70,7 @@ $().ready(function()
 
   $('button.subscribe').click(function()
   {
-    var feedUrl = prompt(l('Enter a feed URL'));
-    if (feedUrl)
-      subscribe(feedUrl);
+    subscribe();
   });
 
   $('.article-filter').change(function()
@@ -166,24 +168,32 @@ $().ready(function()
       .fadeOut('slow'); 
   };
 
-  var subscribe = function(feedUrl)
+  var subscribe = function(parentFolder)
   {
-    $.getJSON('?c=feed', 
+    if (!parentFolder)
+      parentFolder = $('.all-items').data('object');
+
+    var feedUrl = prompt(l('Enter the feed URL'));
+    if (feedUrl)
     {
-      subscribeTo : feedUrl
-    },
-    function(response)
-    {
-      if (!response.error)
+      $.post('?c=feed', 
       {
-        updateFeedDom(response.allItems);
-        showToast(l('Successfully subscribed to "%s"', [response.feed.title]), false);
-      }
-      else
+        subscribeTo : feedUrl,
+        createUnder : parentFolder.id,
+      },
+      function(response)
       {
-        showToast(response.error.message, true);
-      }
-    });
+        if (!response.error)
+        {
+          updateFeedDom(response.allItems);
+          showToast(l('Successfully subscribed to "%s"', [response.feed.title]), false);
+        }
+        else
+        {
+          showToast(response.error.message, true);
+        }
+      }, 'json');
+    }
   };
 
   var markAllAs = function(unread)
@@ -286,6 +296,7 @@ $().ready(function()
         .append($('<span />', { 'class' : 'chevron' })
           .click(function(e)
           {
+            $('.menu').hide();
             $('#menu-' + feed.type)
               .css( { top: e.pageY, left: e.pageX })
               .data('object', feedCopy)
@@ -779,9 +790,9 @@ $().ready(function()
 
   var unsubscribe = function(feed)
   {
-    var message = (feed.type == 'folder')
-      ? l('Unsubscribe from all feeds in "%s"?', [feed.source])
-      : l('Unsubscribe from "%s"?', [feed.source]);
+    var message = (feed.type == 'feed')
+      ? l('Unsubscribe from "%s"?', [feed.source])
+      : l('Unsubscribe from all feeds under "%s"?', [feed.source]);
 
     if (confirm(message))
     {
@@ -810,6 +821,8 @@ $().ready(function()
       renameSubscription(contextObject);
     else if (menuItem.hasClass('menu-unsub'))
       unsubscribe(contextObject);
+    else if (menuItem.hasClass('menu-sub'))
+      subscribe(contextObject);
     else if (menuItem.hasClass('menu-new-folder'))
       createFolder(contextObject);
   };

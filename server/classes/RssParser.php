@@ -72,7 +72,6 @@ class RssParser extends FeedParser
 
       $article = new Article();
       $article->guid = (string)$item->guid;
-      
       $article->published = time();
 
       if ($rss1)
@@ -90,6 +89,13 @@ class RssParser extends FeedParser
       $article->title = (string)$item->title;
       $article->author = current($item->xpath('dc:creator'));
 
+      // If a post has no GUID, use its link as a GUID instead
+      if (!$article->guid)
+        $article->guid = $article->link_url;
+      
+      if (!$article->guid)
+        continue;
+      
       $encoded = $item->xpath('content:encoded');
       if ($encoded)
         $article->text = (string)current($encoded);
