@@ -28,9 +28,9 @@ class ArticleController extends JsonController
 {
   function initRoutes()
   {
-    $this->addGetRoute(array("a"), "articleRoute");
-    $this->addGetRoute(array("f"), "feedRoute");
-    $this->addGetRoute(array("setTag"), "setTagRoute");
+    $this->addPostRoute(array("toggleStatusOf", "isUnread", "isStarred", "isLiked"), "toggleArticleStatusRoute");
+    $this->addPostRoute(array("toggleUnreadUnder", "isUnread", "filter"), "toggleAllUnreadRoute");
+    $this->addPostRoute(array("setTagsFor", "tags"), "setTagRoute");
   }
 
   private function flattenFeedTree($feed)
@@ -45,12 +45,11 @@ class ArticleController extends JsonController
     return $feedIds;
   }
 
-  function articleRoute()
+  function toggleArticleStatusRoute($userArticleId, $isUnread, $isStarred, $isLiked)
   {
-    $userArticleId = $_GET["a"];
-    $isUnread = ($_GET["is_unread"] == "true");
-    $isStarred = ($_GET["is_starred"] == "true");
-    $isLiked = ($_GET["is_liked"] == "true");
+    $isUnread = ($isUnread == "true");
+    $isStarred = ($isStarred == "true");
+    $isLiked = ($isLiked == "true");
 
     $storage = Storage::getInstance();
     if ($storage->setArticleStatus($this->user->id, $userArticleId, $isUnread, $isStarred, $isLiked) === false)
@@ -65,9 +64,9 @@ class ArticleController extends JsonController
     );
   }
 
-  function setTagRoute($userArticleId)
+  function setTagRoute($userArticleId, $tagsAsString)
   {
-    $tagsAsString = trim($_GET["tags"]);
+    $tagsAsString = trim($tagsAsString);
 
     $tags = empty($tagsAsString) ? array() : explode(',', $tagsAsString); // Split the comma-delimited tags
     $tags = array_map('trim', $tags); // Trim each tag
@@ -84,15 +83,14 @@ class ArticleController extends JsonController
     );
   }
 
-  function feedRoute()
+  function toggleAllUnreadRoute($feedFolderId, $isUnread, $requestedFilter)
   {
-    $feedFolderId = $_GET["f"];
-    $isUnread = ($_GET["is_unread"] == "true");
+    $isUnread = ($isUnread == "true");
     $filter = null;
 
     $allowedFilters = array("new", "star");
-    if (in_array($_GET["filter"], $allowedFilters))
-      $filter = $_GET["filter"];
+    if (in_array($requestedFilter, $allowedFilters))
+      $filter = $requestedFilter;
 
     $storage = Storage::getInstance();
     $result = $storage->markAllAs($this->user, $feedFolderId, $filter, $isUnread);

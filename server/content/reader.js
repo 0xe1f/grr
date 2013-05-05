@@ -198,10 +198,10 @@ $().ready(function()
 
   var markAllAs = function(unread)
   {
-    $.getJSON('?c=article', 
+    $.post('?c=article', 
     { 
-      f: getSelectedFeedId(),
-      is_unread: unread,
+      toggleUnreadUnder: getSelectedFeedId(),
+      isUnread: unread,
       filter: $('.article-filter').val(),
     },
     function(response)
@@ -249,7 +249,7 @@ $().ready(function()
       {
         showToast(response.error.message, true);
       }
-    });
+    }, 'json');
   };
 
   var refreshEntry = function(entryDom)
@@ -405,84 +405,83 @@ $().ready(function()
   {
     var entry = entryDom.data('object');
 
-    $.getJSON('?c=article', $.extend({ }, 
-      { 
-        a : entry.id, 
-        is_starred : entry.is_starred, 
-        is_unread : entry.is_unread,
-        is_liked : entry.is_liked
-      }, args),
-      function(response)
+    $.post('?c=article', $.extend({ }, 
+    { 
+      toggleStatusOf : entry.id, 
+      isStarred : entry.is_starred, 
+      isUnread : entry.is_unread,
+      isLiked : entry.is_liked
+    }, args),
+    function(response)
+    {
+      if (!response.error)
       {
-        if (!response.error)
-        {
-          var deltaUnread = 0;
-          if (entry.is_unread && !response.entry.is_unread)
-            deltaUnread--;
-          else if (!entry.is_unread && response.entry.is_unread)
-            deltaUnread++;
+        var deltaUnread = 0;
+        if (entry.is_unread && !response.entry.is_unread)
+          deltaUnread--;
+        else if (!entry.is_unread && response.entry.is_unread)
+          deltaUnread++;
 
-          if (deltaUnread != 0)
+        if (deltaUnread != 0)
+        {
+          $.each($('.feed'), function()
           {
-            $.each($('.feed'), function()
+            var feedDom = $(this);
+            var feed = feedDom.data('object');
+
+            if (feed && feed.id == entry.source_id)
             {
-              var feedDom = $(this);
-              var feed = feedDom.data('object');
+              feed.unread += deltaUnread;
 
-              if (feed && feed.id == entry.source_id)
+              feedDom.parents('.feed').each(function()
               {
+                feedDom = $(this);
+                feed = feedDom.data('object');
+
                 feed.unread += deltaUnread;
+              });
 
-                feedDom.parents('.feed').each(function()
-                {
-                  feedDom = $(this);
-                  feed = feedDom.data('object');
-
-                  feed.unread += deltaUnread;
-                });
-
-                return false;
-              }
-            });
-          }
-
-          entry.is_unread = response.entry.is_unread;
-          entry.is_starred = response.entry.is_starred;
-          entry.is_liked = response.entry.is_liked;
-
-          refreshEntry(entryDom);
-          synchronizeFeedDom();
+              return false;
+            }
+          });
         }
-        else
-        {
-          showToast(response.error.message, true);
-        }
+
+        entry.is_unread = response.entry.is_unread;
+        entry.is_starred = response.entry.is_starred;
+        entry.is_liked = response.entry.is_liked;
+
+        refreshEntry(entryDom);
+        synchronizeFeedDom();
       }
-    );
+      else
+      {
+        showToast(response.error.message, true);
+      }
+    }, 'json');
   };
 
   var toggleStarred = function(entryDom)
   {
     var entry = entryDom.data('object');
 
-    updateEntry(entryDom, { is_starred: !entry.is_starred });
+    updateEntry(entryDom, { isStarred: !entry.is_starred });
   };
 
   var toggleUnread = function(entryDom)
   {
     var entry = entryDom.data('object');
     
-    updateEntry(entryDom, { is_unread: !entry.is_unread });
+    updateEntry(entryDom, { isUnread: !entry.is_unread });
   };
 
   var editTags = function(entryDom, tags)
   {
     var entry = entryDom.data('object');
     
-    $.getJSON('?c=article',
+    $.post('?c=article',
       { 
-        setTag : entry.id, 
-        tags : tags
+        setTagsFor : entry.id, 
+        tags       : tags
       },
       function(response)
       {
@@ -496,8 +495,7 @@ $().ready(function()
         {
           showToast(response.error.message, true);
         }
-      }
-    );
+      }, 'json');
   };
 
   var collapseAllEntries = function()
@@ -554,7 +552,7 @@ $().ready(function()
             .text(l('Like'))
             .click(function(e)
             {
-              updateEntry(entryDom, { is_liked: !entry.is_liked });
+              updateEntry(entryDom, { isLiked: !entry.is_liked });
             }))
           */
         )
@@ -678,7 +676,7 @@ $().ready(function()
           .append($('<div />', { 'class' : 'action-star' })
             .click(function(e)
             {
-              updateEntry($(this).closest('.entry'), { is_starred : !entry.is_starred });
+              updateEntry($(this).closest('.entry'), { isStarred : !entry.is_starred });
               e.stopPropagation();
             }))
           .append($('<span />', { 'class' : 'entry-source' }).text(entry.source))
@@ -706,7 +704,7 @@ $().ready(function()
           }
 
           if (entry.is_unread && entry.is_expanded)
-            updateEntry(entryDom, { is_unread : false }); // Mark as read
+            updateEntry(entryDom, { isUnread : false }); // Mark as read
 
           refreshEntry(entryDom);
         });
