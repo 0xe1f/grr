@@ -24,11 +24,135 @@
 
 abstract class FeedParser
 {
+  const ERROR_DOWNLOAD = 100;
+  const ERROR_EMPTY_DOCUMENT = 101;
+  const ERROR_TOO_MANY_REDIRECTS = 102;
+
   protected $url;
   protected $document;
   protected $xml;
 
-  public static function create($url)
+  public static function create($url, $recursions = 0)
+  {
+    if ($recursions > 2)
+      throw new Exception("Download error", FeedParser::ERROR_TOO_MANY_REDIRECTS);
+
+    $document = FeedParser::fetchDocument($url);
+    if (!$document)
+      throw new Exception("Document is empty", FeedParser::ERROR_EMPTY_DOCUMENT);
+
+    // First pass - parse it as valid XML
+
+    $xmlDocument = null;
+    $parser = null;
+
+    libxml_use_internal_errors(true);
+
+    try
+    {
+      $xmlDocument = @new SimpleXMLElement($document);
+    }
+    catch(Exception $e)
+    {
+    }
+
+    if ($xmlDocument === null)
+    {
+      // Document didn't parse as valid XML
+
+      $errors = libxml_get_errors();
+
+      foreach ($errors as $error)
+      {
+        if ($error->code == 9)
+        {
+          // PCDATA Invalid char value
+
+          $document = preg_replace('/[\x00-\x1f\x80-\xff]/', '', $document);
+
+          // Reparse the document
+
+          try
+          {
+            $xmlDocument = @new SimpleXMLElement($document);
+          }
+          catch(Exception $e)
+          {
+          }
+
+          break;
+        }
+      }
+    }
+
+    if ($xmlDocument === null)
+    {
+      // Not sure if this is ideal, but let's just blindly assume
+      // this is an HTML document and try to parse any rel=alternate
+      // links
+
+      $links = FeedParser::getLinks($url, $document);
+      if (count($links) > 0) // Success? Let's hope so.
+        return FeedParser::create($links[0]->url, $recursions + 1);
+    }
+
+    if ($xmlDocument)
+    {
+      // Valid XML. See if we can determine the type of content
+
+      $rootName = $xmlDocument->getName();
+
+      if ($rootName == 'feed')
+        $parser = new AtomParser();
+      else if ($rootName == 'rss' || $rootName == 'RDF')
+        $parser = new RssParser();
+      else if (strcasecmp($rootName, 'html') === 0)
+      {
+        // HTML document. See if we can find a feed by parsing the HTML
+        $links = FeedParser::getLinks($url, $document);
+        if (count($links) > 0)
+          return FeedParser::create($url, $recursions + 1);
+      }
+
+      if ($parser)
+      {
+        $parser->url = $url;
+        $parser->document = $document;
+        $parser->xml = $xmlDocument;
+      }
+    }
+
+    return $parser;
+  }
+
+  private static function resolveUrl($baseUrl, $relativeUrl)
+  {
+    // Source:
+    // http://stackoverflow.com/questions/1243418/php-how-to-resolve-a-relative-url
+
+    if (parse_url($relativeUrl, PHP_URL_SCHEME) != '') 
+      return $relativeUrl;
+
+    if ($relativeUrl[0] == '#' || $relativeUrl[0] == '?')
+      return $baseUrl.$relativeUrl;
+
+    extract(parse_url($baseUrl));
+
+    $path = preg_replace('#/[^/]*$#', '', $path);
+
+    if ($relativeUrl[0] == '/') 
+      $path = '';
+
+    $absoluteUrl = "$host$path/$relativeUrl";
+
+    $re = array('#(/\.?/)#', '#/(?!\.\.)[^/]+/\.\./#');
+    for ($n = 1; $n > 0; $absoluteUrl = preg_replace($re, '/', $absoluteUrl, -1, $n))
+      ; // Noop
+
+    return "$scheme://$absoluteUrl";
+  }
+
+  private static function fetchDocument(&$url)
   {
     $curlSession = curl_init();
 
@@ -36,6 +160,7 @@ abstract class FeedParser
     curl_setopt($curlSession, CURLOPT_BINARYTRANSFER, true);
     curl_setopt($curlSession, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($curlSession, CURLOPT_FOLLOWLOCATION, true);
+    curl_setopt($curlSession, CURLOPT_MAXREDIRS, 2);
 
     $content = @curl_exec($curlSession);
     $effectiveUrl = @curl_getinfo($curlSession, CURLINFO_EFFECTIVE_URL);
@@ -46,42 +171,47 @@ abstract class FeedParser
     curl_close($curlSession);
 
     if ($errorCode != CURLE_OK)
-      throw new Exception("Error reading document ({$errorCode}: '{$errorMessage}')");
+      throw new Exception("Download error", FeedParser::ERROR_DOWNLOAD);
 
-    if (!$content)
-      throw new Exception('Document is empty');
+    if ($effectiveUrl)
+      $url = $effectiveUrl; // Use the final redirected URL
 
-    $parser = null;
+    return $content;
+  }
 
-    try
+  private static function getLinks($sourceUrl, $html)
+  {
+    $links = array();
+
+    if (preg_match_all("/<link(?:\\s+\\w+=[\"'][^\"']*[\"'])+\\s*\\/?>/", $html, $matches))
     {
-      $xml = @new SimpleXMLElement($content);
+      foreach ($matches[0] as $match)
+      {
+        if (preg_match_all("/(\\w+)=[\"']([^\"']*)[\"']/", $match, $submatches, PREG_SET_ORDER))
+        {
+          $attrs = array();
+          foreach ($submatches as $submatch)
+          {
+            list(, $key, $value) = $submatch;
+            $attrs[strtolower($key)] = $value;
+          }
+
+          if (strcasecmp($attrs["rel"], "alternate") === 0 
+            && (strcasecmp($attrs["type"], "application/rss+xml") === 0
+              || strcasecmp($attrs["type"], "application/atom+xml") === 0))
+          {
+            $link = new stdClass();
+            
+            $link->title = $attrs["title"];
+            $link->url = FeedParser::resolveUrl($sourceUrl, $attrs["href"]);
+
+            $links[] = $link;
+          }
+        }
+      }
     }
-    catch(Exception $e)
-    {
-      // In case there are invalid control characters...
-      
-      $content = preg_replace('/[\x00-\x1f\x80-\xff]/', '', $content);
-      $xml = @new SimpleXMLElement($content);
-    }
 
-    $rootName = $xml->getName();
-    if ($rootName == 'feed')
-      $parser = new AtomParser();
-    else if ($rootName == 'rss' || $rootName == 'RDF')
-      $parser = new RssParser();
-
-    if ($parser != null)
-    {
-      if ($effectiveUrl)
-        $url = $effectiveUrl; // Use the final redirected URL
-
-      $parser->url = $url;
-      $parser->document = $content;
-      $parser->xml = $xml;
-    }
-
-    return $parser;
+    return $links;
   }
 
   public abstract function parse();

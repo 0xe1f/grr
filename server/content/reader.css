@@ -527,6 +527,7 @@ ul.menu
 
 .menu li
 {
+  color: #555;
   cursor: pointer;
   padding: 0.5em 1em;
 }
@@ -536,3 +537,8 @@ ul.menu
   background-color: #ccc;
 }
 
+.menu .divider
+{
+  height: 1px;
+  background-color: #ccc;
+}

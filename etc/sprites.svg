@@ -24,9 +24,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="0.175"
-     inkscape:cx="-2539.6334"
-     inkscape:cy="-1192.5207"
+     inkscape:zoom="0.18915441"
+     inkscape:cx="-946.03745"
+     inkscape:cy="-1452.4587"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="false"
@@ -78,7 +78,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -242,10 +242,6 @@
          inkscape:connector-curvature="0"
          sodipodi:nodetypes="cc" />
     </g>
-    <path
-       style="fill:#7f6b54;fill-opacity:1;stroke:none"
-       d="M -586.6875 2469.9375 C -628.09971 2469.9375 -661.4375 2503.2753 -661.4375 2544.6875 C -661.4375 2554.2157 -659.62829 2563.2905 -656.40625 2571.6562 C -659.62831 2579.0722 -661.4375 2587.2471 -661.4375 2595.875 L -661.4375 2886.8125 C -661.4375 2920.39 -634.38997 2947.4062 -600.8125 2947.4062 L -130.875 2947.4062 C -97.297529 2947.4062 -70.28125 2920.39 -70.28125 2886.8125 L -70.28125 2595.875 C -70.28125 2562.2975 -97.297529 2535.2812 -130.875 2535.2812 L -415.5625 2535.2812 C -420.15395 2498.3334 -451.45686 2469.9375 -489.6875 2469.9375 L -586.6875 2469.9375 z "
-       id="rect3066" />
     <g
        id="g4520"
        transform="matrix(1.320806,0,0,1.320806,1055.6193,341.93255)"
@@ -309,5 +305,10 @@
          inkscape:export-xdpi="2.8047948"
          inkscape:export-ydpi="2.8047948" />
     </g>
+    <path
+       style="fill:#7f6b54;fill-opacity:1;stroke:none"
+       d="m -603.49107,2410.2804 c -31.46677,0 -56.88246,24.8454 -57.875,56.0625 l -0.0625,0 0,1.875 0,22.4375 0,43.4062 0,202.375 0,98 c 0,32.1005 25.83713,57.9376 57.9375,57.9376 l 477.375,0 c 32.100365,-2e-4 57.9375,-25.8372 57.9375,-57.9376 l 0,-300.375 c 0,-32.1003 -25.837135,-57.9687 -57.9375,-57.9687 l -286.9375,0 0,-7.875 c 0,-32.1004 -25.86838,-57.9375 -57.96875,-57.9375 l -132.46875,0 z"
+       id="rect3885"
+       inkscape:connector-curvature="0" />
   </g>
 </svg>
