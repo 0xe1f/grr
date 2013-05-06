@@ -301,10 +301,19 @@ class MySqlStorage extends Storage
     foreach ($movedItems as $movedItem)
       unset($list[$movedItem]);
 
-    $feeds = reset($list);
-    $rootId = key($list);
+    if (empty($list))
+    {
+      $feeds = array();
+      $rootId = $this->getUserFeedRoot($user->id);
+    }
+    else
+    {
+      $feeds = reset($list);
+      $rootId = key($list);
+      
+      $this->pruneFeedTree($feeds);
+    }
 
-    $this->pruneFeedTree($feeds);
     $feeds["id"] = $rootId;
     $feeds["source"] = l("All Items");
     $feeds["type"] = "root";
