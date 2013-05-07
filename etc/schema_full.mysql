@@ -3,7 +3,7 @@
 --
 -- Host: localhost    Database: grr
 -- ------------------------------------------------------
--- Server version 5.6.10
+-- Server version	5.6.10
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -72,8 +72,8 @@ CREATE TABLE `feed_folder_trees` (
   `distance` int(11) NOT NULL,
   PRIMARY KEY (`ancestor_id`,`descendant_id`),
   KEY `fk_uagh_descendant_id` (`descendant_id`),
-  CONSTRAINT `fk_uagh_ancestor_id` FOREIGN KEY (`ancestor_id`) REFERENCES `feed_folders` (`id`),
-  CONSTRAINT `fk_uagh_descendant_id` FOREIGN KEY (`descendant_id`) REFERENCES `feed_folders` (`id`)
+  CONSTRAINT `fk_feed_folder_trees_ancestor_id` FOREIGN KEY (`ancestor_id`) REFERENCES `feed_folders` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_feed_folder_trees_descendant_id` FOREIGN KEY (`descendant_id`) REFERENCES `feed_folders` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -94,6 +94,25 @@ CREATE TABLE `feed_folders` (
   KEY `fk_feed_folders_feed_id` (`feed_id`),
   CONSTRAINT `fk_feed_folders_feed_id` FOREIGN KEY (`feed_id`) REFERENCES `feeds` (`id`),
   CONSTRAINT `fk_feed_folders_user_id` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `feed_links`
+--
+
+DROP TABLE IF EXISTS `feed_links`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `feed_links` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `feed_id` int(11) NOT NULL,
+  `url` varchar(512) NOT NULL,
+  `url_hash` char(40) NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `fk_feed_links_feed_id` (`feed_id`),
+  KEY `ix_url_hash` (`url_hash`),
+  CONSTRAINT `fk_feed_links_feed_id` FOREIGN KEY (`feed_id`) REFERENCES `feeds` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -174,8 +193,10 @@ CREATE TABLE `staged_articles` (
   `content` text NOT NULL,
   `published` datetime NOT NULL,
   `crawled` datetime NOT NULL,
-  `staged` int(11) NOT NULL,
-  PRIMARY KEY (`id`)
+  `stage_id` int(11) NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `fk_staged_articles_stage_id` (`stage_id`),
+  CONSTRAINT `fk_staged_articles_stage_id` FOREIGN KEY (`stage_id`) REFERENCES `stages` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -197,9 +218,28 @@ CREATE TABLE `staged_feeds` (
   `last_built` datetime DEFAULT NULL,
   `last_updated` datetime NOT NULL,
   `next_update` datetime DEFAULT NULL,
-  `staged` int(11) NOT NULL,
-  PRIMARY KEY (`id`)
+  `stage_id` int(11) NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `fk_staged_feeds_stage_id` (`stage_id`),
+  CONSTRAINT `fk_staged_feeds_stage_id` FOREIGN KEY (`stage_id`) REFERENCES `stages` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `stages`
+--
+
+DROP TABLE IF EXISTS `stages`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `stages` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `user_id` int(11) DEFAULT NULL,
+  `started` datetime NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `fk_stages_user_id` (`user_id`),
+  CONSTRAINT `fk_stages_user_id` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -300,12 +340,12 @@ CREATE TABLE `welcome_tokens` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2013-05-02  1:07:16
+-- Dump completed on 2013-05-06 20:25:31
 -- MySQL dump 10.13  Distrib 5.6.10, for osx10.7 (x86_64)
 --
 -- Host: localhost    Database: grr
 -- ------------------------------------------------------
--- Server version 5.6.10
+-- Server version	5.6.10
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -337,4 +377,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2013-05-02  1:07:16
+-- Dump completed on 2013-05-06 20:25:31

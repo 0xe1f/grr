@@ -37,12 +37,12 @@ abstract class Router
   {
     $appRoot = realpath(dirname(dirname(__FILE__)));
 
-    return "$appRoot/controllers/{$controllerId}Controller.php";
+    return "$appRoot/controllers/".ucwords($controllerId)."Controller.php";
   }
 
   private function getControllerClass($controllerId)
   {
-    return "{$controllerId}Controller";
+    return ucwords($controllerId)."Controller";
   }
 
   private function do404()
@@ -87,7 +87,7 @@ abstract class Router
     $controllerPath = $this->getControllerPath($controllerId);
     $controllerClass = $this->getControllerClass($controllerId);
 
-    @include($controllerPath);
+    include($controllerPath);
 
     $controller = @new $controllerClass();
     if (!($controller instanceof Controller))

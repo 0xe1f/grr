@@ -18,29 +18,30 @@
 <?
     }
 ?>
-      <form action="<?= $this->url("login", array("newAccount" => ($this->openIdIdentity) ? "openId" : "local")) ?>" method="post">
+      <form action="<?= $this->url("newUser") ?>" method="post">
+        <input type="hidden" name="newUserAuthMode" value="<?= $this->authMode ?>" />
 <?
     if ($this->welcomeToken)
     {
 ?>
-        <input type="hidden" name="createToken" value="<?= h($this->welcomeToken) ?>" />
+        <input type="hidden" name="welcomeToken" value="<?= h($this->welcomeToken) ?>" />
 <?
     }
 
-    if ($this->openIdIdentity)
+    if ($this->authMode == "openId")
     {
 ?>
-        <input type="hidden" name="oid" value="<?= h($this->openIdIdentity) ?>" />
-        <input type="hidden" name="v" value="<?= h($this->computedOpenIdHash) ?>" />
+        <input type="hidden" name="openId" value="<?= h($this->openIdIdentity) ?>" />
+        <input type="hidden" name="v" value="<?= h($this->openIdHash) ?>" />
 <?
     }
 ?>
         <span class="directions"><?= l("Username:") ?></span>
-        <input type="text" name="username" value="<?= h($_POST["username"]) ?>" />
+        <input type="text" name="username" value="<?= h($this->username) ?>" />
         <span class="directions"><?= l("Email Address:") ?></span>
         <input type="text" name="emailAddress" value="<?= h($this->emailAddress) ?>" />
 <?
-    if (!$this->openIdIdentity)
+    if ($this->authMode == "local")
     {
 ?>
         <span class="directions"><?= l("Password:") ?></span>
@@ -50,7 +51,7 @@
 <?
     }
 ?>
-        <input type="submit" value="<?= l("Create new account") ?>" />
+        <input type="submit" value="<?= l("Create account") ?>" />
       </form>
     </div>
     <div id="footer">

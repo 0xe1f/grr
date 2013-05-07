@@ -37,6 +37,7 @@ class Grr extends Router
     $this->addRoute('feed', 'FeedController');
     $this->addRoute('import', 'ImportController');
     $this->addRoute('login', 'LoginController');
+    $this->addRoute('newUser', 'NewUserController');
     $this->addRoute('paging', 'PagingController');
     $this->addRoute('reader', 'ReaderController', true);
   }

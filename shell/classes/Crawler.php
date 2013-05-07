@@ -28,6 +28,7 @@ class Crawler
 {
   private $db;
   private $started;
+  private $stageId;
   private $inserted;
   private $updated;
   private $personalized;
@@ -49,7 +50,7 @@ class Crawler
                                      last_built,
                                      last_updated,
                                      next_update,
-                                     staged)
+                                     stage_id)
                 VALUES (?,?,?,?,?,FROM_UNIXTIME(?),UTC_TIMESTAMP(),FROM_UNIXTIME(?),?)
                                      ");
 
@@ -61,7 +62,7 @@ class Crawler
       $feed->getSummary(),
       $feed->getLastBuildDate(),
       $feed->getNextUpdate($lastUpdated),
-      $this->started);
+      $this->stageId);
 
     if (!$stageFeedStatement->execute())
     {
@@ -82,7 +83,7 @@ class Crawler
                                         content,
                                         published,
                                         crawled,
-                                        staged)
+                                        stage_id)
                 VALUES (?,?,?,?,?,?,?,FROM_UNIXTIME(?),FROM_UNIXTIME(?),?)
                                      ");
 
@@ -96,7 +97,7 @@ class Crawler
       $articleText,
       $articlePublished,
       $this->started,
-      $this->started);
+      $this->stageId);
 
     foreach ($feed->articles as $article)
     {
@@ -126,11 +127,11 @@ class Crawler
 
     $stmt = $this->db->prepare("
                     DELETE 
-                      FROM staged_articles
-                     WHERE staged = ?
+                      FROM stages
+                     WHERE id = ?
                                ");
 
-    $stmt->bind_param('i', $this->started);
+    $stmt->bind_param('i', $this->stageId);
 
     if (!$stmt->execute())
     {
@@ -157,10 +158,10 @@ class Crawler
                       f.last_built = sf.last_built,
                       f.last_updated = sf.last_updated,
                       f.next_update = sf.next_update
-                WHERE staged = ?
+                WHERE stage_id = ?
                                       ");
 
-    $updateFeeds->bind_param('i', $this->started);
+    $updateFeeds->bind_param('i', $this->stageId);
 
     if (!$updateFeeds->execute())
     {
@@ -172,6 +173,26 @@ class Crawler
     }
 
     $updateFeeds->close();
+
+    // Update links
+
+    $stmt = $this->db->prepare("
+          INSERT INTO feed_links (feed_id, url, url_hash)
+               SELECT f.id,
+                      f.html_url,
+                      sha1(f.html_url)
+                 FROM feeds f 
+           INNER JOIN staged_feeds sf ON sf.feed_hash = f.feed_hash
+            LEFT JOIN feed_links fl ON fl.feed_id = f.id AND fl.url = f.html_url
+                WHERE stage_id = ? AND fl.id IS NULL
+                               ");
+
+    $stmt->bind_param('i', $this->stageId);
+
+    if (!$stmt->execute())
+      echo "Error updating links: {$this->db->error}\n";
+
+    $stmt->close();
 
     // Update modified articles
 
@@ -186,10 +207,10 @@ class Crawler
                       a.published = sa.published,
                       a.crawled = sa.crawled
                 WHERE sa.published != a.published
-                      AND staged = ?
+                      AND stage_id = ?
                                           ");
 
-    $updateStatement->bind_param('i', $this->started);
+    $updateStatement->bind_param('i', $this->stageId);
 
     if (!$updateStatement->execute())
     {
@@ -226,10 +247,10 @@ class Crawler
                     FROM staged_articles sa
                LEFT JOIN articles a ON a.feed_id = sa.feed_id AND a.guid = sa.guid
                    WHERE a.id IS NULL
-                         AND staged = ?
+                         AND stage_id = ?
                                           ");
 
-    $insertStatement->bind_param('i', $this->started);
+    $insertStatement->bind_param('i', $this->stageId);
 
     if (!$insertStatement->execute())
     {
@@ -277,6 +298,9 @@ class Crawler
     $parser = FeedParser::create($feedUrl);
     $this->secondsSpentDownloading += (microtime(true) - $now);
 
+    if (!$parser)   
+      throw new Exception("Could not determine type of feed from content");
+    
     $now = microtime(true);
 
     echo "  (-) parsing (".get_class($parser).") ... ";
@@ -292,13 +316,18 @@ class Crawler
 
   public function crawl()
   {
+    // Initialize crawler
+
     $this->started = time();
+    $this->stageId = false;
     $this->secondsSpentDownloading = 0;
     $this->secondsSpentParsing = 0;
     $this->secondsSpentStaging = 0;
     $this->secondsSpentWriting = 0;
 
     date_default_timezone_set(TIMEZONE);
+
+    // Initialize DB
 
     $this->db = new mysqli(MYSQL_HOSTNAME, MYSQL_USERNAME, MYSQL_PASSWORD, MYSQL_DATABASE);
     if ($this->db->connect_error)
@@ -309,6 +338,23 @@ class Crawler
 
     if (!$this->db->query("SET time_zone = '+0:00'"))
       die('Connection error: '.mysqli_connect_error());
+
+    // Initialize staging
+
+    $stmt = $this->db->prepare("
+        INSERT INTO stages(user_id, started)
+             VALUES (NULL, FROM_UNIXTIME(?))
+                               ");
+
+    $stmt->bind_param('i', $this->started);
+
+    if ($stmt->execute())
+      $this->stageId = $this->db->insert_id;
+
+    $stmt->close();
+
+    if (!$this->stageId)
+      die("Unable to initiate staging: $this->db->error");
 
     $query = "
      SELECT id,

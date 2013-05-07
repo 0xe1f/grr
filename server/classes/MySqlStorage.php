@@ -63,10 +63,10 @@ class MySqlStorage extends Storage
     return $unread;
   }
 
-  private function stageFeedImportLevel($userId, $feeds, $selection, $importStarted)
+  private function stageFeedImportLevel($userId, $feeds, $selection, $stageId)
   {
     $stmt = $this->db->prepare("
-        INSERT INTO staged_feeds(user_id, feed_hash, feed_url, html_url, title, last_updated, staged)
+        INSERT INTO staged_feeds(user_id, feed_hash, feed_url, html_url, title, last_updated, stage_id)
              VALUES (?, ?, ?, ?, ?, UTC_TIMESTAMP(), ?)
                          ");
 
@@ -75,7 +75,7 @@ class MySqlStorage extends Storage
                                 $feedUrl,
                                 $htmlUrl,
                                 $feedTitle,
-                                $importStarted);
+                                $stageId);
 
     // TODO: should there be an upper bound on the number of feeds in a group?
     //       probably.
@@ -103,7 +103,7 @@ class MySqlStorage extends Storage
       
       if (isset($feed["children"]))
       {
-        if (!$this->stageFeedImportLevel($userId, $feed["children"], $selection, $importStarted))
+        if (!$this->stageFeedImportLevel($userId, $feed["children"], $selection, $stageId))
         {
           $success = false;
           break;
@@ -478,17 +478,16 @@ class MySqlStorage extends Storage
 
   public function importFeed($userId, $feed)
   {
-    // FIXME: 
+    // Initiate staging
 
-    // There is a small possibility that the crawler might interfere with 
-    // this process (e.g. by committing data staged by the web app) 
-    // if the staging takes place at the exact moment as the feed import.
-    // See usage of $importStarted
+    $stageId = $this->beginStaging($userId);
+    if (!$stageId)
+      return false;
 
     // Stage the feed
 
     $stmt = $this->db->prepare("
-        INSERT INTO staged_feeds(user_id, feed_hash, feed_url, html_url, title, last_updated, staged)
+        INSERT INTO staged_feeds(user_id, feed_hash, feed_url, html_url, title, last_updated, stage_id)
              VALUES (?, ?, ?, ?, ?, FROM_UNIXTIME(?), ?)
                          ");
 
@@ -498,7 +497,7 @@ class MySqlStorage extends Storage
                                  $htmlUrl,
                                  $feedTitle,
                                  $crawled,
-                                 $importStarted);
+                                 $stageId);
 
     $feedId = false;
     $success = true;
@@ -508,7 +507,6 @@ class MySqlStorage extends Storage
     $htmlUrl = $feed->link;
     $feedTitle = $feed->title;
     $crawled = time();
-    $importStarted = round(microtime(true) * 1000);
 
     $success = $stmt->execute();
 
@@ -530,10 +528,10 @@ class MySqlStorage extends Storage
             LEFT JOIN feeds f ON f.feed_hash = sf.feed_hash
                 WHERE f.id IS NULL 
                       AND sf.user_id = ? 
-                      AND sf.staged = ?
+                      AND sf.stage_id = ?
                                  ");
 
-      $stmt->bind_param('ii', $userId, $importStarted);
+      $stmt->bind_param('ii', $userId, $stageId);
 
       if ($stmt->execute())
       {
@@ -558,7 +556,7 @@ class MySqlStorage extends Storage
                                             content,
                                             published,
                                             crawled,
-                                            staged)
+                                            stage_id)
                     VALUES (?,?,?,?,?,?,?,FROM_UNIXTIME(?),FROM_UNIXTIME(?),?)
                                    ");
 
@@ -572,7 +570,7 @@ class MySqlStorage extends Storage
           $articleText,
           $articlePublished,
           $crawled,
-          $importStarted);
+          $stageId);
 
         foreach ($feed->articles as $article)
         {
@@ -615,12 +613,12 @@ class MySqlStorage extends Storage
                    LEFT JOIN articles a ON a.feed_id = sa.feed_id 
                              AND a.guid = sa.guid
                        WHERE a.id IS NULL
-                             AND staged = ?
+                             AND stage_id = ?
                                    ");
 
         // It's fine if unstaging fails - the crawler should catch it later
 
-        $stmt->bind_param('i', $importStarted);
+        $stmt->bind_param('i', $stageId);
         $stmt->execute();
 
         $stmt->close();
@@ -652,7 +650,9 @@ class MySqlStorage extends Storage
 
   public function importFeeds($userId, $feeds, $selection)
   {
-    $importStarted = time();
+    $stageId = $this->beginStaging($userId);
+    if (!$stageId)
+      return false;
 
     $userFeedRoot = $this->getUserFeedRoot($userId);
     if ($userFeedRoot === false)
@@ -662,7 +662,7 @@ class MySqlStorage extends Storage
 
     // Add to staging table
 
-    if (!$this->stageFeedImportLevel($userId, $feeds, $selection, $importStarted))
+    if (!$this->stageFeedImportLevel($userId, $feeds, $selection, $stageId))
     {
       $this->db->rollback();
       $this->db->autocommit(true);
@@ -684,10 +684,10 @@ class MySqlStorage extends Storage
           LEFT JOIN feeds f ON f.feed_hash = sf.feed_hash
               WHERE f.id IS NULL 
                     AND sf.user_id = ? 
-                    AND sf.staged = ?
+                    AND sf.stage_id = ?
                          ");
 
-    $stmt->bind_param('ii', $userId, $importStarted);
+    $stmt->bind_param('ii', $userId, $stageId);
 
     $success = $stmt->execute();
 
@@ -803,6 +803,45 @@ class MySqlStorage extends Storage
     return $feed;
   }
 
+  public function findFeedFromLinks($url)
+  {
+    $stmt = $this->db->prepare("
+             SELECT f.id,
+                    f.title,
+                    f.feed_url,
+                    f.html_url
+               FROM feed_links fl
+         INNER JOIN feeds f ON f.id = fl.feed_id
+               WHERE url_hash = ? AND url = ?
+                         ");
+
+    $stmt->bind_param('ss', $urlHash, $url);
+
+    $url = trim($url);
+    $urlHash = sha1($url);
+
+    $matches = array();
+
+    if ($stmt->execute())
+    {
+      $stmt->bind_result($feedId, $feedTitle, $feedUrl, $feedLink);
+
+      while ($stmt->fetch())
+      {
+        $feed = new Feed();
+
+        $feed->url = $feedUrl;
+        $feed->link = $feedLink;
+        $feed->title = $feedTitle;
+        $feed->id = $feedId;
+
+        $matches[] = $feed;
+      }
+    }
+
+    return $matches;
+  }
+
   public function getFeedId($feedOrHomeUrl)
   {
     $feed = $this->getFeed($feedOrHomeUrl);
@@ -884,6 +923,36 @@ class MySqlStorage extends Storage
 
       $success = $stmt->execute();
     }
+
+    return $success;
+  }
+
+  public function addLinks($feedId, $links)
+  {
+    $success = true;
+
+    $stmt = $this->db->prepare("
+        INSERT INTO feed_links (feed_id, url, url_hash)
+             SELECT f.id,
+                    ?,
+                    ?
+               FROM feeds f
+          LEFT JOIN feed_links fl ON fl.feed_id = f.id AND fl.url_hash = ?
+              WHERE f.id = ? AND fl.id IS NULL
+                               ");
+
+    $stmt->bind_param('sssi', $url, $urlHash, $urlHash, $feedId);
+
+    foreach ($links as $link)
+    {
+      $url = $link;
+      $urlHash = sha1($url);
+
+      if (!$stmt->execute())
+        $success = false;
+    }
+
+    $stmt->close();
 
     return $success;
   }
@@ -1650,5 +1719,28 @@ class MySqlStorage extends Storage
 
     return $result;
   }  
+
+  // Etc
+
+  public function beginStaging($userId)
+  {
+    $stageId = false;
+
+    $stmt = $this->db->prepare("
+        INSERT INTO stages(user_id, started)
+             VALUES (?, FROM_UNIXTIME(?))
+                               ");
+
+    $stmt->bind_param('ii', $userId, $started);
+
+    $started = time();
+
+    if ($stmt->execute())
+      $stageId = $this->db->insert_id;
+
+    $stmt->close();
+
+    return $stageId;
+  }
 }
 ?>

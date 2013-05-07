@@ -40,7 +40,6 @@ class LoginController extends Controller
   {
     $this->addGetRoute(array("logInWith"), "logInRoute");
     $this->addGetRoute(array("logout"), "logOutRoute");
-    $this->addGetRoute(array("newAccount"), "newAccountRoute");
     $this->addGetRoute(array("newAdminAccount"), "newAdminRoute");
     $this->addGetRoute(array("logIn"), "localLoginRoute", "default");
   }
@@ -65,7 +64,7 @@ class LoginController extends Controller
 
     if ($authUrl)
     {
-      $this->openId->optional = array('contact/email');
+      $this->openId->required = array('contact/email');
       $this->openId->identity = $authUrl;
 
       $this->redirectToUrl($this->openId->authUrl());
@@ -120,127 +119,6 @@ class LoginController extends Controller
 
     $this->unsetUser();
     $this->redirectTo("login");
-  }
-
-  function newAccountRoute($type)
-  {
-    $this->welcomeToken = $_POST["createToken"];
-    $this->openIdIdentity = null;
-    $this->errorMessage = null;
-    $this->emailAddress = $_POST["emailAddress"];
-
-    $username = $_POST["username"];
-
-    $hashedPassword = null;
-
-    if ($type == "local")
-    {
-      if (count($_POST) < 1)
-      {
-        $this->welcomeToken = $_GET["createToken"];
-        return;
-      }
-    }
-    else if ($type == "openId")
-    {
-      $this->openIdIdentity = $_POST["oid"];
-      $this->computedOpenIdHash = $this->saltAndHashOpenId($this->openIdIdentity);
-
-      $receivedOpenIdHash = $_POST["v"];
-
-      if ($this->computedOpenIdHash != $receivedOpenIdHash)
-      {
-        $this->errorMessage = l("Could not log in - try again");
-        return;
-      }
-    }
-    else
-    {
-      $this->errorMessage = l("Cannot create account - try again");
-      $this->setTemplate("default");
-
-      return;
-    }
-
-    if (!preg_match('/^\\w+$/', $username))
-    {
-      $this->errorMessage = l("Enter a valid username");
-      return;
-    }
-    else if (strlen($this->openIdIdentity) >= 512)
-    {
-      $this->errorMessage = l("Cannot create account with this OpenId");
-      return;
-    }
-    else if (!$this->isValidEmailAddress($this->emailAddress))
-    {
-      $this->errorMessage = l("Enter a valid email address");
-      return;
-    }
-
-    if ($type == "local")
-    {
-      $password = $_POST["password"];
-      $confirmPassword = $_POST["confirmPassword"];
-
-      // Verify password length
-
-      if (!$password || strlen(trim($password)) < SHORTEST_PASSWORD_LENGTH)
-      {
-        $this->errorMessage = l("Passwords should be at least %s characters long", SHORTEST_PASSWORD_LENGTH);
-        return;
-      }
-
-      // Check if passwords match
-
-      if ($password != $confirmPassword)
-      {
-        $this->errorMessage = l("Passwords don't match");
-        return;
-      }
-
-      // Generate a password
-
-      $hashedPassword = $this->getHasher()->HashPassword($password);
-      if (strlen($hashedPassword) < 20)
-      {
-        $this->errorMessage = l("Cannot create account. Try again later");
-        return;
-      }
-    }
-
-    $storage = Storage::getInstance();
-    $tokenId = null;
-
-    if (!CREATE_UNKNOWN_ACCOUNTS)
-    {
-      // Account creation is disabled - is there a token?
-
-      if (!$this->welcomeToken || ($token = $storage->getWelcomeToken($this->welcomeToken)) === false)
-      {
-        // Missing or unknown token 
-
-        $this->errorMessage = l("Account creation offer is expired or invalid");
-        return;
-      }
-
-      $tokenId = $token["id"];
-    }
-
-    $roleId = $storage->getRoleId(ROLE_USER);
-    if ($roleId === false)
-    {
-      $this->errorMessage = l("Cannot create account. Try again later");
-      return;
-    }
-
-    if (($user = $storage->createUser($username, $hashedPassword, $this->openIdIdentity, $this->emailAddress, $tokenId, $roleId)) === false)
-    {
-      $this->errorMessage = l("Username or email address already taken. Try again");
-      return;
-    }
-
-    $this->authorizeUser($user);
   }
 
   function newAdminRoute()
@@ -319,55 +197,33 @@ class LoginController extends Controller
       return;
     }
 
-    $this->openIdIdentity = $this->openId->identity;
-    $this->computedOpenIdHash = $this->saltAndHashOpenId($this->openIdIdentity);
+    $openIdIdentity = $this->openId->identity;
     $this->errorMessage = null;
 
     // User has signed in via openID
 
     $storage = Storage::getInstance();
-
-    if (($user = $storage->findUserWithOpenId($this->openIdIdentity)) !== false)
+    if (($user = $storage->findUserWithOpenId($openIdIdentity)) === false)
     {
-      // Already a member
-      $this->authorizeUser($user);
+      // Unknown user. Redirect to account creation controller
+
+      $openIdAttrs = $this->openId->getAttributes();
+      $emailAddress = $openIdAttrs["contact/email"];
+      $welcomeToken = $_GET["createToken"];
+
+      $openIdHash = $this->saltAndHashOpenId($openIdIdentity);
+
+      $this->redirectTo("newUser", array(
+        "welcomeToken" => $welcomeToken,
+        "emailAddress" => $emailAddress,
+        "openId"       => $openIdIdentity,
+        "v"            => $openIdHash));
+
       return;
     }
 
-    // Unknown user. Is a welcome token available?
-
-    $this->welcomeToken = $_GET["createToken"];
-
-    $openIdAttrs = $this->openId->getAttributes();
-    $this->emailAddress = $openIdAttrs["contact/email"];
-
-    $userCount = $storage->getUserCount();
-    if ($userCount !== false && $userCount < 1)
-    {
-      // No users in the database yet
-      $this->setTemplate("newAdmin");
-      return;
-    }
-
-    if (!CREATE_UNKNOWN_ACCOUNTS)
-    {
-      // Account creation is disabled - is there a token?
-
-      if (!$this->welcomeToken || ($token = $storage->getWelcomeToken($this->welcomeToken)) === false)
-      {
-        // Missing or unknown token 
-
-        $this->errorMessage = l("There are no users registered under that account");
-        $this->setTemplate("default");
-
-        return;
-      }
-
-      if (!$this->emailAddress)
-        $this->emailAddress = $token["emailAddress"];
-    }
-
-    $this->setTemplate("newAccount");
+    // Already a member
+    $this->authorizeUser($user);
   }
 
   protected function route()

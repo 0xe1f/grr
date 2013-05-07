@@ -31,12 +31,24 @@ abstract class FeedParser
   protected $url;
   protected $document;
   protected $xml;
+  protected $links;
 
-  public static function create($url, $recursions = 0)
+  public function __construct()
+  {
+    $this->links = array();
+  }
+
+  public function getLinks()
+  {
+    return $this->links;
+  }
+
+  public static function create($url, $followHtml = false, $recursions = 0)
   {
     if ($recursions > 2)
       throw new Exception("Download error", FeedParser::ERROR_TOO_MANY_REDIRECTS);
 
+    $originalUrl = $url;
     $document = FeedParser::fetchDocument($url);
     if (!$document)
       throw new Exception("Document is empty", FeedParser::ERROR_EMPTY_DOCUMENT);
@@ -45,6 +57,7 @@ abstract class FeedParser
 
     $xmlDocument = null;
     $parser = null;
+    $links = array();
 
     libxml_use_internal_errors(true);
 
@@ -85,15 +98,24 @@ abstract class FeedParser
       }
     }
 
-    if ($xmlDocument === null)
+    if ($xmlDocument === null && $followHtml)
     {
       // Not sure if this is ideal, but let's just blindly assume
       // this is an HTML document and try to parse any rel=alternate
       // links
 
-      $links = FeedParser::getLinks($url, $document);
+      $links = FeedParser::extractLinks($url, $document);
       if (count($links) > 0) // Success? Let's hope so.
-        return FeedParser::create($links[0]->url, $recursions + 1);
+      {
+        if ($parser = FeedParser::create($links[0]->url, $followHtml, $recursions + 1))
+        {
+          $parser->links[] = $url;
+          if ($url != $originalUrl)
+            $parser->links[] = $originalUrl;
+        }
+
+        return $parser;
+      }
     }
 
     if ($xmlDocument)
@@ -106,20 +128,29 @@ abstract class FeedParser
         $parser = new AtomParser();
       else if ($rootName == 'rss' || $rootName == 'RDF')
         $parser = new RssParser();
-      else if (strcasecmp($rootName, 'html') === 0)
+      else if ($followHtml && strcasecmp($rootName, 'html') === 0)
       {
         // HTML document. See if we can find a feed by parsing the HTML
-        $links = FeedParser::getLinks($url, $document);
+        $links = FeedParser::extractLinks($url, $document);
         if (count($links) > 0)
-          return FeedParser::create($url, $recursions + 1);
-      }
+        {
+          if ($parser = FeedParser::create($url, $followHtml, $recursions + 1))
+          {
+            $parser->links[] = $url;
+            if ($url != $originalUrl)
+              $parser->links[] = $originalUrl;
+          }
 
-      if ($parser)
-      {
-        $parser->url = $url;
-        $parser->document = $document;
-        $parser->xml = $xmlDocument;
+          return $parser;
+        }
       }
+    }
+
+    if ($parser)
+    {
+      $parser->url = $url;
+      $parser->document = $document;
+      $parser->xml = $xmlDocument;
     }
 
     return $parser;
@@ -179,7 +210,7 @@ abstract class FeedParser
     return $content;
   }
 
-  private static function getLinks($sourceUrl, $html)
+  private static function extractLinks($sourceUrl, $html)
   {
     $links = array();
 

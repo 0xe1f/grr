@@ -29,7 +29,7 @@
     if (CREATE_UNKNOWN_ACCOUNTS)
     {
 ?>
-        <span class="directions"><a href="<?= $this->url("login", array("newAccount" => "local")) ?>">Create a new account</a></span>
+        <span class="directions"><a href="<?= $this->url("newUser") ?>">Create a new account</a></span>
 <?
     }
     else if ($this->createToken)

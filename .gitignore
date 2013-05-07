@@ -1,3 +1,4 @@
 server/include/config.php
 shell/config.php
 .DS_Store
+etc/dump.sh

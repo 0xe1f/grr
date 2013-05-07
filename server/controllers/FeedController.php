@@ -88,6 +88,13 @@ class FeedController extends JsonController
     $storage = Storage::getInstance();
     $feed = $storage->getFeed($feedUrl);
 
+    if (!$feed) // Try the list of links
+    {
+      $matches = $storage->findFeedFromLinks($feedUrl);
+      if (count($matches) > 0)
+        $feed = $matches[0]; // TODO: allow selection if > 1
+    }
+
     if (!$feed)
     {
       // Not in the system. Fetch it from www
@@ -101,7 +108,7 @@ class FeedController extends JsonController
 
       try
       {
-        $parser = FeedParser::create($feedUrl);
+        $parser = FeedParser::create($feedUrl, true);
       }
       catch(Exception $e)
       {
@@ -125,6 +132,14 @@ class FeedController extends JsonController
       $feed->id = $storage->importFeed($this->user->id, $feed);
       if ($feed->id === false)
         throw new JsonError(l("An error occurred while adding feed"));
+
+      // Import any links
+
+      $links = $parser->getLinks();
+      if (!in_array($feed->link, $links))
+        $links[] = $feed->link;
+
+      $storage->addLinks($feed->id, $links);
     }
 
     // Subscribe to feed
