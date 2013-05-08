@@ -28,6 +28,11 @@ class ArticleController extends JsonController
 {
   function initRoutes()
   {
+    // Paging
+    $this->addGetRoute(array("fetch", "filter", "continue"), "fetchPageRoute");
+    $this->addGetRoute(array("fetch", "filter"), "fetchPageRoute");
+
+    // Modification
     $this->addPostRoute(array("toggleStatusOf", "isUnread", "isStarred", "isLiked"), "toggleArticleStatusRoute");
     $this->addPostRoute(array("toggleUnreadUnder", "isUnread", "filter"), "toggleAllUnreadRoute");
     $this->addPostRoute(array("setTagsFor", "tags"), "setTagRoute");
@@ -105,6 +110,23 @@ class ArticleController extends JsonController
     return array(
       "unreadCounts" => $this->flattenFeedTree($affectedFeeds),
     );
+  }
+
+  function fetchPageRoute($subscriptionId, $filter, $continueAfterId = null)
+  {
+    $storage = Storage::getInstance();
+
+    $articles = $storage->getArticlePage($this->user->id, 
+      $subscriptionId, $filter, PAGE_SIZE, $continueAfterId);
+
+    $response = array("entries"  => $articles);
+    if (count($articles) >= PAGE_SIZE)
+    {
+      $last = end($articles);
+      $response["continue"] = $last["id"];
+    }
+
+    return $response;
   }
 }
 

@@ -22,35 +22,31 @@
  ******************************************************************************
  */
 
-require("classes/Controller.php");
+require("GatewayController.php");
 
 require("include/openid.php");
 require("include/PasswordHash.php");
 
-class LoginController extends Controller
+class LoginController extends GatewayController
 {
   private $openId;
-
-  function mustBeAuthorized()
-  {
-    return false;
-  }
 
   function initRoutes()
   {
     $this->addGetRoute(array("logInWith"), "logInRoute");
     $this->addGetRoute(array("logout"), "logOutRoute");
-    $this->addGetRoute(array("newAdminAccount"), "newAdminRoute");
     $this->addGetRoute(array("logIn"), "localLoginRoute", "default");
   }
 
   function defaultRoute()
   {
     if (isset($_GET["createToken"]))
-      $this->createToken = $_GET["createToken"];
+      $this->welcomeToken = $_GET["createToken"];
 
     if ($this->isAuthenticated())
       $this->redirectTo("reader");
+
+    $this->canCreateAccounts = CREATE_UNKNOWN_ACCOUNTS || $this->missingAdminAccounts() || $this->welcomeToken;
   }
 
   function logInRoute($provider)
@@ -73,32 +69,32 @@ class LoginController extends Controller
 
   function localLoginRoute()
   {
-    $username = $_POST["username"];
+    $this->username = $_POST["username"];
     $password = $_POST["password"];
 
     $this->errorMessage = null;
 
-    if (strlen($username) < 1)
+    if (strlen(trim($this->username)) < 1)
     {
       $this->errorMessage = l("Enter a valid username");
       return;
     }
-    else if (!preg_match('/^\\w+$/', $password))
+    else if (strlen($password) < 1)
     {
-      $this->errorMessage = l("Enter a valid username");
+      $this->errorMessage = l("Enter a valid password");
       return;
     }
 
     if ($this->shouldThrottleLogin())
     {
-      $this->errorMessage = l("Enter a valid username");
+      $this->errorMessage = l("Too many unsuccessful attempts. Try again in a short while");
       return;
     }
 
     if (!$this->errorMessage)
     {
       $storage = Storage::getInstance();
-      $user = $storage->findUserWithUsername($username, $hash);
+      $user = $storage->findUserWithUsername($this->username, $hash);
 
       if ($user === false || !$this->getHasher()->CheckPassword($password, $hash))
       {
@@ -117,76 +113,11 @@ class LoginController extends Controller
     setcookie(COOKIE_AUTH, "", time() - 3600);
     setcookie(COOKIE_VAUTH, "", time() - 3600);
 
-    $this->unsetUser();
-    $this->redirectTo("login");
-  }
-
-  function newAdminRoute()
-  {
-    $this->openIdIdentity = $_POST["oid"];
-    $this->computedOpenIdHash = $this->saltAndHashOpenId($this->openIdIdentity);
-    $this->errorMessage = null;
-
-    $tokenHash = $_POST["createToken"];
-    $username = $_POST["username"];
-    $emailAddress = $_POST["emailAddress"];
-
-    $receivedOpenIdHash = $_POST["v"];
-
-    if ($this->computedOpenIdHash != $receivedOpenIdHash)
-    {
-      $this->errorMessage = l("Could not log in - try again");
-      return;
-    }
-    else if (!preg_match('/^\\w+$/', $username))
-    {
-      $this->errorMessage = l("Enter a valid username");
-      return;
-    }
-    else if (strlen($this->openIdIdentity) >= 512)
-    {
-      $this->errorMessage = l("Cannot create account with this OpenId");
-      return;
-    }
-    else if (!$this->isValidEmailAddress($emailAddress))
-    {
-      $this->errorMessage = l("Enter a valid email address");
-      return;
-    }
-    else if (ADMIN_SECRET === null || trim($tokenHash) !== ADMIN_SECRET)
-    {
-      $this->errorMessage = l("ADMIN_SECRET is incorrect. Try again");
-      return;
-    }
-
     $storage = Storage::getInstance();
+    $storage->voidSession($this->user->id, $this->user->sessionId);
 
-    $userCount = $storage->getUserCount();
-    if ($userCount === false)
-    {
-      $this->errorMessage = l("Cannot verify number of users");
-      return;
-    }
-    else if ($userCount > 0)
-    {
-      $this->redirectTo("login");
-      return;
-    }
-
-    $roleId = $storage->getRoleId(ROLE_ADMIN);
-    if ($roleId === false)
-    {
-      $this->errorMessage = l("Cannot create account. Try again later");
-      return;
-    }
-
-    if (($user = $storage->createUser($username, null, $this->openIdIdentity, $emailAddress, null, $roleId)) === false)
-    {
-      $this->errorMessage = l("Cannot create account at the moment");
-      return;
-    }
-
-    $this->authorizeUser($user);
+    $this->user = null;
+    $this->redirectTo("login");
   }
 
   function openIdModeRoute($mode)
@@ -209,7 +140,7 @@ class LoginController extends Controller
 
       $openIdAttrs = $this->openId->getAttributes();
       $emailAddress = $openIdAttrs["contact/email"];
-      $welcomeToken = $_GET["createToken"];
+      $welcomeToken = $_GET["welcomeToken"];
 
       $openIdHash = $this->saltAndHashOpenId($openIdIdentity);
 
@@ -234,35 +165,6 @@ class LoginController extends Controller
       $this->openIdModeRoute($this->openId->mode);
     else
       parent::route();
-  }
-
-  private function saltAndHashOpenId($openId)
-  {
-    return hash('sha256', hash('sha256', 
-      sprintf("%s,%s", SALT_VOPENID, $openId)));
-  }
-
-  private function authorizeUser($user)
-  {
-    $hash = hash('sha256', hash('sha256', sprintf("%s,%s,%s,%s", 
-      SALT_SESSION, $user->id, mt_rand(), time())));
-
-    $storage = Storage::getInstance();
-    $sessionId = $storage->createSession($user->id, $hash, $_SERVER["REMOTE_ADDR"]);
-
-    if ($sessionId !== false)
-    {
-      // Verification hash
-      $vhash = hash('md5', hash('md5', sprintf("%s,%s,%s",
-        SALT_VHASH, $user->username, $sessionId)));
-
-      setcookie(COOKIE_AUTH, $hash, time() + SESSION_DURATION);
-      setcookie(COOKIE_VAUTH, $vhash, time() + SESSION_DURATION);
-
-      $this->redirectTo("reader");
-    }
-
-    return $sessionId;
   }
 
   private function shouldThrottleLogin()

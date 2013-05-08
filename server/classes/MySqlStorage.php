@@ -24,6 +24,9 @@
 
 class MySqlStorage extends Storage
 {
+  // FIXME: there are no unique constraints on users(open_id_identity)
+  // This would make it possible to add two accounts with the same openId
+  
   private $db;
 
   public function __construct()
@@ -315,7 +318,7 @@ class MySqlStorage extends Storage
     }
 
     $feeds["id"] = $rootId;
-    $feeds["source"] = l("All Items");
+    $feeds["source"] = l("Subscriptions");
     $feeds["type"] = "root";
 
     if ($matchingFeed != null && $restrictToFolderId != $rootId)
@@ -1020,10 +1023,10 @@ class MySqlStorage extends Storage
 
       if ($stmt->fetch())
       {
-        $token = array(
-          "id"           => $tokenId,
-          "emailAddress" => $emailAddress,
-        );
+        $token = new stdClass();
+
+        $token->id = $tokenId;
+        $token->emailAddress = $emailAddress;
       }
     }
 
@@ -1201,7 +1204,7 @@ class MySqlStorage extends Storage
     return $user;
   }
 
-  public function getUserCount()
+  public function getAdminCount()
   {
     $stmt = $this->db->prepare("
              SELECT COUNT(*) user_count
@@ -1241,8 +1244,8 @@ class MySqlStorage extends Storage
                FROM sessions s
          INNER JOIN users u ON s.user_id = u.id
          INNER JOIN roles r ON r.id = u.role_id
-              WHERE hash = ?
-                         ");
+              WHERE hash = ? AND voided IS NULL
+                               ");
 
     $stmt->bind_param('s', $sessionHash);
 
@@ -1438,13 +1441,14 @@ class MySqlStorage extends Storage
     // Create session
 
     $sessionId = false;
+    $now = time();
     
     $stmt = $this->db->prepare("
         INSERT INTO sessions (user_id, hash, source_ip, created)
-             VALUES (?, ?, ?, UTC_TIMESTAMP())
-                         ");
+             VALUES (?, ?, ?, FROM_UNIXTIME(?))
+                               ");
 
-    $stmt->bind_param('iss', $userId, $hash, $remoteAddress);
+    $stmt->bind_param('issi', $userId, $hash, $remoteAddress, $now);
 
     if ($stmt->execute())
       $sessionId = $this->db->insert_id;
@@ -1452,6 +1456,25 @@ class MySqlStorage extends Storage
     $stmt->close();
 
     return $sessionId;
+  }
+
+  public function voidSession($userId, $sessionId)
+  {
+    $now = time();
+
+    $stmt = $this->db->prepare("
+        UPDATE sessions
+           SET voided = FROM_UNIXTIME(?)
+         WHERE id = ? AND user_id = ?
+                               ");
+
+    $stmt->bind_param('iii', $now, $sessionId, $userId);
+
+    $success = $stmt->execute();
+
+    $stmt->close();
+
+    return $success;
   }
 
   public function reportFailedLogin($userId, $remoteAddress)
@@ -1540,13 +1563,15 @@ class MySqlStorage extends Storage
                       ua.is_unread,
                       ua.is_starred,
                       ua.is_liked,
-                      GROUP_CONCAT(uat.tag SEPARATOR ',') tags
+                      GROUP_CONCAT(uat.tag SEPARATOR ',') tags,
+                      SUM(ua_liked.is_liked) liked_count
                  FROM user_articles ua
             LEFT JOIN user_article_tags uat ON uat.user_article_id = ua.id
            INNER JOIN articles a ON a.id = ua.article_id
            INNER JOIN feeds f ON f.id = a.feed_id
            INNER JOIN feed_folders ff ON ff.feed_id = f.id
            INNER JOIN feed_folder_trees fft ON fft.descendant_id = ff.id 
+           INNER JOIN user_articles ua_liked ON ua_liked.article_id = ua.article_id
                 WHERE fft.ancestor_id = ? 
                       AND ua.user_id = ?
                       {$filterClause}
@@ -1575,13 +1600,15 @@ class MySqlStorage extends Storage
                       ua.is_unread,
                       ua.is_starred,
                       ua.is_liked,
-                      GROUP_CONCAT(uat.tag SEPARATOR ',') tags
+                      GROUP_CONCAT(uat.tag SEPARATOR ',') tags,
+                      SUM(ua_liked.is_liked) liked_count
                  FROM user_articles ua
             LEFT JOIN user_article_tags uat ON uat.user_article_id = ua.id
            INNER JOIN articles a ON a.id = ua.article_id
            INNER JOIN feeds f ON f.id = a.feed_id
            INNER JOIN feed_folders ff ON ff.feed_id = f.id
            INNER JOIN feed_folder_trees fft ON fft.descendant_id = ff.id 
+           INNER JOIN user_articles ua_liked ON ua_liked.article_id = ua.article_id
 
            INNER JOIN (SELECT a2.published 
                          FROM user_articles ua2 
@@ -1622,27 +1649,29 @@ class MySqlStorage extends Storage
                          $isArticleUnread,
                          $isArticleStarred,
                          $isArticleLiked,
-                         $articleTags);
+                         $articleTags,
+                         $likeCount);
 
       $articles = array();
 
       while ($stmt->fetch())
       {
         $articles[] = array(
-          "id"         => $userArticleId,
-          "title"      => $articleTitle,
-          "link"       => $articleLink,
-          "author"     => $articleAuthor,
-          "summary"    => $articleSummary,
-          "content"    => $articleContent,
-          "published"  => $articlePublished,
-          "source_id"  => $feedId,
-          "source"     => $feedTitle,
-          "source_www" => $feedWwwUrl,
-          "is_unread"  => ($isArticleUnread > 0),
-          "is_starred" => ($isArticleStarred > 0),
-          "is_liked"   => ($isArticleLiked > 0),
-          "tags"       => empty($articleTags) ? array() : explode(',', $articleTags),
+          "id"          => $userArticleId,
+          "title"       => $articleTitle,
+          "link"        => $articleLink,
+          "author"      => $articleAuthor,
+          "summary"     => $articleSummary,
+          "content"     => $articleContent,
+          "published"   => $articlePublished,
+          "source_id"   => $feedId,
+          "source"      => $feedTitle,
+          "source_www"  => $feedWwwUrl,
+          "is_unread"   => ($isArticleUnread > 0),
+          "is_starred"  => ($isArticleStarred > 0),
+          "is_liked"    => ($isArticleLiked > 0),
+          "tags"        => empty($articleTags) ? array() : explode(',', $articleTags),
+          "like_count" => (int)$likeCount,
         );
       }
     }

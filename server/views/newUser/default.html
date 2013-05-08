@@ -17,42 +17,63 @@
       <div class="error"><?= h($this->errorMessage) ?></div>
 <?
     }
+
+    if ($this->canCreateAccounts)
+    {
 ?>
       <form action="<?= $this->url("newUser") ?>" method="post">
         <input type="hidden" name="newUserAuthMode" value="<?= $this->authMode ?>" />
 <?
-    if ($this->welcomeToken)
-    {
+      if ($this->welcomeToken)
+      {
 ?>
         <input type="hidden" name="welcomeToken" value="<?= h($this->welcomeToken) ?>" />
 <?
-    }
+      }
 
-    if ($this->authMode == "openId")
-    {
+      if ($this->authMode == "openId")
+      {
 ?>
         <input type="hidden" name="openId" value="<?= h($this->openIdIdentity) ?>" />
         <input type="hidden" name="v" value="<?= h($this->openIdHash) ?>" />
 <?
-    }
+      }
+
+      if ($this->newAdminMode)
+      {
+?>
+        <span class="directions"><?= l("Please check the configuration file ('config.php') on the server. Copy the 
+          value of 'ADMIN_SECRET' (without quotes) and paste it in the field below:") ?></span>
+        <input type="text" name="newAdminToken" />
+<?
+      }
 ?>
         <span class="directions"><?= l("Username:") ?></span>
         <input type="text" name="username" value="<?= h($this->username) ?>" />
         <span class="directions"><?= l("Email Address:") ?></span>
         <input type="text" name="emailAddress" value="<?= h($this->emailAddress) ?>" />
 <?
-    if ($this->authMode == "local")
-    {
+      if ($this->authMode == "local")
+      {
 ?>
         <span class="directions"><?= l("Password:") ?></span>
         <input type="password" name="password" />
         <span class="directions"><?= l("Confirm Password:") ?></span>
         <input type="password" name="confirmPassword" />
 <?
-    }
+      }
 ?>
         <input type="submit" value="<?= l("Create account") ?>" />
       </form>
+<?
+    }
+    else
+    {
+?>
+        <span class="directions"><a href="<?= $this->url("login") ?>"><?= l("Log In") ?></a></span>
+<?
+    }
+?>
     </div>
     <div id="footer">
       &copy; 2013 Akop Karapetyan | <a href="https://github.com/melllvar/grr">grr</a> is Open and Free Software licensed under GPL

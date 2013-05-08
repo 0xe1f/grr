@@ -37,7 +37,7 @@ abstract class Storage
   public abstract function addWelcomeToken($tokenHash, $emailAddress, $createdBy);
   public abstract function getAllUserAccounts();
   public abstract function findUserWithOpenId($openIdIdentity);
-  public abstract function getUserCount();
+  public abstract function getAdminCount();
   public abstract function getUserWithSessionHash($sessionHash, $receivedVHash);
   public abstract function createUser($username, $password, $openIdIdentity, $emailAddress, $welcomeTokenId, $roleId);
   public abstract function getRoleId($roleCode);
@@ -60,19 +60,6 @@ class User
   var $username;
   var $role;
   var $sessionId;
-
-  public static function getCurrent()
-  {
-    if (!isset($_COOKIE[COOKIE_AUTH]) || !isset($_COOKIE[COOKIE_VAUTH]))
-      return false;
-
-    $hash = $_COOKIE[COOKIE_AUTH];
-    $receivedVHash = $_COOKIE[COOKIE_VAUTH];
-
-    $storage = Storage::getInstance();
-
-    return $storage->getUserWithSessionHash($hash, $receivedVHash);
-  }
 
   public function isAdmin()
   {

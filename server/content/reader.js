@@ -47,6 +47,11 @@ $().ready(function()
       if ($('.entry.selected').length)
         toggleStarred($('.entry.selected'));
     })
+    .bind('keypress', 'l', function()
+    {
+      if ($('.entry.selected').length)
+        toggleLiked($('.entry.selected'));
+    })
     .bind('keypress', 'm', function()
     {
       if ($('.entry.selected').length)
@@ -171,12 +176,12 @@ $().ready(function()
   var subscribe = function(parentFolder)
   {
     if (!parentFolder)
-      parentFolder = $('.all-items').data('object');
+      parentFolder = $('.subscriptions').data('object');
 
     var feedUrl = prompt(l('Enter the feed URL'));
     if (feedUrl)
     {
-      $.post('?c=feed', 
+      $.post('?c=feeds', 
       {
         subscribeTo : feedUrl,
         createUnder : parentFolder.id,
@@ -198,7 +203,7 @@ $().ready(function()
 
   var markAllAs = function(unread)
   {
-    $.post('?c=article', 
+    $.post('?c=articles', 
     { 
       toggleUnreadUnder: getSelectedFeedId(),
       isUnread: unread,
@@ -273,6 +278,10 @@ $().ready(function()
       .text(entry.tags.length ? l('Edit tags: %s', [ entry.tags.join(', ') ]) : l('Add tags'))
       .toggleClass('has-tags', entry.tags.length > 0);
 
+    // Update 'like' count
+    entryDom.find('.action-like')
+      .text((entry.like_count < 1) ? l('Like') : l('Like (%s)', [entry.like_count]));
+
     if (entry.is_expanded)
     {
       if (content.length < 1)
@@ -329,7 +338,7 @@ $().ready(function()
     $('#feeds').empty();
 
     var allItemsDom = createFeedDom(allItems);
-    allItemsDom.addClass('all-items');
+    allItemsDom.addClass('subscriptions');
     if (allItems.feeds)
       allItemsDom.append(buildFeedDom(allItems.feeds));
 
@@ -357,7 +366,7 @@ $().ready(function()
       feedDom.find('.feed-item').toggleClass('has-unread', feed.unread > 0);
     });
 
-    var allItems = $('.all-items').data('object');
+    var allItems = $('.subscriptions').data('object');
 
     var title = '>:(';
     if (allItems.unread > 0)
@@ -384,7 +393,7 @@ $().ready(function()
 
   var refreshFeeds = function()
   {
-    $.getJSON('?c=feed', 
+    $.getJSON('?c=feeds', 
     {
     },
     function(response)
@@ -405,7 +414,7 @@ $().ready(function()
   {
     var entry = entryDom.data('object');
 
-    $.post('?c=article', $.extend({ }, 
+    $.post('?c=articles', $.extend({ }, 
     { 
       toggleStatusOf : entry.id, 
       isStarred : entry.is_starred, 
@@ -421,6 +430,11 @@ $().ready(function()
           deltaUnread--;
         else if (!entry.is_unread && response.entry.is_unread)
           deltaUnread++;
+
+        if (entry.is_liked && !response.entry.is_liked)
+          entry.like_count--;
+        else if (!entry.is_liked && response.entry.is_liked)
+          entry.like_count++;
 
         if (deltaUnread != 0)
         {
@@ -462,23 +476,24 @@ $().ready(function()
 
   var toggleStarred = function(entryDom)
   {
-    var entry = entryDom.data('object');
-
-    updateEntry(entryDom, { isStarred: !entry.is_starred });
+    updateEntry(entryDom, { isStarred: !entryDom.data('object').is_starred });
   };
 
   var toggleUnread = function(entryDom)
   {
-    var entry = entryDom.data('object');
-    
-    updateEntry(entryDom, { isUnread: !entry.is_unread });
+    updateEntry(entryDom, { isUnread: !entryDom.data('object').is_unread });
+  };
+
+  var toggleLiked = function(entryDom)
+  {
+    updateEntry(entryDom, { isLiked: !entryDom.data('object').is_liked });
   };
 
   var editTags = function(entryDom, tags)
   {
     var entry = entryDom.data('object');
     
-    $.post('?c=article',
+    $.post('?c=articles',
       { 
         setTagsFor : entry.id, 
         tags       : tags
@@ -547,14 +562,12 @@ $().ready(function()
                 if (tags != null)
                   editTags(entryDom, tags);
             }))
-          /*
           .append($('<span />', { 'class' : 'action-like entry-action'})
-            .text(l('Like'))
+            .text((entry.like_count < 1) ? l('Like') : l('Like (%s)', [entry.like_count]))
             .click(function(e)
             {
-              updateEntry(entryDom, { isLiked: !entry.is_liked });
+              toggleLiked(entryDom);
             }))
-          */
         )
         .click(function(e)
         {
@@ -601,11 +614,11 @@ $().ready(function()
     var spinner = new Spinner({ width: 3, length: 5, lines: 9, radius: 5, corners: 2}).spin();
     $('.next-page').empty().append(spinner.el);
     
-    $.getJSON('?c=paging',
+    $.getJSON('?c=articles',
     {
-      continue: continueAfter,
-      feed: getSelectedFeedId(),
+      fetch: getSelectedFeedId(),
       filter: $('.article-filter').val(),
+      continue: continueAfter,
     },
     function(response)
     {
@@ -627,9 +640,9 @@ $().ready(function()
   {
     lastPageRequested = null;
     
-    $.getJSON('?c=paging', 
+    $.getJSON('?c=articles', 
     {
-      feed: getSelectedFeedId(),
+      fetch: getSelectedFeedId(),
       filter: $('.article-filter').val(),
     }, 
     function(response) 
@@ -741,7 +754,7 @@ $().ready(function()
 
     if (newName && newName != feed.source)
     {
-      $.post('?c=feed', 
+      $.post('?c=feeds', 
       {
         renameSubscription : feed.id,
         newName : newName,
@@ -766,7 +779,7 @@ $().ready(function()
     var folderName = prompt(l('Name of folder:'));
     if (folderName)
     {
-      $.post('?c=feed', 
+      $.post('?c=feeds', 
       {
         createFolderUnder : feed.id,
         folderName : folderName,
@@ -794,7 +807,7 @@ $().ready(function()
 
     if (confirm(message))
     {
-      $.post('?c=feed', 
+      $.post('?c=feeds', 
       {
         unsubscribeFrom : feed.id,
       },
@@ -831,7 +844,7 @@ $().ready(function()
   {
     $.ajax(
     {
-      url: '?c=feed', 
+      url: '?c=feeds', 
       success: function(response) 
       {
         if (!response.error)

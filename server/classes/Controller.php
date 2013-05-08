@@ -170,7 +170,18 @@ class Controller
 
   protected function onStarted()
   {
-    $this->user = User::getCurrent();
+    $this->user = false;
+
+    // Get current user
+
+    if (isset($_COOKIE[COOKIE_AUTH]) && isset($_COOKIE[COOKIE_VAUTH]))
+    {
+      $hash = $_COOKIE[COOKIE_AUTH];
+      $receivedVHash = $_COOKIE[COOKIE_VAUTH];
+
+      $storage = Storage::getInstance();
+      $this->user = $storage->getUserWithSessionHash($hash, $receivedVHash);
+    }
   }
 
   protected function onInitialized()
@@ -203,11 +214,6 @@ class Controller
   protected function mustBeAuthorized()
   {
     return true;
-  }
-
-  protected function unsetUser()
-  {
-    $this->user = false;
   }
 
   protected function initRoutes()

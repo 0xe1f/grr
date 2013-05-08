@@ -33,21 +33,20 @@ abstract class Router
     $this->defaultControllerId = null;
   }
 
-  private function getControllerPath($controllerId)
+  private function getControllerClassPath($controllerClass)
   {
     $appRoot = realpath(dirname(dirname(__FILE__)));
 
-    return "$appRoot/controllers/".ucwords($controllerId)."Controller.php";
-  }
-
-  private function getControllerClass($controllerId)
-  {
-    return ucwords($controllerId)."Controller";
+    return "{$appRoot}/controllers/{$controllerClass}.php";
   }
 
   private function do404()
   {
     header('HTTP/1.0 404 Not Found');
+
+    $urlParts = parse_url($_SERVER['REQUEST_URI']);
+    $urlPath = $urlParts['path'];
+    
 ?>
 <!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML 2.0//EN">
   <html>
@@ -56,7 +55,7 @@ abstract class Router
     </head>
     <body>
       <h1>Not Found</h1>
-      <p>The requested URL was not found on this server.</p>
+      <p>The requested URL <?= h($urlPath) ?> was not found on this server.</p>
     </body>
   </html>
 <?
@@ -77,17 +76,16 @@ abstract class Router
     if (!$controllerId)
       $controllerId = $this->defaultControllerId;
 
-    $controller = $this->routes[$controllerId];
-    if (!$controller)
+    $controllerClass = $this->routes[$controllerId];
+    if (!$controllerClass)
     {
       $this->do404();
       return;
     }
 
-    $controllerPath = $this->getControllerPath($controllerId);
-    $controllerClass = $this->getControllerClass($controllerId);
+    $controllerPath = $this->getControllerClassPath($controllerClass);
 
-    include($controllerPath);
+    @include($controllerPath);
 
     $controller = @new $controllerClass();
     if (!($controller instanceof Controller))

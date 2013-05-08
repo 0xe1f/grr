@@ -166,13 +166,14 @@ DROP TABLE IF EXISTS `sessions`;
 CREATE TABLE `sessions` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `user_id` int(11) NOT NULL,
-  `hash` char(64) NOT NULL,
-  `source_ip` varchar(46) NOT NULL,
+  `hash` char(64) CHARACTER SET latin1 NOT NULL,
+  `source_ip` varchar(46) CHARACTER SET latin1 NOT NULL,
   `created` datetime NOT NULL,
+  `voided` datetime DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `fk_sessions_user_id` (`user_id`),
   CONSTRAINT `fk_sessions_user_id` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -340,7 +341,7 @@ CREATE TABLE `welcome_tokens` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2013-05-06 20:25:31
+-- Dump completed on 2013-05-07 13:42:07
 -- MySQL dump 10.13  Distrib 5.6.10, for osx10.7 (x86_64)
 --
 -- Host: localhost    Database: grr
@@ -377,4 +378,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2013-05-06 20:25:31
+-- Dump completed on 2013-05-07 13:42:07

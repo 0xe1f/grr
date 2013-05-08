@@ -33,12 +33,11 @@ class Grr extends Router
   protected function initRoutes()
   {
     $this->addRoute('admin', 'AdminController');
-    $this->addRoute('article', 'ArticleController');
-    $this->addRoute('feed', 'FeedController');
+    $this->addRoute('articles', 'ArticleController');
+    $this->addRoute('feeds', 'FeedController');
     $this->addRoute('import', 'ImportController');
     $this->addRoute('login', 'LoginController');
     $this->addRoute('newUser', 'NewUserController');
-    $this->addRoute('paging', 'PagingController');
     $this->addRoute('reader', 'ReaderController', true);
   }
 }

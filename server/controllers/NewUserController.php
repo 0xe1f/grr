@@ -22,18 +22,12 @@
  ******************************************************************************
  */
 
-require("classes/Controller.php");
+require("GatewayController.php");
 
-require("include/openid.php");
 require("include/PasswordHash.php");
 
-class NewUserController extends Controller
+class NewUserController extends GatewayController
 {
-  function mustBeAuthorized()
-  {
-    return false;
-  }
-
   function initRoutes()
   {
     $this->addPostRoute(array("newUserAuthMode"), "createUserRoute", "default");
@@ -41,8 +35,12 @@ class NewUserController extends Controller
 
   function defaultRoute()
   {
+    if ($this->isAuthenticated())
+      $this->redirectTo("reader");
+
     $this->emailAddress = $_GET["emailAddress"];
     $this->welcomeToken = $_GET["welcomeToken"];
+    $this->newAdminToken = null;
 
     $openIdIdentity = $_GET["openId"];
     $receivedOpenIdHash = $_GET["v"];
@@ -55,14 +53,43 @@ class NewUserController extends Controller
         $this->openIdIdentity = $openIdIdentity;
         $this->openIdHash = $receivedOpenIdHash;
       }
+      else
+      {
+        // Invalid openId/hash
+
+        $this->redirectTo("login");
+        return;
+      }
     }
 
+    if ($this->welcomeToken)
+    {
+      $storage = Storage::getInstance();
+      if (($token = $storage->getWelcomeToken($this->welcomeToken)) === false)
+      {
+        $this->errorMessage = l("Account creation offer has expired");
+        return;
+      }
+
+      if (!$this->emailAddress)
+        $this->emailAddress = $token->emailAddress;
+    }
+    
     $this->authMode = ($this->openIdIdentity) ? "openId" : "local";
+    $this->newAdminMode = $this->missingAdminAccounts();
+    $this->canCreateAccounts = CREATE_UNKNOWN_ACCOUNTS || $this->newAdminMode || $this->welcomeToken;
+
+    if (!$this->canCreateAccounts)
+    {
+      $this->errorMessage = l("User not found");
+      return;
+    }
   }
 
   function createUserRoute($authMode)
   {
     $this->authMode = $authMode;
+    $this->newAdminMode = $this->missingAdminAccounts();
 
     $this->username = $_POST["username"];
     $this->emailAddress = $_POST["emailAddress"];
@@ -70,6 +97,8 @@ class NewUserController extends Controller
     
     $this->openIdIdentity = null;
     $this->openIdHash = null;
+
+    $this->canCreateAccounts = CREATE_UNKNOWN_ACCOUNTS || $this->newAdminMode || $this->welcomeToken;
 
     $hashedPassword = null;
     $tokenId = null;
@@ -89,6 +118,18 @@ class NewUserController extends Controller
           $this->openIdIdentity = $openIdIdentity;
           $this->openIdHash = $receivedOpenIdHash;
         }
+      }
+    }
+
+    // Validate admin token
+
+    if ($this->newAdminMode)
+    {
+      $adminToken = $_POST["newAdminToken"];
+      if (ADMIN_SECRET === null || $adminToken !== ADMIN_SECRET)
+      {
+        $this->errorMessage = l("ADMIN_SECRET is incorrect. Try again");
+        return;
       }
     }
 
@@ -152,24 +193,32 @@ class NewUserController extends Controller
 
     $storage = Storage::getInstance();
 
-    if ($this->welcomeToken)
+    if ($this->newAdminMode)
     {
-      if (($token = $storage->getWelcomeToken($this->welcomeToken)) === false)
+      $roleId = $storage->getRoleId(ROLE_ADMIN);
+    }
+    else
+    {
+      if ($this->welcomeToken)
       {
-        $this->errorMessage = l("Account creation offer has expired");
+        if (($token = $storage->getWelcomeToken($this->welcomeToken)) === false)
+        {
+          $this->errorMessage = l("Account creation offer has expired");
+          return;
+        }
+
+        $tokenId = $token->id;
+      }
+
+      if (!CREATE_UNKNOWN_ACCOUNTS && $tokenId === null)
+      {
+        $this->errorMessage = l("Account creation requires approval");
         return;
       }
 
-      $tokenId = $token["id"];
+      $roleId = $storage->getRoleId(ROLE_USER);
     }
 
-    if (!CREATE_UNKNOWN_ACCOUNTS && $tokenId === null)
-    {
-      $this->errorMessage = l("Account creation requires approval");
-      return;
-    }
-
-    $roleId = $storage->getRoleId(ROLE_USER);
     if ($roleId === false)
     {
       $this->errorMessage = l("Cannot create account. Try again later");
@@ -183,35 +232,6 @@ class NewUserController extends Controller
     }
 
     $this->authorizeUser($user);
-  }
-
-  private function saltAndHashOpenId($openId)
-  {
-    return hash('sha256', hash('sha256', 
-      sprintf("%s,%s", SALT_VOPENID, $openId)));
-  }
-
-  private function authorizeUser($user)
-  {
-    $hash = hash('sha256', hash('sha256', sprintf("%s,%s,%s,%s", 
-      SALT_SESSION, $user->id, mt_rand(), time())));
-
-    $storage = Storage::getInstance();
-    $sessionId = $storage->createSession($user->id, $hash, $_SERVER["REMOTE_ADDR"]);
-
-    if ($sessionId !== false)
-    {
-      // Verification hash
-      $vhash = hash('md5', hash('md5', sprintf("%s,%s,%s",
-        SALT_VHASH, $user->username, $sessionId)));
-
-      setcookie(COOKIE_AUTH, $hash, time() + SESSION_DURATION);
-      setcookie(COOKIE_VAUTH, $vhash, time() + SESSION_DURATION);
-
-      $this->redirectTo("reader");
-    }
-
-    return $sessionId;
   }
 }
 

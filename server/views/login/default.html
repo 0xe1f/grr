@@ -20,22 +20,16 @@
 ?>
       <form action="<?= $this->url("login", array("logIn" => "true")) ?>" method="post">
         <span class="directions">Username:</span>
-        <input type="text" name="username" value="<?= h($_POST["username"]) ?>" />
+        <input type="text" name="username" value="<?= $this->username ?>" />
         <span class="directions">Password:</span>
-        <input type="password" name="password" value="<?= h($_POST["password"]) ?>" />
+        <input type="password" name="password" />
         <input type="submit" value="Log In" />
       </form>
 <?
-    if (CREATE_UNKNOWN_ACCOUNTS)
+    if ($this->canCreateAccounts)
     {
 ?>
-        <span class="directions"><a href="<?= $this->url("newUser") ?>">Create a new account</a></span>
-<?
-    }
-    else if ($this->createToken)
-    {
-?>
-        <span class="directions"><a href="<?= $this->url("login", array("newAccount" => "local", "createToken" => $this->createToken)) ?>">Create a new account</a></span>
+        <span class="directions"><a href="<?= $this->url("newUser", array("welcomeToken" => $this->welcomeToken)) ?>">Create a new account</a></span>
 <?
     }
 ?>
@@ -43,8 +37,8 @@
 
       <span class="directions">Log in with an OpenId account:</span>
       <div class="openid-providers">
-        <a href="<?= $this->url("login", array("logInWith" => "google", "createToken" => $this->createToken)) ?>" class="google large-button" title="Log in with Google"></a>
-        <a href="<?= $this->url("login", array("logInWith" => "yahoo", "createToken" => $this->createToken)) ?>" class="yahoo large-button" title="Log in with Yahoo!"></a>
+        <a href="<?= $this->url("login", array("logInWith" => "google", "welcomeToken" => $this->welcomeToken)) ?>" class="google large-button" title="Log in with Google"></a>
+        <a href="<?= $this->url("login", array("logInWith" => "yahoo", "welcomeToken" => $this->welcomeToken)) ?>" class="yahoo large-button" title="Log in with Yahoo!"></a>
       </div>
     </div>
     <div id="footer">

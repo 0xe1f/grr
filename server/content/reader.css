@@ -241,12 +241,8 @@ body
 
 .action-like
 {
-  display: inline-block;
-  width: 15px;
-  height: 15px;
   background-image: url(sprites.png);
   background-position: -60px -60px;
-  cursor: pointer;
 }
 
 .liked .action-like
