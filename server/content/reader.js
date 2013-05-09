@@ -624,8 +624,10 @@ $().ready(function()
     {
       if (!response.error)
       {
-        appendEntries(response.entries, response.continue != null);
-        $('#entries').data('continue', response.continue);
+        var canContinue = typeof response.continue !== 'undefined';
+
+        appendEntries(response.entries, canContinue);
+        $('#entries').data('continue', canContinue ? response.continue : null);
       }
       else
       {
@@ -647,12 +649,15 @@ $().ready(function()
     }, 
     function(response) 
     {
+      $('.entries-container').scrollTop(0); // Scroll to top first, to prevent auto-paging
       $('#entries .entry').remove();
 
       if (!response.error)
       {
-        appendEntries(response.entries, response.continue != null);
-        $('#entries').data('continue', response.continue);
+        var canContinue = typeof response.continue !== 'undefined';
+
+        appendEntries(response.entries, canContinue);
+        $('#entries').data('continue', canContinue ? response.continue : null);
 
         // Update the 'new items' caption in the dropdown to reflect
         // the unread count

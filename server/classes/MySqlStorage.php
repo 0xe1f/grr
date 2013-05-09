@@ -1671,7 +1671,7 @@ class MySqlStorage extends Storage
           "is_starred"  => ($isArticleStarred > 0),
           "is_liked"    => ($isArticleLiked > 0),
           "tags"        => empty($articleTags) ? array() : explode(',', $articleTags),
-          "like_count" => (int)$likeCount,
+          "like_count"  => (int)$likeCount,
         );
       }
     }
@@ -1686,16 +1686,44 @@ class MySqlStorage extends Storage
     $isArticleUnread = $isUnread ? 1 : 0;
     $isArticleStarred = $isStarred ? 1 : 0;
     $isArticleLiked = $isLiked ? 1 : 0;
+    $now = time();
 
     $stmt = $this->db->prepare("
                 UPDATE user_articles
-                   SET is_starred = ?,
+                   SET star_time = CASE WHEN is_starred = ? 
+                                             THEN star_time 
+                                        WHEN is_starred = 0 AND ? = 1
+                                             THEN FROM_UNIXTIME(?)
+                                        ELSE 
+                                             NULL
+                                        END,
+                       read_time = CASE WHEN is_unread = ? 
+                                             THEN read_time 
+                                        WHEN is_unread = 1 AND ? = 0
+                                             THEN FROM_UNIXTIME(?)
+                                        ELSE 
+                                             NULL
+                                        END,
+                       like_time = CASE WHEN is_liked = ? 
+                                             THEN like_time 
+                                        WHEN is_liked = 0 AND ? = 1
+                                             THEN FROM_UNIXTIME(?)
+                                        ELSE 
+                                             NULL
+                                        END,
+                       is_starred = ?,
                        is_unread = ?,
                        is_liked = ?
-                 WHERE id = ? AND user_id = ?
+                 WHERE id = ? 
+                       AND user_id = ?
                          ");
 
-    $stmt->bind_param('iiiii', $isArticleStarred, $isArticleUnread, $isArticleLiked, $userArticleId, $userId);
+    $stmt->bind_param('iiiiiiiiiiiiii', 
+      $isArticleStarred, $isArticleStarred, $now,
+      $isArticleUnread, $isArticleUnread, $now,
+      $isArticleLiked, $isArticleLiked, $now,
+      $isArticleStarred, $isArticleUnread, $isArticleLiked, 
+      $userArticleId, $userId);
 
     $result = $stmt->execute();
     $stmt->close();
@@ -1712,7 +1740,7 @@ class MySqlStorage extends Storage
                   FROM user_article_tags uat
             INNER JOIN user_articles ua ON ua.id = uat.user_article_id 
                  WHERE uat.user_article_id = ? 
-                   AND ua.user_id = ?
+                       AND ua.user_id = ?
                          ");
 
     $stmt->bind_param('ii', $userArticleId, $userId);
