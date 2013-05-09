@@ -1,3 +1,26 @@
+/*****************************************************************************
+ **
+ ** grr >:(
+ ** https://github.com/melllvar/grr
+ ** Copyright (C) 2013 Akop Karapetyan
+ **
+ ** This program is free software; you can redistribute it and/or modify
+ ** it under the terms of the GNU General Public License as published by
+ ** the Free Software Foundation; either version 2 of the License, or
+ ** (at your option) any later version.
+ **
+ ** This program is distributed in the hope that it will be useful,
+ ** but WITHOUT ANY WARRANTY; without even the implied warranty of
+ ** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ ** GNU General Public License for more details.
+ **
+ ** You should have received a copy of the GNU General Public License
+ ** along with this program; if not, write to the Free Software
+ ** Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ **
+ ******************************************************************************
+ */
+
 body 
 {
   font-family: arial, sans-serif;
@@ -62,21 +85,42 @@ body
 .feeds-container
 {
   position: absolute;
-  width: 20em;
+  width: 280px;
   top: 0px;
   bottom: 0;
   overflow: auto;
 }
 
+#entries
+{
+  margin-left: 0.25em;
+  margin-right: 0.75em;
+}
+
+.entries-header
+{
+  font-size: 10.5pt;
+  font-weight: bold;
+  padding: 0.5em;
+  color: #444;
+  white-space: nowrap;
+  border-bottom: solid 1px #ccc;
+}
+
+.entries-header a
+{
+  color: #444;
+  text-decoration: none;
+}
+
 .entries-container
 {
   position: absolute;
-  left: 21em;
-  top: 0px;
+  left: 280px;
+  top: 0;
   bottom: 0;
   right: 0;
   overflow: auto;
-  border-left: solid 1px #ccc;
 }
 
 .entry
@@ -124,6 +168,11 @@ body
   position: absolute;
 }
 
+.single-feed .entry-source
+{
+  display: none;
+}
+
 .entry-excerpt
 {
   overflow: hidden;
@@ -131,6 +180,11 @@ body
   white-space: nowrap;
   margin-left: 12em;
   margin-right: 7em;
+}
+
+.single-feed .entry-excerpt
+{
+  margin-left: 20px;
 }
 
 .entry-pubDate
@@ -204,13 +258,13 @@ body
 
 .action-unread
 {
-  background-image: url(sprites.png);
+  background-image: url(../sprites.png);
   background-position: -15px -15px;
 }
 
 .action-tag
 {
-  background-image: url(sprites.png);
+  background-image: url(../sprites.png);
   background-position: -120px -120px;
 }
 
@@ -229,7 +283,7 @@ body
   display: inline-block;
   width: 15px;
   height: 15px;
-  background-image: url(sprites.png);
+  background-image: url(../sprites.png);
   background-position: -30px -30px;
   cursor: pointer;
 }
@@ -241,7 +295,7 @@ body
 
 .action-like
 {
-  background-image: url(sprites.png);
+  background-image: url(../sprites.png);
   background-position: -60px -60px;
 }
 
@@ -289,7 +343,7 @@ ul#feeds,
   height: 15px;
   float: left;
   margin-right: 5px;
-  background-image: url(sprites.png);
+  background-image: url(../sprites.png);
 }
 
 .feed-icon.folder
@@ -304,7 +358,7 @@ ul#feeds,
 
 .feed-icon.root
 {
-  background-image: none;
+  background-position: -165px -165px;
 }
 
 #feeds .feed-item
@@ -492,14 +546,14 @@ ul#feeds,
   margin: 5px auto;
 }
 
-.chevron
+.feed-item .chevron
 {
   width: 15px;
   height: 15px;
   display: inline-block;
   float: left;
   visibility: hidden;
-  background-image: url(sprites.png);
+  background-image: url(../sprites.png);
   background-position: -90px -90px;
 }
 

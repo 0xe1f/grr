@@ -315,8 +315,8 @@ $().ready(function()
           }))
         .append($('<div />', { 'class' : 'feed-icon ' + feed.type }))
         .append($('<span />', { 'class' : 'feed-title' })
-          .text(feed.source))
-        .attr('title', feed.source)
+          .text(feed.title))
+        .attr('title', feed.title)
         .append($('<span />', { 'class' : 'feed-unread-count' }))
         .click(function() 
         {
@@ -641,10 +641,23 @@ $().ready(function()
   var reloadItems = function()
   {
     lastPageRequested = null;
-    
+
+    var feed = getSelectedFeed();
+    var feedHasLink = typeof feed.link !== 'undefined';
+
+    if (!feedHasLink)
+      $('.entries-header').text(feed.title);
+    else
+      $('.entries-header').html($('<a />', { 'href' : feed.link, 'target' : '_blank' })
+        .text(feed.title)
+        .append($('<span />')
+          .text(' »')));
+
+    $('.entries-container').toggleClass('single-feed', feedHasLink);
+
     $.getJSON('?c=articles', 
     {
-      fetch: getSelectedFeedId(),
+      fetch: feed.id,
       filter: $('.article-filter').val(),
     }, 
     function(response) 
@@ -755,9 +768,9 @@ $().ready(function()
 
   var renameSubscription = function(feed)
   {
-    var newName = prompt(l('New name:'), feed.source);
+    var newName = prompt(l('New name:'), feed.title);
 
-    if (newName && newName != feed.source)
+    if (newName && newName != feed.title)
     {
       $.post('?c=feeds', 
       {
@@ -807,8 +820,8 @@ $().ready(function()
   var unsubscribe = function(feed)
   {
     var message = (feed.type == 'feed')
-      ? l('Unsubscribe from "%s"?', [feed.source])
-      : l('Unsubscribe from all feeds under "%s"?', [feed.source]);
+      ? l('Unsubscribe from "%s"?', [feed.title])
+      : l('Unsubscribe from all feeds under "%s"?', [feed.title]);
 
     if (confirm(message))
     {
@@ -821,7 +834,7 @@ $().ready(function()
         if (!response.error)
         {
           updateFeedDom(response.allItems);
-          showToast(l('Successfully unsubscribed from "%s"', [feed.source]), false);
+          showToast(l('Successfully unsubscribed from "%s"', [feed.title]), false);
         }
         else
         {

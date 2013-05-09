@@ -252,11 +252,13 @@ class MySqlStorage extends Storage
                     ff.feed_id,
                     fft.ancestor_id,
                     ff.title source,
+                    f.html_url link,
                     SUM(ua.is_unread) unread_count
                FROM feed_folders ff
          INNER JOIN feed_folder_trees fft ON fft.descendant_id = ff.id
           LEFT JOIN articles a ON a.feed_id = ff.feed_id
           LEFT JOIN user_articles ua ON ua.article_id = a.id AND ua.user_id = ff.user_id
+          LEFT JOIN feeds f ON f.id = ff.feed_id
               WHERE ff.user_id = ? AND fft.distance = 1
            GROUP BY ff.id, fft.ancestor_id, ff.title
            ORDER BY ff.title
@@ -268,18 +270,22 @@ class MySqlStorage extends Storage
 
     if ($stmt->execute())
     {
-      $stmt->bind_result($userFeedId, $feedId, $ancestorId, $feedTitle, $unreadCount);
+      $stmt->bind_result($userFeedId, $feedId, $ancestorId, 
+        $feedTitle, $feedLink, $unreadCount);
 
       while ($stmt->fetch())
       {
         $feedOrGroup = array(
           "id"     => (int)$userFeedId,
-          "source" => $feedTitle,
+          "title"  => $feedTitle,
           "type"   => $feedId ? "feed" : "folder",
           "unread" => (int)$unreadCount,
           "feeds"  => array(),
           "parent" => (int)$ancestorId,
         );
+
+        if ($feedLink)
+          $feedOrGroup["link"] = $feedLink;
 
         $list[$userFeedId] = $feedOrGroup;
       }
@@ -318,7 +324,7 @@ class MySqlStorage extends Storage
     }
 
     $feeds["id"] = $rootId;
-    $feeds["source"] = l("Subscriptions");
+    $feeds["title"] = l("Subscriptions");
     $feeds["type"] = "root";
 
     if ($matchingFeed != null && $restrictToFolderId != $rootId)
