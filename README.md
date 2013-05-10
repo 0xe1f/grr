@@ -8,7 +8,7 @@ _grr_ consists of two components - the web server application, which interacts w
 Features
 --------
 
-Primary focus of _grr_ was replicating the core functionality of [Google Reader] [1] - specifically, features like starring, reading/unreading, navigation, and subscription categories. To that extent, _grr_ supports:
+Primary focus of _grr_ was to replicate the core functionality of [Google Reader] [1] - specifically, features like starring, reading/unreading, navigation, and subscription categories. To that extent, _grr_ supports:
 
 * Subscription categories
 * Starring
