@@ -7,6 +7,7 @@
     <script src="content/js/jquery-1.9.1.min.js" type="text/javascript"></script>
     <script src="content/js/jquery.scrollintoview.min.js" type="text/javascript"></script>
     <script src="content/js/jquery.hotkeys.js" type="text/javascript"></script>
+    <script src="content/js/jquery.cookie.js" type="text/javascript"></script>
     <script src="content/js/spin.min.js" type="text/javascript"></script>
     <script src="content/js/reader.js" type="text/javascript"></script>
     <title>&gt;:(</title>
@@ -33,20 +34,18 @@
       <div class="right-aligned">
         <button class="select-article up">&lt;</button><button class="select-article down">&gt;</button>
       </div>
-      <button class="subscribe"><?= l("Subscribe") ?></button>
-      <span class="spacer"></span>
+      <button class="navigate"><?= l("Navigate") ?></button>
       <button class="refresh"><?= l("Refresh") ?></button>
-      <span class="spacer"></span>
-      <button class="mark-all-as-read"><?= l("Mark all as read") ?></button>
-      <span class="spacer"></span>
       <select class="article-filter">
         <option value="all" class="filter-all"><?= l("All Items") ?></option>
         <option value="new" class="filter-new"><?= l("New Items") ?></option>
         <option value="star" class="filter-star"><?= l("Starred") ?></option>
       </select>
+      <button class="mark-all-as-read"><?= l("Mark all as read") ?></button>
     </div>
     <div id="reader">
       <div class="feeds-container">
+        <button class="subscribe"><?= l("Subscribe") ?></button>
         <ul id="feeds"></ul>
       </div>
       <div class="entries-container">
@@ -54,6 +53,7 @@
         <div id="entries"></div>
       </div>
     </div>
+    <div id="floating-nav"></div>
     <ul id="menu-root" class="menu">
       <li class="menu-new-folder"><?= l("New folder...") ?></li>
       <li class="menu-sub"><?= l("Subscribe...") ?></li>

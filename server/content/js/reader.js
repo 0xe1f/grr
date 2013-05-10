@@ -34,6 +34,11 @@ $().ready(function()
   // Key bindings
 
   $(document)
+    .bind('keypress', '', function()
+    {
+      $('.menu').hide();
+      $('#floating-nav').hide();
+    })
     .bind('keypress', 'j', function()
     {
       selectArticle(false);
@@ -64,7 +69,35 @@ $().ready(function()
     .bind('keypress', 'a', function()
     {
       subscribe();
+    })
+    .bind('keypress', 'u', function()
+    {
+      toggleNavMode();
     });
+
+  // Default click handler
+
+  $('html').click(function() 
+  {
+    $('.menu').hide();
+    $('#floating-nav').hide();
+  });
+
+  // Menus
+
+  $('.menu').click(function(event)
+  {
+    event.stopPropagation();
+  });
+
+  $('.menu li').click(function()
+  {
+    var item = $(this);
+    var menu = item.closest('ul');
+
+    menu.hide();
+    onMenuItemClick(menu.data('object'), item);
+  });
 
   // Buttons
 
@@ -76,6 +109,15 @@ $().ready(function()
   $('button.subscribe').click(function()
   {
     subscribe();
+  });
+
+  $('button.navigate').click(function(e)
+  {
+    $('#floating-nav')
+      .css( { top: $('button.navigate').offset().top, left: $('button.navigate').offset().left })
+      .show();
+
+    e.stopPropagation();
   });
 
   $('.article-filter').change(function()
@@ -125,6 +167,21 @@ $().ready(function()
       return vsprintf(str, args);
 
     return str;
+  };
+
+  var toggleNavMode = function(floatedNavEnabled)
+  {
+    $('body').toggleClass('floated-nav', floatedNavEnabled);
+
+    if ($('body').hasClass('floated-nav'))
+      $('#floating-nav')
+        .append($('.feeds-container'));
+    else
+      $('#reader')
+        .prepend($('.feeds-container'));
+
+    $.cookie('floated-nav', 
+      $('body').hasClass('floated-nav'));
   };
 
   var getPublishedDate = function(unixTimestamp)
@@ -362,15 +419,30 @@ $().ready(function()
       if (!feed)
         return true;
 
-      feedDom.find('.feed-unread-count').text(l('(%s)', [feed.unread]));
+      feedDom.find('.feed-unread-count').text('(' + feed.unread + ')');
       feedDom.find('.feed-item').toggleClass('has-unread', feed.unread > 0);
     });
 
     var allItems = $('.subscriptions').data('object');
 
+    // Update the title bar
+
     var title = '>:(';
     if (allItems.unread > 0)
       title += ' (' + allItems.unread + ')';
+
+    // Update the 'new items' caption in the dropdown to reflect
+    // the unread count
+
+    var selected = getSelectedFeed();
+    if (!selected)
+      $('.filter-new').text(l('New items'));
+    else if (selected.unread == 0)
+      $('.filter-new').text(l('No new items'));
+    else if (selected.unread == 1)
+      $('.filter-new').text(l('1 new item'));
+    else
+      $('.filter-new').text(l('%1$s new items', [selected.unread]));
 
     document.title = title;
   };
@@ -547,6 +619,19 @@ $().ready(function()
             {
               toggleStarred(entryDom);
             }))
+          // .append($('<span />', { 'class' : 'action-share-gplus entry-action'})
+          //   .append($('<a />',
+          //   {
+          //     'href'    : 'https://plus.google.com/share?url=' + entry.link,
+          //     'onclick' : "javascript:window.open(this.href, '', 'menubar=no,toolbar=no,resizable=yes,scrollbars=yes,height=600,width=600');return false;"
+          //   })
+          //     .append($('<img />', 
+          //     { 
+          //       'src' : 'https://www.gstatic.com/images/icons/gplus-16.png', 
+          //       'alt' : l('Share on Google+')
+          //     }))
+          //     .append($('<span />')
+          //       .text(l('Share')))))
           .append($('<span />', { 'class' : 'action-unread entry-action'})
             .text(l('Keep unread'))
             .click(function(e)
@@ -642,6 +727,9 @@ $().ready(function()
   {
     lastPageRequested = null;
 
+    $('.entries-container').scrollTop(0); // Scroll to top first, to prevent auto-paging
+    $('#entries .entry').remove();
+
     var feed = getSelectedFeed();
     var feedHasLink = typeof feed.link !== 'undefined';
 
@@ -662,28 +750,12 @@ $().ready(function()
     }, 
     function(response) 
     {
-      $('.entries-container').scrollTop(0); // Scroll to top first, to prevent auto-paging
-      $('#entries .entry').remove();
-
       if (!response.error)
       {
         var canContinue = typeof response.continue !== 'undefined';
 
         appendEntries(response.entries, canContinue);
         $('#entries').data('continue', canContinue ? response.continue : null);
-
-        // Update the 'new items' caption in the dropdown to reflect
-        // the unread count
-
-        var selected = getSelectedFeed();
-        if (!selected)
-          $('.filter-new').text(l('New items'));
-        else if (selected.unread == 0)
-          $('.filter-new').text(l('No new items'));
-        else if (selected.unread == 1)
-          $('.filter-new').text(l('1 new item'));
-        else
-          $('.filter-new').text(l('%1$s new items', [selected.unread]));
       }
       else
       {
@@ -882,24 +954,6 @@ $().ready(function()
     });
   })();
 
-  // Menus
-
-  $('html').click(function() 
-  {
-    $('.menu').hide();
-  });
-
-  $('.menu').click(function(event)
-  {
-    event.stopPropagation();
-  });
-
-  $('.menu li').click(function()
-  {
-    var item = $(this);
-    var menu = item.closest('ul');
-
-    menu.hide();
-    onMenuItemClick(menu.data('object'), item);
-  });
+  if ($.cookie('floated-nav') === 'true')
+    toggleNavMode(true);
 });

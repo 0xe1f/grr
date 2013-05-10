@@ -86,9 +86,26 @@ body
 {
   position: absolute;
   width: 280px;
-  top: 0px;
+  top: 0;
   bottom: 0;
   overflow: auto;
+}
+
+.floated-nav #reader .feeds-container
+{
+  display: none;
+}
+
+#floating-nav
+{
+  display: none;
+  position: absolute;
+  width: 280px;
+  bottom: 0;
+  margin: 4px;
+  background-color: white;
+  border: solid 1px #ccc;
+  box-shadow: 2px 2px 5px #aaa;
 }
 
 #entries
@@ -121,6 +138,11 @@ body
   bottom: 0;
   right: 0;
   overflow: auto;
+}
+
+.floated-nav .entries-container
+{
+  left: 0;
 }
 
 .entry
@@ -256,6 +278,17 @@ body
   cursor: pointer;
 }
 
+.entry-action a
+{
+  text-decoration: none;
+  color: #000;
+}
+
+.entry-action a span
+{
+  margin-left: 5px;
+}
+
 .action-unread
 {
   background-image: url(../sprites.png);
@@ -275,7 +308,7 @@ body
 
 .entry.read .action-unread
 {
-  background-position: 0px 0px;
+  background-position: 0 0;
 }
 
 .action-star
@@ -438,7 +471,7 @@ ul#feeds,
 
 #navbar
 {
-  padding: 10px 20px;
+  padding: 10px;
 }
 
 #navbar .right-aligned
@@ -446,12 +479,12 @@ ul#feeds,
   float: right;
 }
 
-#navbar select
+select
 {
   width: 150px;
 }
 
-#navbar button
+button
 {
   padding: 0.5em 1.5em;
   background-color: #eee;
@@ -461,6 +494,16 @@ ul#feeds,
   font-family: arial, sans-serif;
   font-size: 9pt;
   font-weight: bold;
+}
+
+.navigate
+{
+  display: none;
+}
+
+.floated-nav .navigate
+{
+  display: inline-block;
 }
 
 #navbar button.select-article.up
@@ -489,18 +532,19 @@ ul#feeds,
   border-color: #777;
 }
 
-#navbar .refresh
+button.refresh
 {
   width: 100px;
 }
 
-#navbar .subscribe
+button.subscribe
 {
   border-color: #D14836;
   background-color: #D14836;
   color: white;
   text-transform: uppercase;
   font-weight: bold;
+  margin: 1em 20px;
 }
 
 #navbar .spacer
