@@ -5,6 +5,8 @@ grr >:(
 
 _grr_ consists of two components - the web server application, which interacts with the user, and the shell application, which routinely updates feeds in the background.
 
+You can see a video of it here: http://www.youtube.com/watch?v=6gIGjweNu7Q
+
 Features
 --------
 
