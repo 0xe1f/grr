@@ -34,7 +34,7 @@ class ArticleController extends JsonController
 
     // Modification
     $this->addPostRoute(array("toggleStatusOf", "isUnread", "isStarred", "isLiked"), "toggleArticleStatusRoute");
-    $this->addPostRoute(array("toggleUnreadUnder", "isUnread", "filter"), "toggleAllUnreadRoute");
+    $this->addPostRoute(array("toggleUnreadUnder", "filter"), "toggleAllUnreadRoute");
     $this->addPostRoute(array("setTagsFor", "tags"), "setTagRoute");
   }
 
@@ -88,9 +88,9 @@ class ArticleController extends JsonController
     );
   }
 
-  function toggleAllUnreadRoute($feedFolderId, $isUnread, $requestedFilter)
+  function toggleAllUnreadRoute($feedFolderId, $requestedFilter)
   {
-    $isUnread = ($isUnread == "true");
+    $isUnread = false;
     $filter = null;
 
     $allowedFilters = array("new", "star");

@@ -209,10 +209,26 @@ body
   margin-left: 20px;
 }
 
+.entry-link
+{
+  display: block;
+  width: 15px;
+  height: 15px;
+  position: absolute;
+  right: 0;
+  top: 50%;
+  margin-top: -8px;
+  margin-right: 8px;
+  background-image: url(../sprites.png);
+  background-position: -210px -210px;
+  white-space: nowrap;
+}
+
 .entry-pubDate
 {
   display: block;
-  float: right;
+  position: absolute;
+  right: 32px;
   text-align: right;
   width: 6em;
 }
@@ -379,17 +395,17 @@ ul#feeds,
   background-image: url(../sprites.png);
 }
 
-.feed-icon.folder
+.feed-icon.icon-folder
 {
   background-position: -135px -135px;
 }
 
-.feed-icon.feed
+.feed-icon.icon-feed
 {
   background-position: -150px -150px;
 }
 
-.feed-icon.root
+.feed-icon.icon-root
 {
   background-position: -165px -165px;
 }
@@ -436,6 +452,7 @@ ul#feeds,
   cursor: pointer;
   padding: 0.35em 1em;
   margin-right: 1em;
+  border: solid 1px transparent;
 }
 
 .feed-item:hover
@@ -446,6 +463,11 @@ ul#feeds,
 .feed.selected > .feed-item
 {
   background-color: #cedefa;
+}
+
+.feed.highlighted > .feed-item
+{
+  border: solid 1px #000;
 }
 
 .feed-title

@@ -1570,14 +1570,15 @@ class MySqlStorage extends Storage
                       ua.is_starred,
                       ua.is_liked,
                       GROUP_CONCAT(uat.tag SEPARATOR ',') tags,
-                      SUM(ua_liked.is_liked) liked_count
+                      (SELECT SUM(is_liked)
+                         FROM user_articles ua_liked
+                        WHERE ua_liked.article_id = ua.article_id) liked_count
                  FROM user_articles ua
             LEFT JOIN user_article_tags uat ON uat.user_article_id = ua.id
            INNER JOIN articles a ON a.id = ua.article_id
            INNER JOIN feeds f ON f.id = a.feed_id
            INNER JOIN feed_folders ff ON ff.feed_id = f.id
            INNER JOIN feed_folder_trees fft ON fft.descendant_id = ff.id 
-           INNER JOIN user_articles ua_liked ON ua_liked.article_id = ua.article_id
                 WHERE fft.ancestor_id = ? 
                       AND ua.user_id = ?
                       {$filterClause}
@@ -1607,14 +1608,15 @@ class MySqlStorage extends Storage
                       ua.is_starred,
                       ua.is_liked,
                       GROUP_CONCAT(uat.tag SEPARATOR ',') tags,
-                      SUM(ua_liked.is_liked) liked_count
+                      (SELECT SUM(is_liked)
+                         FROM user_articles ua_liked
+                        WHERE ua_liked.article_id = ua.article_id) liked_count
                  FROM user_articles ua
             LEFT JOIN user_article_tags uat ON uat.user_article_id = ua.id
            INNER JOIN articles a ON a.id = ua.article_id
            INNER JOIN feeds f ON f.id = a.feed_id
            INNER JOIN feed_folders ff ON ff.feed_id = f.id
            INNER JOIN feed_folder_trees fft ON fft.descendant_id = ff.id 
-           INNER JOIN user_articles ua_liked ON ua_liked.article_id = ua.article_id
 
            INNER JOIN (SELECT a2.published 
                          FROM user_articles ua2 

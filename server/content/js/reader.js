@@ -23,6 +23,7 @@
 
 $().ready(function()
 {
+  var lastGPressTime = 0;
   var itemsLoaded = false;
   var prefs = 
   {
@@ -39,13 +40,41 @@ $().ready(function()
       $('.menu').hide();
       $('#floating-nav').hide();
     })
+    .bind('keypress', 'n', function()
+    {
+      selectArticle(1);
+    })
+    .bind('keypress', 'p', function()
+    {
+      selectArticle(-1);
+    })
+    .bind('keypress', 'shift+n', function()
+    {
+      highlightFeed(1);
+    })
+    .bind('keypress', 'shift+p', function()
+    {
+      highlightFeed(-1);
+    })
+    .bind('keypress', 'shift+o', function()
+    {
+      openFeed($('.feed.highlighted'));
+    })
     .bind('keypress', 'j', function()
     {
-      selectArticle(false);
+      openArticle(1);
     })
     .bind('keypress', 'k', function()
     {
-      selectArticle(true);
+      openArticle(-1);
+    })
+    .bind('keypress', 'o', function()
+    {
+      openArticle(0);
+    })
+    .bind('keypress', 'g', function()
+    {
+      lastGPressTime = new Date().getTime();
     })
     .bind('keypress', 's', function()
     {
@@ -57,10 +86,22 @@ $().ready(function()
       if ($('.entry.selected').length)
         toggleLiked($('.entry.selected'));
     })
+    .bind('keypress', 't', function()
+    {
+      editTags($('.entry.selected'));
+    })
+    .bind('keypress', 'v', function()
+    {
+      openLink($('.entry.selected'));
+    })
     .bind('keypress', 'm', function()
     {
       if ($('.entry.selected').length)
         toggleUnread($('.entry.selected'));
+    })
+    .bind('keypress', 'shift+a', function()
+    {
+      markAllAsRead();
     })
     .bind('keypress', 'r', function()
     {
@@ -68,7 +109,10 @@ $().ready(function()
     })
     .bind('keypress', 'a', function()
     {
-      subscribe();
+      if (isGModifierActive())
+        openFeed($('.subscriptions'));
+      else
+        subscribe();
     })
     .bind('keypress', 'u', function()
     {
@@ -142,19 +186,17 @@ $().ready(function()
 
   $('button.mark-all-as-read').click(function()
   {
-    var selected = getSelectedFeed();
-    if (selected)
-      markAllAs(false);
+    markAllAsRead();
   });
 
   $('.select-article.up').click(function()
   {
-    selectArticle(true);
+    openArticle(-1);
   });
 
   $('.select-article.down').click(function()
   {
-    selectArticle(false);
+    openArticle(1);
   });
 
   // Functions
@@ -197,27 +239,100 @@ $().ready(function()
       return then.toLocaleDateString();
   };
 
-  var selectArticle = function(selectPrevious)
+  // which: < 0 to select previous; > 0 to select next
+  var selectArticle = function(which, scrollIntoView)
   {
-    if (selectPrevious)
-      $('.entry.selected').prev('.entry').click();
-    else
+    if (which < 0)
+    {
+      if ($('.entry.selected').prev('.entry').length > 0)
+        $('.entry.selected')
+          .removeClass('selected')
+          .prev('.entry')
+          .addClass('selected');
+    }
+    else if (which > 0)
     {
       var selected = $('.entry.selected');
-      var next;
-
       if (selected.length < 1)
         next = $('#entries .entry:first');
       else
         next = selected.next('.entry');
 
-      next.click(); // TODO: Do this less hackily
+      $('.entry.selected').removeClass('selected');
+      next.addClass('selected');
 
       if (next.next('.entry').length < 1)
         loadNextPage(); // Load another page - this is the last item
     }
 
-    $('.entry.selected').scrollintoview();
+    scrollIntoView = (typeof scrollIntoView !== 'undefined') ? scrollIntoView : true;
+    if (scrollIntoView)
+      $('.entry.selected').scrollintoview({ duration: 0});
+  };
+
+  // which: < 0 to open previous; > 0 to open next; 0 to toggle current
+  var openArticle = function(which)
+  {
+    selectArticle(which, false);
+
+    if (!$('.entry-content', $('.entry.selected')).length || which === 0)
+      $('.entry.selected')
+        .click()
+        .scrollintoview();
+  };
+
+  var highlightFeed = function(which, scrollIntoView)
+  {
+    var highlighted = $('.feed.highlighted');
+    var next;
+
+    if (which < 0)
+    {
+      var allFeeds = $('#feeds .feed');
+      var highlightedIndex = allFeeds.index(highlighted);
+
+      if (highlightedIndex - 1 >= 0)
+        next = $(allFeeds[highlightedIndex - 1]);
+    }
+    else if (which > 0)
+    {
+      if (highlighted.length < 1)
+        next = $('#feeds .feed:first');
+      else
+      {
+        var allFeeds = $('#feeds .feed');
+        var highlightedIndex = allFeeds.index(highlighted);
+
+        if (highlightedIndex + 1 < allFeeds.length)
+          next = $(allFeeds[highlightedIndex + 1]);
+      }
+    }
+
+    if (next)
+    {
+      $('.feed.highlighted').removeClass('highlighted');
+      next.addClass('highlighted');
+
+      scrollIntoView = (typeof scrollIntoView !== 'undefined') ? scrollIntoView : true;
+      if (scrollIntoView)
+        $('.feed.highlighted').scrollintoview({ duration: 0});
+    }
+  };
+
+  var isGModifierActive = function()
+  {
+    return new Date().getTime() - lastGPressTime < 1000;
+  };
+
+  var openFeed = function(feedDom)
+  {
+    if (!feedDom.length)
+      return;
+
+    $('.feed.selected').removeClass('selected');
+    feedDom.addClass('selected');
+
+    reloadItems();
   };
 
   var showToast = function(message, isError)
@@ -258,12 +373,15 @@ $().ready(function()
     }
   };
 
-  var markAllAs = function(unread)
+  var markAllAsRead = function()
   {
+    var selected = getSelectedFeed();
+    if (!selected)
+      return;
+
     $.post('?c=articles', 
     { 
       toggleUnreadUnder: getSelectedFeedId(),
-      isUnread: unread,
       filter: $('.article-filter').val(),
     },
     function(response)
@@ -285,7 +403,7 @@ $().ready(function()
 
           if ($.inArray(entry.source_id, feedIds) > -1)
           {
-            entry.is_unread = unread;
+            entry.is_unread = false;
             entryDom.toggleClass('read', !entry.is_unread);
           }
         });
@@ -370,17 +488,14 @@ $().ready(function()
 
             e.stopPropagation();
           }))
-        .append($('<div />', { 'class' : 'feed-icon ' + feed.type }))
+        .append($('<div />', { 'class' : 'feed-icon icon-' + feed.type }))
         .append($('<span />', { 'class' : 'feed-title' })
           .text(feed.title))
         .attr('title', feed.title)
         .append($('<span />', { 'class' : 'feed-unread-count' }))
         .click(function() 
         {
-          $('.feed.selected').removeClass('selected');
-          $(this).closest('.feed').addClass('selected');
-
-          reloadItems();
+          openFeed($(this).closest('.feed'));
         }));
   };
 
@@ -561,11 +676,17 @@ $().ready(function()
     updateEntry(entryDom, { isLiked: !entryDom.data('object').is_liked });
   };
 
-  var editTags = function(entryDom, tags)
+  var editTags = function(entryDom)
   {
+    if (entryDom.length < 1)
+      return;
+
     var entry = entryDom.data('object');
-    
-    $.post('?c=articles',
+    var tags = prompt(l('Separate multiple tags with commas'), entry.tags.join(', '));
+
+    if (tags != null)
+    {
+      $.post('?c=articles',
       { 
         setTagsFor : entry.id, 
         tags       : tags
@@ -583,6 +704,13 @@ $().ready(function()
           showToast(response.error.message, true);
         }
       }, 'json');
+    }
+  };
+
+  var openLink = function(entryDom)
+  {
+    if (entryDom.length > 0)
+      $('.entry-link', entryDom)[0].click();
   };
 
   var collapseAllEntries = function()
@@ -643,9 +771,7 @@ $().ready(function()
             .toggleClass('has-tags', entry.tags.length > 0)
             .click(function(e)
             {
-                var tags = prompt(l('Separate multiple tags with commas'), entry.tags.join(', '));
-                if (tags != null)
-                  editTags(entryDom, tags);
+              editTags(entryDom);
             }))
           .append($('<span />', { 'class' : 'action-like entry-action'})
             .text((entry.like_count < 1) ? l('Like') : l('Like (%s)', [entry.like_count]))
@@ -783,6 +909,11 @@ $().ready(function()
               e.stopPropagation();
             }))
           .append($('<span />', { 'class' : 'entry-source' }).text(entry.source))
+          .append($('<a />', { 'class' : 'entry-link', 'href' : entry.link, 'target' : '_blank' })
+            .click(function(e)
+            {
+              e.stopPropagation();
+            }))
           .append($('<span />', { 'class' : 'entry-pubDate' })
             .text(getPublishedDate(entry.published)))
           .append($('<div />', { 'class' : 'entry-excerpt' })
