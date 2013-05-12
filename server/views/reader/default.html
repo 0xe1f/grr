@@ -36,11 +36,13 @@
       </div>
       <button class="navigate"><?= l("Navigate") ?></button>
       <button class="refresh"><?= l("Refresh") ?></button>
-      <select class="article-filter">
-        <option value="all" class="filter-all"><?= l("All Items") ?></option>
-        <option value="new" class="filter-new"><?= l("New Items") ?></option>
-        <option value="star" class="filter-star"><?= l("Starred") ?></option>
-      </select>
+      <div class="styled-select">
+        <select class="article-filter">
+          <option value="all" class="filter-all"><?= l("All Items") ?></option>
+          <option value="new" class="filter-new"><?= l("New Items") ?></option>
+          <option value="star" class="filter-star"><?= l("Starred") ?></option>
+        </select>
+      </div>
       <button class="mark-all-as-read"><?= l("Mark all as read") ?></button>
     </div>
     <div id="reader">
@@ -69,5 +71,70 @@
       <li class="menu-rename-sub"><?= l("Rename subscription...") ?></li>
       <li class="menu-unsub"><?= l("Unsubscribe from all") ?></li>
     </ul>
+    <div class="shortcuts">
+      <table>
+        <tr>
+          <th colspan="2">Navigation</th>
+          <th colspan="2">Application</th>
+        </tr>
+        <tr>
+          <td class="sh-keys">j/k:</td>
+          <td class="sh-action">next/previous article</td>
+          <td class="sh-keys">r:</td>
+          <td class="sh-action">refresh</td>
+        </tr>
+        <tr>
+          <td class="sh-keys">n/p:</td>
+          <td class="sh-action">scan next/previous article</td>
+          <td class="sh-keys">u:</td>
+          <td class="sh-action">toggle navigation mode</td>
+        </tr>
+        <tr>
+          <td class="sh-keys">Shift+n/p:</td>
+          <td class="sh-action">scan next/previous subscription</td>
+          <td class="sh-keys">a:</td>
+          <td class="sh-action">add a subscription</td>
+        </tr>
+        <tr>
+          <td class="sh-keys">Shift+o:</td>
+          <td class="sh-action">open subscription or folder</td>
+        </tr>
+        <tr>
+          <td class="sh-keys">g then a:</td>
+          <td class="sh-action">open Subscriptions</td>
+        </tr>
+        <tr>
+          <th colspan="2">Articles</th>
+        </tr>
+        <tr>
+          <td class="sh-keys">m:</td>
+          <td class="sh-action">mark as read/unread</td>
+        </tr>
+        <tr>
+          <td class="sh-keys">s:</td>
+          <td class="sh-action">star article</td>
+        </tr>
+        <tr>
+          <td class="sh-keys">t:</td>
+          <td class="sh-action">tag article</td>
+        </tr>
+        <tr>
+          <td class="sh-keys">l:</td>
+          <td class="sh-action">like article</td>
+        </tr>
+        <tr>
+          <td class="sh-keys">v:</td>
+          <td class="sh-action">open link</td>
+        </tr>
+        <tr>
+          <td class="sh-keys">o:</td>
+          <td class="sh-action">open article</td>
+        </tr>
+        <tr>
+          <td class="sh-keys">shift+a:</td>
+          <td class="sh-action">mark all as read</td>
+        </tr>
+      </table>
+    </div>
   </body>
 </html>

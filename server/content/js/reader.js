@@ -37,6 +37,7 @@ $().ready(function()
   $(document)
     .bind('keypress', '', function()
     {
+      $('.shortcuts').hide();
       $('.menu').hide();
       $('#floating-nav').hide();
     })
@@ -117,12 +118,17 @@ $().ready(function()
     .bind('keypress', 'u', function()
     {
       toggleNavMode();
+    })
+    .bind('keypress', 'shift+?', function()
+    {
+      $('.shortcuts').show();
     });
 
   // Default click handler
 
   $('html').click(function() 
   {
+    $('.shortcuts').hide();
     $('.menu').hide();
     $('#floating-nav').hide();
   });

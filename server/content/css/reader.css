@@ -508,6 +508,7 @@ select
 
 button
 {
+  height: 30px;
   padding: 0.5em 1.5em;
   background-color: #eee;
   border: solid 1px #aaa;
@@ -516,6 +517,32 @@ button
   font-family: arial, sans-serif;
   font-size: 9pt;
   font-weight: bold;
+}
+
+.styled-select 
+{
+  display: inline-block;
+  width: 120px;
+  height: 28px;
+  overflow: hidden;
+  background: url(../sprites.png) no-repeat right #ddd;
+  background-position: -180px -270px;
+  border: solid 1px #aaa;
+  border-radius: 3px;
+  box-shadow: 1px 1px 1px #aaa;
+}
+
+.styled-select select 
+{
+  background: transparent;
+  width: 140px;
+  height: 28px;
+  padding: 0 1em;
+  font-size: 9pt;
+  font-weight: bold;
+  font-family: arial, sans-serif;
+  border: none;
+  -webkit-appearance: none;
 }
 
 .navigate
@@ -657,4 +684,43 @@ ul.menu
 {
   height: 1px;
   background-color: #ccc;
+}
+
+.shortcuts
+{
+  position: absolute;
+  top: 2em;
+  right: 2em;
+  bottom: 2em;
+  left: 2em;
+  background-color: #000;
+  border-radius: 1em;
+  display: none;
+  overflow: auto;
+}
+
+.shortcuts table
+{
+  margin: auto;
+  color: #fff;
+  font-size: 15pt;
+}
+
+.shortcuts th
+{
+  color: yellow;
+  padding: 1em 0 0.3em 0;
+}
+
+.shortcuts .sh-keys
+{
+  text-align: right;
+  padding-left: 2em;
+  font-weight: bold;
+}
+
+.shortcuts .sh-action
+{
+  text-align: left;
+  padding-right: 2em;
 }
