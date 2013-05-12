@@ -65,7 +65,7 @@
       <span class="directions"><?= l("Welcome Tokens:") ?></span>
       <table>
         <tr>
-          <th><?= l("Email Address") ?></th>
+          <th><?= l("Description") ?></th>
           <th><?= l("Token") ?></th>
           <th><?= l("Created By") ?></th>
           <th><?= l("Date Created") ?></th>
@@ -78,27 +78,24 @@
         // FIXME: the date format should be localized
 ?>
         <tr>
-          <td><?= h($token["emailAddress"]) ?></td>
+          <td><?= h($token->description) ?></td>
           <td><a class="token-link" 
-                 data-clipboard-text="<?= $this->url("login", array("createToken" => $token["token"])) ?>"
-                 href="<?= $this->url("login", array("createToken" => $token["token"])) ?>">http://.../?c=login&amp;createToken=<?= $token["token"] ?></a></td>
-          <td><?= h($token["createdBy"]) ?></td>
-          <td><?= h(date("F j, Y, g:i a", $token["createdOn"])) ?></td>
+                 data-clipboard-text="<?= $this->url("login", array("createToken" => $token->hash)) ?>"
+                 href="<?= $this->url("login", array("createToken" => $token->hash)) ?>">http://.../?c=login&amp;createToken=<?= $token->hash ?></a></td>
+          <td><?= h($token->createdByUsername) ?></td>
+          <td><?= h(date("F j, Y, g:i a", $token->createdOnStamp)) ?></td>
         </tr>
 <?
       }
     }
 ?>
       </table>
-      <span class="directions"><?= l("Create new token with email address:") ?></span>
+      <span class="directions"><?= l("Create new token with description:") ?></span>
       <form action="<?= $this->url("admin") ?>" method="post">
         <input type="hidden" name="newToken" value="true" />
-        <input type="text" name="emailAddress" value="<?= h($_POST["emailAddress"]) ?>" />
+        <input type="text" name="description" value="<?= h($this->description) ?>" />
         <input type="submit" value="Create" />
       </form>
-      <p>
-        <?= l("Note that tokens aren't actually emailed") ?>
-      </p>
     </div>
     <div id="footer">
       &copy; 2013 Akop Karapetyan | <a href="https://github.com/melllvar/grr">grr</a> is Open and Free Software licensed under GPL

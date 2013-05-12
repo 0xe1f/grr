@@ -28,7 +28,7 @@ class AdminController extends Controller
 {
   function initRoutes()
   {
-    $this->addPostRoute(array("newToken", "emailAddress"), "createTokenRoute");
+    $this->addPostRoute(array("newToken", "description"), "createTokenRoute");
   }
 
   function mustBeAuthorized()
@@ -49,26 +49,29 @@ class AdminController extends Controller
     return "default"; // No other templates
   }
 
-  function createTokenRoute($dummy, $emailAddress)
+  function createTokenRoute($dummy, $description)
   {
-    $emailAddress = trim($emailAddress);
+    $this->description = trim($description);
 
     $this->message = null;
     $this->errorMessage = null;
 
-    if (!$this->isValidEmailAddress($emailAddress))
+    if (strlen($this->description) < 1)
     {
-      $this->errorMessage = l("Enter a valid email address");
+      $this->errorMessage = l("Enter a valid description");
     }
     else
     {
-      $tokenHash = sha1(sha1(sprintf("%d,%s,%d", time(), $emailAddress, rand())));
+      $tokenHash = sha1(sha1(sprintf("%d,%s,%d", time(), $this->description, rand())));
 
       $storage = Storage::getInstance();
-      if (!$storage->addWelcomeToken($tokenHash, $emailAddress, $this->user))
+      if (!$storage->addWelcomeToken($tokenHash, $this->description, $this->user))
         $this->errorMessage = l("Error generating a new token. Try again");
       else
+      {
         $this->message = l("Token successfully created");
+        $this->description = null;
+      }
     }
   }
 }

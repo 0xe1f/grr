@@ -22,6 +22,9 @@
  ******************************************************************************
  */
 
+require("models/Subscription.php");
+require("models/WelcomeToken.php");
+
 class MySqlStorage extends Storage
 {
   // FIXME: there are no unique constraints on users(open_id_identity)
@@ -42,26 +45,26 @@ class MySqlStorage extends Storage
       die('Connection error: '.mysqli_connect_error());
   }
 
-  private function pruneFeedTree(&$feed)
+  private function pruneSubscriptions(&$subscriptions)
   {
     $unread = 0;
 
-    foreach ($feed["feeds"] as &$subfeed)
+    foreach ($subscriptions->subs as &$subfeed)
     {
-      $unread += $subfeed["unread"];
+      $unread += $subfeed->unread;
 
-      unset($subfeed["parent"]);
+      unset($subfeed->parentId);
 
-      if (count($subfeed["feeds"]) < 1)
+      if (count($subfeed->subs) < 1)
       {
-        unset($subfeed["feeds"]);
+        unset($subfeed->subs);
         continue;
       }
 
-      $unread += $this->pruneFeedTree($subfeed);
+      $unread += $this->pruneSubscriptions($subfeed);
     }
 
-    $feed["unread"] = $unread;
+    $subscriptions->unread = $unread;
 
     return $unread;
   }
@@ -266,7 +269,7 @@ class MySqlStorage extends Storage
 
     $stmt->bind_param('i', $user->id);
 
-    $list = array();
+    $subscriptionMap = array();
 
     if ($stmt->execute())
     {
@@ -275,19 +278,17 @@ class MySqlStorage extends Storage
 
       while ($stmt->fetch())
       {
-        $feedOrGroup = array(
-          "id"     => (int)$userFeedId,
-          "title"  => $feedTitle,
-          "type"   => $feedId ? "feed" : "folder",
-          "unread" => (int)$unreadCount,
-          "feeds"  => array(),
-          "parent" => (int)$ancestorId,
-        );
+        $subscription = new Subscription();
+        $subscription->id = (int)$userFeedId;
+        $subscription->title = $feedTitle;
+        $subscription->type = $feedId ? "feed" : "folder";
+        $subscription->unread = (int)$unreadCount;
+        $subscription->parentId = (int)$ancestorId;
 
         if ($feedLink)
-          $feedOrGroup["link"] = $feedLink;
+          $subscription->link = $feedLink;
 
-        $list[$userFeedId] = $feedOrGroup;
+        $subscriptionMap[$userFeedId] = $subscription;
       }
     }
 
@@ -295,42 +296,42 @@ class MySqlStorage extends Storage
 
     $matchingFeed = null;
     if ($restrictToFolderId !== null)
-      $matchingFeed = &$list[$restrictToFolderId];
+      $matchingFeed = &$subscriptionMap[$restrictToFolderId];
 
     $movedItems = array();
-    foreach ($list as $key => &$item)
+    foreach ($subscriptionMap as $subscriptionId => &$subscription)
     {
-      $parentId = $item["parent"];
-      $subfeeds = &$list[$parentId]["feeds"];
+      $parentId = $subscription->parentId;
+      $subfeeds = &$subscriptionMap[$parentId]->subs;
 
-      $subfeeds[] = &$item;
-      $movedItems[] = $item["id"];
+      $subfeeds[] = &$subscription;
+      $movedItems[] = $subscription->id;
     }
 
     foreach ($movedItems as $movedItem)
-      unset($list[$movedItem]);
+      unset($subscriptionMap[$movedItem]);
 
-    if (empty($list))
+    if (empty($subscriptionMap))
     {
-      $feeds = array();
+      $subscriptions = new Subscription();
       $rootId = $this->getUserFeedRoot($user->id);
     }
     else
     {
-      $feeds = reset($list);
-      $rootId = key($list);
+      $subscriptions = reset($subscriptionMap);
+      $rootId = key($subscriptionMap);
       
-      $this->pruneFeedTree($feeds);
+      $this->pruneSubscriptions($subscriptions);
     }
 
-    $feeds["id"] = $rootId;
-    $feeds["title"] = l("Subscriptions");
-    $feeds["type"] = "root";
+    $subscriptions->id = $rootId;
+    $subscriptions->title = l("Subscriptions");
+    $subscriptions->type = "root";
 
     if ($matchingFeed != null && $restrictToFolderId != $rootId)
-      $feeds = $matchingFeed;
+      $subscriptions = $matchingFeed;
 
-    return $feeds;
+    return $subscriptions;
   }
 
   public function markAllAs($user, $feedFolderId, $filter, $isUnread)
@@ -973,7 +974,8 @@ class MySqlStorage extends Storage
     $stmt = $this->db->prepare("
                 SELECT wt.id,
                        token_hash token,
-                       wt.email_address,
+                       wt.description,
+                       u.id creator_id,
                        u.username creator_username,
                        UNIX_TIMESTAMP(created) created
                   FROM welcome_tokens wt
@@ -982,23 +984,26 @@ class MySqlStorage extends Storage
                        AND wt.claimed IS NULL
                        AND wt.revoked IS NULL
               ORDER BY wt.created DESC 
-                         ");
+                               ");
 
     $tokens = array();
 
     if ($stmt->execute())
     {
-      $stmt->bind_result($tokenId, $token, $emailAddress, $createdBy, $createdOn);
+      $stmt->bind_result($tokenId, $tokenHash, 
+        $description, $createdById, $createdByUsername, $createdOn);
 
       while ($stmt->fetch())
       {
-        $tokens[] = array(
-          "id"           => $tokenId,
-          "token"        => $token,
-          "emailAddress" => $emailAddress,
-          "createdBy"    => $createdBy,
-          "createdOn"    => $createdOn,
-        );
+        $token = new WelcomeToken();
+        $token->id = $tokenId;
+        $token->hash = $tokenHash;
+        $token->description = $description;
+        $token->createdById = $createdById;
+        $token->createdByUsername = $createdByUsername;
+        $token->createdOnStamp = $createdOn;
+
+        $tokens[] = $token;
       }
     }
 
@@ -1007,17 +1012,22 @@ class MySqlStorage extends Storage
     return $tokens;
   }
 
-  public function getWelcomeToken($tokenHash)
+  public function findActiveWelcomeToken($tokenHash)
   {
     $stmt = $this->db->prepare("
-                SELECT id,
-                       email_address
-                  FROM welcome_tokens
-                 WHERE token_hash = ?
-                       AND created BETWEEN UTC_TIMESTAMP() - INTERVAL 14 DAY AND UTC_TIMESTAMP()
-                       AND claimed IS NULL
-                       AND revoked IS NULL
-                         ");
+                SELECT wt.id,
+                       token_hash token,
+                       wt.description,
+                       u.id creator_id,
+                       u.username creator_username,
+                       UNIX_TIMESTAMP(created) created
+                  FROM welcome_tokens wt
+            INNER JOIN users u ON u.id = wt.created_by_user_id
+                 WHERE wt.token_hash = ?
+                       AND wt.created BETWEEN UTC_TIMESTAMP() - INTERVAL 14 DAY AND UTC_TIMESTAMP()
+                       AND wt.claimed IS NULL
+                       AND wt.revoked IS NULL
+                               ");
 
     $stmt->bind_param('s', $tokenHash);
 
@@ -1025,14 +1035,18 @@ class MySqlStorage extends Storage
 
     if ($stmt->execute())
     {
-      $stmt->bind_result($tokenId, $emailAddress);
+      $stmt->bind_result($tokenId, $tokenHash, 
+        $description, $createdById, $createdByUsername, $createdOn);
 
       if ($stmt->fetch())
       {
-        $token = new stdClass();
-
+        $token = new WelcomeToken();
         $token->id = $tokenId;
-        $token->emailAddress = $emailAddress;
+        $token->hash = $tokenHash;
+        $token->description = $description;
+        $token->createdById = $createdById;
+        $token->createdByUsername = $createdByUsername;
+        $token->createdOnStamp = $createdOn;
       }
     }
 
@@ -1041,47 +1055,20 @@ class MySqlStorage extends Storage
     return $token;
   }
 
-  public function addWelcomeToken($tokenHash, $emailAddress, $createdBy)
+  public function addWelcomeToken($tokenHash, $description, $createdBy)
   {
     if (!$createdBy)
       return false;
 
-    $this->db->autocommit(false);
-
-    // Revoke existing tokens
-
-    $stmt = $this->db->prepare("
-       UPDATE welcome_tokens 
-          SET revoked_by_user_id = ?,
-              revoked = UTC_TIMESTAMP()
-        WHERE created BETWEEN UTC_TIMESTAMP() - INTERVAL 14 DAY AND UTC_TIMESTAMP()
-              AND claimed IS NULL
-              AND revoked IS NULL
-              AND email_address = ?
-                         ");
-
-    $stmt->bind_param('is', $createdBy->id, $emailAddress);
-    if (!$stmt->execute())
-    {
-      $this->db->rollback();
-      $this->db->autocommit(true);
-
-      return false;
-    }
-
-    $affectedRows = $this->db->affected_rows;
-
-    // Add new token
-    
     $stmt = $this->db->prepare("
        INSERT INTO welcome_tokens (token_hash,
-                                   email_address,
+                                   description,
                                    created_by_user_id,
                                    created)
                            VALUES (?, ?, ?, UTC_TIMESTAMP())
-                         ");
+                               ");
 
-    $stmt->bind_param('ssi', $tokenHash, $emailAddress, $createdBy->id);
+    $stmt->bind_param('ssi', $tokenHash, $description, $createdBy->id);
 
     $affectedRows = false;
     if ($stmt->execute())
@@ -1090,7 +1077,6 @@ class MySqlStorage extends Storage
     $stmt->close();
 
     $this->db->commit();
-    $this->db->autocommit(true);
 
     return $affectedRows > 0;
   }

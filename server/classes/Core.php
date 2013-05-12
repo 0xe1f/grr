@@ -33,7 +33,6 @@ abstract class Storage
   public abstract function getUserFeedRoot($userId);
   public abstract function getFeedFolderId($userId, $parentId, $title);
   public abstract function getActiveWelcomeTokens();
-  public abstract function getWelcomeToken($tokenHash);
   public abstract function addWelcomeToken($tokenHash, $emailAddress, $createdBy);
   public abstract function getAllUserAccounts();
   public abstract function findUserWithOpenId($openIdIdentity);

@@ -478,7 +478,7 @@ $().ready(function()
   var createFeedDom = function(feed)
   {
     var feedCopy = jQuery.extend({}, feed);
-    delete feedCopy.feeds; // No need to carry the entire tree around
+    delete feedCopy.subs; // No need to carry the entire tree around
 
     return $('<li />', { 'class' : 'feed feed-' + feed.id })
       .data('object', feedCopy)
@@ -517,8 +517,8 @@ $().ready(function()
 
     var allItemsDom = createFeedDom(allItems);
     allItemsDom.addClass('subscriptions');
-    if (allItems.feeds)
-      allItemsDom.append(buildFeedDom(allItems.feeds));
+    if (allItems.subs)
+      allItemsDom.append(buildFeedDom(allItems.subs));
 
     $('#feeds').append(allItemsDom);
 
@@ -575,8 +575,8 @@ $().ready(function()
     $.each(feeds, function(key, feed)
     {
       var feedGroupDom = createFeedDom(feed);
-      if (feed.feeds)
-        feedGroupDom.append(buildFeedDom(feed.feeds));
+      if (feed.subs)
+        feedGroupDom.append(buildFeedDom(feed.subs));
 
       feedGroupDoms.append(feedGroupDom);
     });

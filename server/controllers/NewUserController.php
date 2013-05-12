@@ -65,14 +65,11 @@ class NewUserController extends GatewayController
     if ($this->welcomeToken)
     {
       $storage = Storage::getInstance();
-      if (($token = $storage->getWelcomeToken($this->welcomeToken)) === false)
+      if (($token = $storage->findActiveWelcomeToken($this->welcomeToken)) === false)
       {
         $this->errorMessage = l("Account creation offer has expired");
         return;
       }
-
-      if (!$this->emailAddress)
-        $this->emailAddress = $token->emailAddress;
     }
     
     $this->authMode = ($this->openIdIdentity) ? "openId" : "local";
@@ -201,7 +198,7 @@ class NewUserController extends GatewayController
     {
       if ($this->welcomeToken)
       {
-        if (($token = $storage->getWelcomeToken($this->welcomeToken)) === false)
+        if (($token = $storage->findActiveWelcomeToken($this->welcomeToken)) === false)
         {
           $this->errorMessage = l("Account creation offer has expired");
           return;
