@@ -519,32 +519,6 @@ button
   font-weight: bold;
 }
 
-.styled-select 
-{
-  display: inline-block;
-  width: 120px;
-  height: 28px;
-  overflow: hidden;
-  background: url(../sprites.png) no-repeat right #ddd;
-  background-position: -180px -270px;
-  border: solid 1px #aaa;
-  border-radius: 3px;
-  box-shadow: 1px 1px 1px #aaa;
-}
-
-.styled-select select 
-{
-  background: transparent;
-  width: 140px;
-  height: 28px;
-  padding: 0 1em;
-  font-size: 9pt;
-  font-weight: bold;
-  font-family: arial, sans-serif;
-  border: none;
-  -webkit-appearance: none;
-}
-
 .navigate
 {
   display: none;
