@@ -37,7 +37,7 @@ abstract class GatewayController extends Controller
       sprintf("%s,%s", SALT_VOPENID, $openId)));
   }
 
-  protected function authorizeUser($user)
+  protected function authorizeUser($user, $isAsync = false)
   {
     $hash = hash('sha256', hash('sha256', sprintf("%s,%s,%s,%s", 
       SALT_SESSION, $user->id, mt_rand(), time())));
@@ -51,13 +51,20 @@ abstract class GatewayController extends Controller
       $vhash = hash('md5', hash('md5', sprintf("%s,%s,%s",
         SALT_VHASH, $user->username, $sessionId)));
 
-      setcookie(COOKIE_AUTH, $hash, time() + SESSION_DURATION);
-      setcookie(COOKIE_VAUTH, $vhash, time() + SESSION_DURATION);
+      if (!$isAsync)
+      {
+        setcookie(COOKIE_AUTH, $hash, time() + SESSION_DURATION);
+        setcookie(COOKIE_VAUTH, $vhash, time() + SESSION_DURATION);
 
-      $this->redirectTo("reader");
+        $this->redirectTo("reader");
+      }
     }
 
-    return $sessionId;
+    return array(
+      "auth_name"   => COOKIE_AUTH,
+      "vauth_name"  => COOKIE_VAUTH,
+      "auth_value"  => $hash,
+      "vauth_value" => $vhash);
   }
 
   protected function missingAdminAccounts()

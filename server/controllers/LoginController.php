@@ -69,43 +69,27 @@ class LoginController extends GatewayController
 
   function localLoginRoute()
   {
-    $this->username = $_POST["username"];
-    $password = $_POST["password"];
+    $isAsync = strcasecmp($_SERVER['HTTP_X_REQUESTED_WITH'], 'XMLHttpRequest') === 0;
+    $success = $this->performLocalLogin($isAsync);
 
-    $this->errorMessage = null;
-
-    if (strlen(trim($this->username)) < 1)
+    if ($isAsync)
     {
-      $this->errorMessage = l("Enter a valid username");
-      return;
-    }
-    else if (strlen($password) < 1)
-    {
-      $this->errorMessage = l("Enter a valid password");
-      return;
-    }
+      // Handle as async request
+      header('Content-type: application/json');
 
-    if ($this->shouldThrottleLogin())
-    {
-      $this->errorMessage = l("Too many unsuccessful attempts. Try again in a short while");
-      return;
-    }
-
-    if (!$this->errorMessage)
-    {
-      $storage = Storage::getInstance();
-      $user = $storage->findUserWithUsername($this->username, $hash);
-
-      if ($user === false || !$this->getHasher()->CheckPassword($password, $hash))
+      if ($success === false)
       {
-        $storage->reportFailedLogin($user ? $user->id : null, $_SERVER["REMOTE_ADDR"]);
-
-        $this->errorMessage = l("Incorrect username or password");
-        return;
+        header('HTTP/1.0 401 Unauthorized', true, 401);
+        $response = array("error" => $this->errorMessage);
       }
-    }
+      else
+      {
+        $response = $success;
+      }
 
-    $this->authorizeUser($user);
+      echo json_encode($response);
+      $this->setTemplate(null); // prevent view rendering
+    }
   }
 
   function logOutRoute()
@@ -165,6 +149,47 @@ class LoginController extends GatewayController
       $this->openIdModeRoute($this->openId->mode);
     else
       parent::route();
+  }
+
+  private function performLocalLogin($isAsync = false)
+  {
+    $this->username = $_POST["username"];
+    $password = $_POST["password"];
+
+    $this->errorMessage = null;
+
+    if (strlen(trim($this->username)) < 1)
+    {
+      $this->errorMessage = l("Enter a valid username");
+      return false;
+    }
+    else if (strlen($password) < 1)
+    {
+      $this->errorMessage = l("Enter a valid password");
+      return false;
+    }
+
+    if ($this->shouldThrottleLogin())
+    {
+      $this->errorMessage = l("Too many unsuccessful attempts. Try again in a short while");
+      return false;
+    }
+
+    if (!$this->errorMessage)
+    {
+      $storage = Storage::getInstance();
+      $user = $storage->findUserWithUsername($this->username, $hash);
+
+      if ($user === false || !$this->getHasher()->CheckPassword($password, $hash))
+      {
+        $storage->reportFailedLogin($user ? $user->id : null, $_SERVER["REMOTE_ADDR"]);
+
+        $this->errorMessage = l("Incorrect username or password");
+        return false;
+      }
+    }
+
+    return $this->authorizeUser($user, $isAsync);
   }
 
   private function shouldThrottleLogin()
