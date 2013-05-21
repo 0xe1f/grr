@@ -67,7 +67,7 @@ Limitations
 
 _grr_ is currently in a late-alpha/early-beta stage, and as a result:
 
-* The design of the web application is atrocious, because _dammit Kirk, I'm a programmer, not a designer!_
+* The design of the web application is atrocious, because _dammit Jim, I'm a programmer, not a designer!_
 * Administrative features were mostly an afterthought and could certainly do with a redesign/overhaul
 
   [1]: http://www.google.com/reader/  "Google Reader"
