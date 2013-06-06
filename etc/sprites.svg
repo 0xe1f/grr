@@ -39,8 +39,8 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="0.37830882"
-     inkscape:cx="-938.2801"
-     inkscape:cy="-3410.0505"
+     inkscape:cx="400.07058"
+     inkscape:cy="-1734.0771"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="false"
@@ -48,8 +48,8 @@
      inkscape:guide-bbox="true"
      inkscape:window-width="1606"
      inkscape:window-height="949"
-     inkscape:window-x="173"
-     inkscape:window-y="391"
+     inkscape:window-x="251"
+     inkscape:window-y="232"
      inkscape:window-maximized="0">
     <sodipodi:guide
        orientation="1,0"
@@ -544,6 +544,54 @@
          d="m -244.28571,4437.3235 -239.29889,239.299 m 239.29889,-239.299 0,151.5998 m 0,-151.5998 -151.59986,0"
          style="fill:none;stroke:#ffffff;stroke-width:40;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
          id="path4342" />
+    </g>
+    <g
+       inkscape:export-ydpi="18.91"
+       inkscape:export-xdpi="18.91"
+       inkscape:export-filename="/Users/akop/Desktop/ic_star_on_96.png"
+       style="fill:#ffe31f;fill-opacity:1;stroke:#7474d2;stroke-width:15;stroke-linejoin:round;stroke-miterlimit:10;stroke-opacity:1;stroke-dasharray:none"
+       transform="matrix(0.99980352,0.01982206,-0.01982206,0.99980352,627.96751,2446.9428)"
+       id="g3132">
+      <path
+         sodipodi:type="star"
+         style="fill:#ffe31f;fill-opacity:1;stroke:#7474d2;stroke-width:15;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:10;stroke-opacity:1;stroke-dasharray:none"
+         id="path3134"
+         sodipodi:sides="5"
+         sodipodi:cx="285.71429"
+         sodipodi:cy="249.50504"
+         sodipodi:r1="232.32193"
+         sodipodi:r2="101.33799"
+         sodipodi:arg1="0.40656889"
+         sodipodi:arg2="1.0348875"
+         inkscape:flatsided="false"
+         inkscape:rounded="0"
+         inkscape:randomized="0"
+         d="M 499.09806,341.37912 337.45977,336.63594 264.27605,480.83571 218.83811,325.64284 59.080969,300.60117 192.63707,209.42988 167.08544,49.753507 295.06559,148.59943 439.03095,74.95567 384.57094,227.21709 z"
+         transform="matrix(0.86893509,0.49492605,-0.49492605,0.86893509,167.94804,-104.07724)" />
+    </g>
+    <g
+       id="g3910"
+       transform="matrix(0.99980352,0.01982206,-0.01982206,0.99980352,627.96751,3006.9428)"
+       style="fill:#ffffff;fill-opacity:1;stroke:#7474d2;stroke-width:15;stroke-linejoin:round;stroke-miterlimit:10;stroke-opacity:1;stroke-dasharray:none"
+       inkscape:export-filename="/Users/akop/Desktop/ic_star_off_96.png"
+       inkscape:export-xdpi="18.91"
+       inkscape:export-ydpi="18.91">
+      <path
+         transform="matrix(0.86893509,0.49492605,-0.49492605,0.86893509,167.94804,-104.07724)"
+         d="M 499.09806,341.37912 337.45977,336.63594 264.27605,480.83571 218.83811,325.64284 59.080969,300.60117 192.63707,209.42988 167.08544,49.753507 295.06559,148.59943 439.03095,74.95567 384.57094,227.21709 z"
+         inkscape:randomized="0"
+         inkscape:rounded="0"
+         inkscape:flatsided="false"
+         sodipodi:arg2="1.0348875"
+         sodipodi:arg1="0.40656889"
+         sodipodi:r2="101.33799"
+         sodipodi:r1="232.32193"
+         sodipodi:cy="249.50504"
+         sodipodi:cx="285.71429"
+         sodipodi:sides="5"
+         id="path3913"
+         style="fill:#ffffff;fill-opacity:1;stroke:#7474d2;stroke-width:15;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:10;stroke-opacity:1;stroke-dasharray:none"
+         sodipodi:type="star" />
     </g>
   </g>
 </svg>
