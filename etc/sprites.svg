@@ -39,17 +39,17 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="0.37830882"
-     inkscape:cx="400.07058"
-     inkscape:cy="-1734.0771"
+     inkscape:cx="-67.801144"
+     inkscape:cy="-2157.012"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="false"
      showguides="true"
      inkscape:guide-bbox="true"
-     inkscape:window-width="1606"
-     inkscape:window-height="949"
-     inkscape:window-x="251"
-     inkscape:window-y="232"
+     inkscape:window-width="1548"
+     inkscape:window-height="1019"
+     inkscape:window-x="130"
+     inkscape:window-y="135"
      inkscape:window-maximized="0">
     <sodipodi:guide
        orientation="1,0"
@@ -591,6 +591,30 @@
          sodipodi:sides="5"
          id="path3913"
          style="fill:#ffffff;fill-opacity:1;stroke:#7474d2;stroke-width:15;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:10;stroke-opacity:1;stroke-dasharray:none"
+         sodipodi:type="star" />
+    </g>
+    <g
+       id="g3140"
+       transform="matrix(0.99980352,0.01982206,-0.01982206,0.99980352,627.96751,3506.9428)"
+       style="fill:#ffc043;fill-opacity:1;stroke:#7474d2;stroke-width:15;stroke-linejoin:round;stroke-miterlimit:10;stroke-opacity:1;stroke-dasharray:none;opacity:1"
+       inkscape:export-filename="/Users/akop/Desktop/ic_star_pressed_32.png"
+       inkscape:export-xdpi="6.3000002"
+       inkscape:export-ydpi="6.3000002">
+      <path
+         transform="matrix(0.86893509,0.49492605,-0.49492605,0.86893509,167.94804,-104.07724)"
+         d="M 499.09806,341.37912 337.45977,336.63594 264.27605,480.83571 218.83811,325.64284 59.080969,300.60117 192.63707,209.42988 167.08544,49.753507 295.06559,148.59943 439.03095,74.95567 384.57094,227.21709 z"
+         inkscape:randomized="0"
+         inkscape:rounded="0"
+         inkscape:flatsided="false"
+         sodipodi:arg2="1.0348875"
+         sodipodi:arg1="0.40656889"
+         sodipodi:r2="101.33799"
+         sodipodi:r1="232.32193"
+         sodipodi:cy="249.50504"
+         sodipodi:cx="285.71429"
+         sodipodi:sides="5"
+         id="path3142"
+         style="fill:#ffc043;fill-opacity:1;stroke:#7474d2;stroke-width:15;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:10;stroke-opacity:1;stroke-dasharray:none"
          sodipodi:type="star" />
     </g>
   </g>
