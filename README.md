@@ -5,7 +5,12 @@ grr >:(
 
 _grr_ consists of two components - the web server application, which interacts with the user, and the shell application, which routinely updates feeds in the background.
 
-You can see a video of it here: http://www.youtube.com/watch?v=6gIGjweNu7Q
+See a video of it here: http://www.youtube.com/watch?v=6gIGjweNu7Q
+
+Clients
+-------
+
+There's an [official Android client] [9] for _grr_.
 
 Features
 --------
@@ -78,3 +83,4 @@ _grr_ is currently in a late-alpha/early-beta stage, and as a result:
   [6]: http://openid.net/ "OpenID"
   [7]: https://www.google.com/takeout/ "Google Takeout"
   [8]: http://httpd.apache.org/ "Apache"
+  [9]: https://github.com/melllvar/angrroid "angrroid"
