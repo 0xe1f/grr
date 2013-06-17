@@ -77,7 +77,8 @@ class Controller
         $rootUri = substr($rootUri, 1);
     }
 
-    return "http://{$_SERVER['SERVER_NAME']}/{$rootUri}?{$queryString}";
+    $proto = (!empty($_SERVER['HTTPS']) ? 'https' : 'http');
+    return "{$proto}://{$_SERVER['SERVER_NAME']}/{$rootUri}?{$queryString}";
   }
 
   function getCurrentUser()
