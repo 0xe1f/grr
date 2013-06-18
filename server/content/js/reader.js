@@ -563,7 +563,7 @@ $().ready(function()
     // the unread count
 
     var selected = getSelectedFeed();
-    if (!selected)
+    if (!selected || selected.unread === null)
       $('.filter-new').text(l('New items'));
     else if (selected.unread == 0)
       $('.filter-new').text(l('No new items'));
