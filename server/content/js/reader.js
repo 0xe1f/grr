@@ -544,14 +544,21 @@ $().ready(function()
       feedDom.find('.feed-item').toggleClass('has-unread', feed.unread > 0);
     });
 
-    var allItems = $('.subscriptions').data('object');
-
     // Update the title bar
 
+    var allItems = $('.subscriptions').data('object');
     var title = '>:(';
+
     if (allItems.unread > 0)
       title += ' (' + allItems.unread + ')';
 
+    document.title = title;
+    
+    updateUnreadCounts();
+  };
+
+  var updateUnreadCounts = function()
+  {
     // Update the 'new items' caption in the dropdown to reflect
     // the unread count
 
@@ -564,8 +571,6 @@ $().ready(function()
       $('.filter-new').text(l('1 new item'));
     else
       $('.filter-new').text(l('%1$s new items', [selected.unread]));
-
-    document.title = title;
   };
 
   var buildFeedDom = function(feeds)
@@ -894,6 +899,8 @@ $().ready(function()
         showToast(response.error.message, true);
       }
     });
+
+    updateUnreadCounts();
   };
 
   var appendEntries = function(entries, canContinue)
