@@ -1,9 +1,11 @@
 grr >:(
 =======
 
-**grr** is an attempt at replacing the gaping hole that the impending departure of [Google Reader] [1] will leave in my daily routine. Its (initially temporary) name is an abbreviation for _Google Reader Replacement_, but seeing as how it also doubles as a decent onomatopoeic representation of my feelings towards the discontinuation of one of Google's most useful products, it's now the app's de-facto name.
+**grr** is an attempt to replace the gaping hole that the impending departure of [Google Reader] [1] will leave in my daily routine. Its (initially temporary) name is an abbreviation for _Google Reader Replacement_, but seeing as how it also doubles as a decent onomatopoeic representation of my feelings towards the discontinuation of one of Google's most useful products, it's now the app's de-facto name.
 
 _grr_ consists of two components - the web server application, which interacts with the user, and the shell application, which routinely updates feeds in the background.
+
+![Screenshot](http://i.imgur.com/lvPfScP.png "Screenshot")
 
 See a video of it here: http://www.youtube.com/watch?v=6gIGjweNu7Q
 
