@@ -36,11 +36,7 @@
       </div>
       <button class="navigate"><?= l("Navigate") ?></button>
       <button class="refresh"><?= l("Refresh") ?></button>
-      <select class="article-filter">
-        <option value="all" class="filter-all"><?= l("All Items") ?></option>
-        <option value="new" class="filter-new"><?= l("New Items") ?></option>
-        <option value="star" class="filter-star"><?= l("Starred") ?></option>
-      </select>
+      <button class="filter dropdown"><?= l("All Items") ?></button>
       <button class="mark-all-as-read"><?= l("Mark all as read") ?></button>
     </div>
     <div id="reader">
@@ -57,6 +53,11 @@
     <ul id="menu-root" class="menu">
       <li class="menu-new-folder"><?= l("New folder...") ?></li>
       <li class="menu-sub"><?= l("Subscribe...") ?></li>
+    </ul>
+    <ul id="menu-filter" class="menu" data-dropdown="button.filter">
+      <li class="menu-all-items group-filter" data-value="all"><?= l("All items") ?></li>
+      <li class="menu-new-items group-filter" data-value="new"><?= l("New items") ?></li>
+      <li class="menu-starred-items group-filter" data-value="star"><?= l("Starred") ?></li>
     </ul>
     <ul id="menu-feed" class="menu">
       <li class="menu-rename-sub"><?= l("Rename subscription...") ?></li>

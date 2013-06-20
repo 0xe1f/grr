@@ -519,6 +519,13 @@ button
   font-weight: bold;
 }
 
+button.dropdown
+{
+  background: url(../sprites.png) no-repeat right #eee;
+  background-position: 100% -270px;
+  padding: 0.5em 30px 0.5em 20px;
+}
+
 .navigate
 {
   display: none;
@@ -605,7 +612,7 @@ button.subscribe
 #toast.error span 
 {
   border-color: red;
-  background-color: #FFaaaa;
+  background-color: #ffaaaa;
 }
 
 .spinner
@@ -640,6 +647,7 @@ ul.menu
   border: solid 1px #ccc;
   border-radius: 2px;
   box-shadow: 2px 2px 2px #ddd;
+  min-width: 13em;
 }
 
 .menu li
@@ -658,6 +666,10 @@ ul.menu
 {
   height: 1px;
   background-color: #ccc;
+}
+
+.menu li.selected-menu-item
+{
 }
 
 .shortcuts

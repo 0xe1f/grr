@@ -145,6 +145,24 @@ $().ready(function()
     var item = $(this);
     var menu = item.closest('ul');
 
+    var groupName = null;
+    $.each(item.attr('class').split(/\s+/), function()
+    {
+      if (this.indexOf('group-') == 0)
+      {
+        groupName = this;
+        return false;
+      }
+    });
+
+    if (groupName)
+    {
+      $('.' + groupName).removeClass('selected-menu-item');
+      item.addClass('selected-menu-item');
+    }
+
+    $(menu.data('dropdown')).text(item.text());
+
     menu.hide();
     onMenuItemClick(menu.data('object'), item);
   });
@@ -170,9 +188,26 @@ $().ready(function()
     e.stopPropagation();
   });
 
-  $('.article-filter').change(function()
+  $('button.filter').click(function(e)
   {
-    reloadItems();
+    var topOffset = 0;
+    var selected = $('#menu-filter').find('.selected-menu-item');
+
+    $('.menu').hide();
+    $('#menu-filter')
+      .show();
+
+    if (selected.length)
+      topOffset += selected.position().top;
+
+    $('#menu-filter')
+      .css(
+      {
+        top: $(this).offset().top - topOffset, 
+        left: $(this).offset().left,
+      });
+
+    e.stopPropagation();
   });
 
   $('.entries-container').scroll(function()
@@ -388,7 +423,7 @@ $().ready(function()
     $.post('?c=articles', 
     { 
       toggleUnreadUnder: getSelectedFeedId(),
-      filter: $('.article-filter').val(),
+      filter: $('.group-filter.selected-menu-item').data('value'),
     },
     function(response)
     {
@@ -563,14 +598,22 @@ $().ready(function()
     // the unread count
 
     var selected = getSelectedFeed();
+    var caption;
+
     if (!selected)
-      $('.filter-new').text(l('New items'));
+      caption = l('New items');
     else if (selected.unread == 0)
-      $('.filter-new').text(l('No new items'));
+      caption = l('No new items');
     else if (selected.unread == 1)
-      $('.filter-new').text(l('1 new item'));
+      caption = l('1 new item');
     else
-      $('.filter-new').text(l('%1$s new items', [selected.unread]));
+      caption = l('%1$s new items', [selected.unread]);
+
+    var newItems = $('.menu-new-items');
+
+    newItems.text(caption);
+    if (newItems.is('.selected-menu-item'))
+      $('.filter').text(caption);
   };
 
   var buildFeedDom = function(feeds)
@@ -839,7 +882,7 @@ $().ready(function()
     $.getJSON('?c=articles',
     {
       fetch: getSelectedFeedId(),
-      filter: $('.article-filter').val(),
+      filter: $('.group-filter.selected-menu-item').data('value'),
       continue: continueAfter,
     },
     function(response)
@@ -883,7 +926,7 @@ $().ready(function()
     $.getJSON('?c=articles', 
     {
       fetch: feed.id,
-      filter: $('.article-filter').val(),
+      filter: $('.group-filter.selected-menu-item').data('value'),
     }, 
     function(response) 
     {
@@ -1062,14 +1105,18 @@ $().ready(function()
 
   var onMenuItemClick = function(contextObject, menuItem)
   {
-    if (menuItem.hasClass('menu-rename-sub'))
+    if (menuItem.is('.menu-rename-sub'))
       renameSubscription(contextObject);
-    else if (menuItem.hasClass('menu-unsub'))
+    else if (menuItem.is('.menu-unsub'))
       unsubscribe(contextObject);
-    else if (menuItem.hasClass('menu-sub'))
+    else if (menuItem.is('.menu-sub'))
       subscribe(contextObject);
-    else if (menuItem.hasClass('menu-new-folder'))
+    else if (menuItem.is('.menu-new-folder'))
       createFolder(contextObject);
+    else if (menuItem.is('.menu-all-items, .menu-new-items, .menu-starred-items'))
+    {
+      reloadItems();
+    }
   };
 
   // Schedule routine updates (also handles initial feed update)
@@ -1100,4 +1147,15 @@ $().ready(function()
 
   if ($.cookie('floated-nav') === 'true')
     toggleNavMode(true);
+
+  (function()
+  {
+    // Select first item in filter dropdown
+
+    var menu = $('#menu-filter');
+    var selected = menu.find('li:first');
+
+    selected.addClass('selected-menu-item');
+    $(menu.data('dropdown')).text(selected.text());
+  })();
 });
