@@ -600,7 +600,7 @@ $().ready(function()
     var selected = getSelectedFeed();
     var caption;
 
-    if (!selected)
+    if (!selected || selected.unread === null)
       caption = l('New items');
     else if (selected.unread == 0)
       caption = l('No new items');
