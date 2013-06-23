@@ -501,11 +501,6 @@ ul#feeds,
   float: right;
 }
 
-select
-{
-  width: 150px;
-}
-
 button
 {
   height: 30px;
@@ -513,9 +508,9 @@ button
   background-color: #eee;
   border: solid 1px #aaa;
   border-radius: 3px;
-  box-shadow: 1px 1px 1px #aaa;
+  box-shadow: 1px 1px 1px #ddd;
   font-family: arial, sans-serif;
-  font-size: 9pt;
+  font-size: 8pt;
   font-weight: bold;
 }
 
@@ -536,20 +531,35 @@ button.dropdown
   display: inline-block;
 }
 
-#navbar button.select-article.up
+.select-article
+{
+  width: 40px;
+  padding: 0;
+}
+
+.select-article.up
 {
   margin-right: 0;
   box-shadow: 0 1px 1px #aaa;
   border-right: none;
   border-top-right-radius: 0;
   border-bottom-right-radius: 0;
+  background: url(../sprites.png) no-repeat -25px -240px #eee;
 }
 
-#navbar button.select-article.down
+.select-article.down
 {
   margin-left: 0;
   border-top-left-radius: 0;
   border-bottom-left-radius: 0;
+  background: url(../sprites.png) no-repeat 5px -240px #eee;
+}
+
+.refresh
+{
+  width: 60px;
+  padding: 0;
+  background: url(../sprites.png) no-repeat 0 -270px #eee;
 }
 
 #navbar button:active
@@ -560,11 +570,6 @@ button.dropdown
 #navbar button:hover
 {
   border-color: #777;
-}
-
-button.refresh
-{
-  width: 100px;
 }
 
 button.subscribe
@@ -642,7 +647,7 @@ ul.menu
   display: none;
   margin: 0;
   padding-left: 0;
-  background-color: #eee;
+  background-color: #fff;
   list-style-type: none;
   border: solid 1px #ccc;
   border-radius: 2px;

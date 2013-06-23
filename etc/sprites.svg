@@ -133,16 +133,16 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="0.099572397"
-     inkscape:cx="1137.4398"
-     inkscape:cy="-2406.7931"
+     inkscape:zoom="0.53286244"
+     inkscape:cx="2471.995"
+     inkscape:cy="-3830.5117"
      inkscape:document-units="px"
-     inkscape:current-layer="layer1"
+     inkscape:current-layer="g5243"
      showgrid="false"
      showguides="true"
      inkscape:guide-bbox="true"
-     inkscape:window-width="1730"
-     inkscape:window-height="1230"
+     inkscape:window-width="1280"
+     inkscape:window-height="756"
      inkscape:window-x="57"
      inkscape:window-y="0"
      inkscape:window-maximized="0">
@@ -1236,6 +1236,57 @@
          id="path6576"
          style="fill:#ffc043;fill-opacity:1;stroke:#666666;stroke-width:15;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:0.98431373000000000;stroke-dasharray:none"
          sodipodi:type="arc" />
+    </g>
+    <path
+       style="fill:none;fill-opacity:1;stroke:#444444;stroke-width:40;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+       d="m 1305.4557,5036.7533 130.4889,-130.4888 130.4888,130.4888"
+       id="rect3329"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="ccc"
+       inkscape:export-filename="/Users/akop/Desktop/up.png"
+       inkscape:export-xdpi="4.46"
+       inkscape:export-ydpi="4.46" />
+    <path
+       sodipodi:nodetypes="ccc"
+       inkscape:connector-curvature="0"
+       id="path4123"
+       d="m 1765.4557,4906.2645 130.4889,130.4888 130.4888,-130.4888"
+       style="fill:none;fill-opacity:1;stroke:#444444;stroke-width:40;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+       inkscape:export-filename="/Users/akop/Desktop/down.png"
+       inkscape:export-xdpi="4.46"
+       inkscape:export-ydpi="4.46" />
+    <g
+       id="g5243"
+       transform="translate(96.93853,-1141.7205)"
+       inkscape:export-filename="/Users/akop/Desktop/refresh.png"
+       inkscape:export-xdpi="2.3499999"
+       inkscape:export-ydpi="2.3499999"
+       style="stroke-width:80;stroke-miterlimit:4;stroke-dasharray:none">
+      <path
+         sodipodi:nodetypes="ccc"
+         inkscape:connector-curvature="0"
+         id="path5239"
+         d="m 2600.1776,6027.1894 173.7793,62.0925 62.0926,-173.779"
+         style="fill:none;stroke:#444444;stroke-width:60;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+         inkscape:export-filename="/Users/akop/Desktop/refresh.png"
+         inkscape:export-xdpi="2.4237792"
+         inkscape:export-ydpi="2.4237792" />
+      <path
+         transform="matrix(0.99534097,-0.09641764,-0.09641764,-0.99534097,624.18753,12323.116)"
+         sodipodi:open="true"
+         sodipodi:end="5.7817683"
+         sodipodi:start="0"
+         d="m 2711.3708,6021.9395 c 0,157.7368 -127.871,285.6078 -285.6079,285.6078 -157.7368,0 -285.6078,-127.871 -285.6078,-285.6078 0,-157.7369 127.871,-285.6079 285.6078,-285.6079 104.3047,0 200.3143,56.8601 250.4503,148.3251"
+         sodipodi:ry="285.60788"
+         sodipodi:rx="285.60788"
+         sodipodi:cy="6021.9395"
+         sodipodi:cx="2425.7629"
+         id="path5241"
+         style="fill:none;stroke:#444444;stroke-width:59.99999976;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+         sodipodi:type="arc"
+         inkscape:export-filename="/Users/akop/Desktop/refresh.png"
+         inkscape:export-xdpi="2.4237792"
+         inkscape:export-ydpi="2.4237792" />
     </g>
   </g>
 </svg>
