@@ -30,6 +30,7 @@ import (
   "io/ioutil"
   "bytes"
   "errors"
+  "strings"
 )
 
 type Feed struct {
@@ -58,6 +59,15 @@ type GenericFeed struct {
   XMLName xml.Name
 }
 
+
+func charsetReader(charset string, r io.Reader) (io.Reader, error) {
+  // FIXME: This hardly does anything useful at the moment
+  if strings.ToLower(charset) == "iso-8859-1" {
+    return r, nil
+  }
+  return nil, errors.New("Unsupported character set encoding: " + charset)
+}
+
 func UnmarshalStream(reader io.Reader) (*Feed, error) {
   // Read the stream into memory (we'll need to parse it twice)
   var contentReader *bytes.Reader
@@ -67,11 +77,13 @@ func UnmarshalStream(reader io.Reader) (*Feed, error) {
     return nil, err
   }
 
-  genericFeed := &GenericFeed{}
-  decoder := xml.NewDecoder(contentReader)
+  genericFeed := GenericFeed{}
 
-  if err := decoder.Decode(genericFeed); err != nil {
-    return nil, err
+  decoder := xml.NewDecoder(contentReader)
+  decoder.CharsetReader = charsetReader
+
+  if err := decoder.Decode(&genericFeed); err != nil {
+     return nil, err
   }
 
   var xmlFeed FeedMarshaler
@@ -89,6 +101,8 @@ func UnmarshalStream(reader io.Reader) (*Feed, error) {
   contentReader.Seek(0, 0)
 
   decoder = xml.NewDecoder(contentReader)
+  decoder.CharsetReader = charsetReader
+  
   if err := decoder.Decode(xmlFeed); err != nil {
     return nil, err
   }

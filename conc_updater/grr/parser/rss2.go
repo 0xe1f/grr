@@ -51,7 +51,7 @@ type RSS2Entry struct {
 func (rss2Feed *RSS2Feed) Marshal() (feed Feed, err error) {
   updated := time.Time {}
   if rss2Feed.Updated != "" {
-    updated, err = AsTime(rss2Feed.Updated)
+    updated, err = parseRSS2Time(rss2Feed.Updated)
   }
 
   feed = Feed {
@@ -89,7 +89,7 @@ func (rss2Entry *RSS2Entry) Marshal() (entry *Entry, err error) {
 
   published := time.Time {}
   if rss2Entry.Published != "" {
-    published, err = AsTime(rss2Entry.Published)
+    published, err = parseRSS2Time(rss2Entry.Published)
   }
 
   entry = &Entry {
@@ -104,11 +104,15 @@ func (rss2Entry *RSS2Entry) Marshal() (entry *Entry, err error) {
   return entry, err
 }
 
-func AsTime(timeSpec string) (time.Time, error) {
+func parseRSS2Time(timeSpec string) (time.Time, error) {
   if timeSpec != "" {
     if parsedTime, err := time.Parse("Mon, 02 Jan 2006 15:04:05 MST", timeSpec); err == nil {
       return parsedTime, nil
     } else if parsedTime, err := time.Parse("Mon, 02 Jan 2006 15:04:05 -0700", timeSpec); err == nil {
+      return parsedTime, nil
+    } else if parsedTime, err := time.Parse("2006-01-02T15:04:05-07:00", timeSpec); err == nil {
+      return parsedTime, nil
+    } else if parsedTime, err := time.Parse("Mon, 02 Jan 2006 15:04:05 Z", timeSpec); err == nil {
       return parsedTime, nil
     } else {
       return time.Time {}, errors.New("Unrecognized time format: " + timeSpec)
