@@ -25,9 +25,13 @@ package parser
 
 import (
   "time"
-  "errors"
   "encoding/xml"
 )
+
+var supportedRSS1TimeFormats = []string {
+  "2006-01-02T15:04-07:00",
+  "2006-01-02T15:04:05-07:00",
+}
 
 type RSS1Feed struct {
   XMLName xml.Name `xml:"http://www.w3.org/1999/02/22-rdf-syntax-ns# RDF"`
@@ -51,7 +55,7 @@ type RSS1Entry struct {
 func (rss1Feed *RSS1Feed) Marshal() (feed Feed, err error) {
   updated := time.Time {}
   if rss1Feed.Updated != "" {
-    updated, err = parseRSS1Time(rss1Feed.Updated)
+    updated, err = parseTime(supportedRSS1TimeFormats, rss1Feed.Updated)
   }
 
   feed = Feed {
@@ -89,7 +93,7 @@ func (rss1Entry *RSS1Entry) Marshal() (entry *Entry, err error) {
 
   published := time.Time {}
   if rss1Entry.Published != "" {
-    published, err = parseRSS1Time(rss1Entry.Published)
+    published, err = parseTime(supportedRSS1TimeFormats, rss1Entry.Published)
   }
 
   entry = &Entry {
@@ -102,18 +106,4 @@ func (rss1Entry *RSS1Entry) Marshal() (entry *Entry, err error) {
   }
 
   return entry, err
-}
-
-func parseRSS1Time(timeSpec string) (time.Time, error) {
-  if timeSpec != "" {
-    if parsedTime, err := time.Parse("2006-01-02T15:04-07:00", timeSpec); err == nil {
-      return parsedTime, nil
-    } else if parsedTime, err := time.Parse("2006-01-02T15:04:05-07:00", timeSpec); err == nil {
-      return parsedTime, nil
-    } else {
-      return time.Time {}, errors.New("Unrecognized time format: " + timeSpec)
-    }
-  }
-
-  return time.Time {}, nil
 }

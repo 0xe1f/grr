@@ -85,9 +85,11 @@ func DumpURLInfo(URL string) {
 
   fmt.Println("OK!   ", URL)
 
-  return
+  // return
   bf, _ := json.MarshalIndent(feed, "", "  ")
   fmt.Println(string(bf))
+
+  fmt.Println("--- DONE")
 }
 
 func Parse(URL string) (*parser.Feed, error) {

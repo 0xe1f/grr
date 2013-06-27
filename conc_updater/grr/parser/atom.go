@@ -65,10 +65,14 @@ type AtomText struct {
   Content string `xml:",chardata"`
 }
 
+var supportedAtomTimeFormats = []string {
+  time.RFC3339,
+}
+
 func (atomFeed *AtomFeed) Marshal() (feed Feed, err error) {
   updated := time.Time {}
   if atomFeed.Updated != "" {
-    updated, err = time.Parse(time.RFC3339, atomFeed.Updated)
+    updated, err = parseTime(supportedAtomTimeFormats, atomFeed.Updated)
   }
 
   linkUrl := ""
@@ -120,12 +124,12 @@ func (atomEntry *AtomEntry) Marshal() (entry *Entry, err error) {
 
   published := time.Time {}
   if atomEntry.Published != "" {
-    published, err = time.Parse(time.RFC3339, atomEntry.Published)
+    published, err = parseTime(supportedAtomTimeFormats, atomEntry.Published)
   }
 
   updated := time.Time {}
   if atomEntry.Updated != "" {
-    updated, err = time.Parse(time.RFC3339, atomEntry.Updated)
+    updated, err = parseTime(supportedAtomTimeFormats, atomEntry.Updated)
   }
 
   entry = &Entry {

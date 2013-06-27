@@ -102,7 +102,7 @@ func UnmarshalStream(reader io.Reader) (*Feed, error) {
 
   decoder = xml.NewDecoder(contentReader)
   decoder.CharsetReader = charsetReader
-  
+
   if err := decoder.Decode(xmlFeed); err != nil {
     return nil, err
   }
@@ -113,4 +113,18 @@ func UnmarshalStream(reader io.Reader) (*Feed, error) {
   }
 
   return &feed, nil
+}
+
+func parseTime(supportedFormats []string, timeSpec string) (time.Time, error) {
+  if timeSpec != "" {
+    for _, format := range supportedFormats {
+      if parsedTime, err := time.Parse(format, timeSpec); err == nil {
+        return parsedTime, nil
+      }
+    }
+
+    return time.Time {}, errors.New("Unrecognized time format: " + timeSpec)
+  }
+
+  return time.Time {}, nil
 }

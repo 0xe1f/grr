@@ -1,77 +1,69 @@
-# http://feeds.feedburner.com/blogspot/hsDu
-# http://www.aripulkkinen.com/feed/ 
-# http://feeds.arstechnica.com/arstechnica/everything 
-# http://buttersafe.com/feed/ 
-# http://kenlevine.blogspot.com/feeds/posts/default
-# http://feeds.feedburner.com/freakonomicsradio 
-# http://googlecode.blogspot.com/feeds/posts/default 
-# http://blog.humblebundle.com/rss 
-# http://www.joystiq.com/rss.xml 
-# http://www.msx.org/newsfeed.php 
-# http://feeds.feedburner.com/npr/mqiy 
-# http://googlereader.blogspot.com/feeds/posts/default 
-# http://rss.slashdot.org/Slashdot/slashdot 
-# http://feeds.feedburner.com/oatmealfeed 
-# http://feeds.theonion.com/theonion/daily 
-# http://rss.thesmokinggun.com/rss.asp 
-# http://www.thesuperficial.com/index.xml 
-# http://www.worldwidewords.org/rss/updates.xml 
-# http://syndication.thedailywtf.com/TheDailyWtf 
-# http://blag.xkcd.com/feed/ 
-# http://www.zennaware.com/blog/feed/ 
-# http://feeds.kcrw.com/kcrw/sg 
-# http://joystiq.com/category/podcasts/rss.xml 
-# http://feeds.thisamericanlife.org/talpodcast 
+http://www.realitypanic.com/feed/atom/ 
+http://feeds.feedburner.com/basicinst 
+http://feeds.feedburner.com/VirtualShackles 
+http://espn.go.com/blog/feed?blog=los-angelesdodger-thoughts 
+http://www.aripulkkinen.com/feed/ 
+http://feeds.arstechnica.com/arstechnica/everything 
+http://buttersafe.com/feed/ 
+
+http://kenlevine.blogspot.com/feeds/posts/default
+http://feeds.feedburner.com/freakonomicsradio 
+http://googlecode.blogspot.com/feeds/posts/default 
+http://blog.humblebundle.com/rss 
+http://www.joystiq.com/rss.xml 
+http://www.msx.org/newsfeed.php 
+http://feeds.feedburner.com/npr/mqiy 
+http://googlereader.blogspot.com/feeds/posts/default 
+http://rss.slashdot.org/Slashdot/slashdot 
+http://feeds.feedburner.com/oatmealfeed 
+http://feeds.theonion.com/theonion/daily 
+http://rss.thesmokinggun.com/rss.asp 
+http://www.thesuperficial.com/index.xml 
+http://www.worldwidewords.org/rss/updates.xml 
+http://syndication.thedailywtf.com/TheDailyWtf 
+http://blag.xkcd.com/feed/ 
+http://www.zennaware.com/blog/feed/ 
+http://feeds.kcrw.com/kcrw/sg 
+http://joystiq.com/category/podcasts/rss.xml 
+http://feeds.thisamericanlife.org/talpodcast 
 http://rsspect.com/rss/qwantz.xml 
-# http://xkcd.com/atom.xml 
-# http://dubiousquality.blogspot.com/feeds/posts/default 
-# http://www.gamerswithjobs.com/node/feed 
-# http://feeds.arstechnica.com/arstechnica/gaming 
-# http://feeds.penny-arcade.com/pa-report 
-# http://feeds.feedburner.com/RockPaperShotgun 
-# http://feeds.feedburner.com/43Folders 
-# http://feeds.feedburner.com/typepad/Bobsutton/my_weblog 
-# http://hiddenlosangeles.com/?feed=rss2 
-# http://feeds.lifehack.org/Lifehack 
-# http://feeds.feedburner.com/ThisIsWhyImBroke 
-# http://feeds.feedburner.com/unclutterer 
-# http://home.woot.com/Blog/Feed.ashx 
-# http://kids.woot.com/Blog/Feed.ashx 
-# http://shirt.woot.com/Blog/Rss.aspx 
-# http://sport.woot.com/blog/feed.rss 
-# http://tech.woot.com/blog/feed.rss 
-# http://www.woot.com/Blog/Rss.aspx 
+http://xkcd.com/atom.xml 
+http://dubiousquality.blogspot.com/feeds/posts/default 
+http://www.gamerswithjobs.com/node/feed 
+http://feeds.arstechnica.com/arstechnica/gaming 
+http://feeds.penny-arcade.com/pa-report 
+http://feeds.feedburner.com/RockPaperShotgun 
+http://feeds.feedburner.com/43Folders 
+http://feeds.feedburner.com/typepad/Bobsutton/my_weblog 
+http://hiddenlosangeles.com/?feed=rss2 
+http://feeds.lifehack.org/Lifehack 
+http://feeds.feedburner.com/ThisIsWhyImBroke 
+http://feeds.feedburner.com/unclutterer 
+http://home.woot.com/Blog/Feed.ashx 
+http://kids.woot.com/Blog/Feed.ashx 
+http://shirt.woot.com/Blog/Rss.aspx 
+http://sport.woot.com/blog/feed.rss 
+http://tech.woot.com/blog/feed.rss 
+http://www.woot.com/Blog/Rss.aspx 
 http://www.dodgerthoughts.com/feed/ 
 http://www.forumblueandgold.com/feed/atom/ 
 http://feeds.feedburner.com/2pStart 
-http://www.applegeeks.com/rss/ 
-http://wilshipley.com/blog/rss.xml 
-http://forums.lakersground.net/blog.php/comments/feed/ 
 http://feeds.feedburner.com/DigitalUnrestComic 
-http://espn.go.com/blog/feed?blog=los-angelesdodger-thoughts 
-http://www.hotdogspot.com/atom.xml 
 http://feeds.feedburner.com/Hyperbole-and-a-half 
 http://illicitohio.com/blog/feed/ 
 http://feeds2.feedburner.com/JTIAFD 
 http://lawgeek.typepad.com/lawgeek/rss.xml 
-http://blog.newsweek.com/blogs/levelup/rss.aspx 
-http://forums.lakersground.net/blog.php/feed/ 
-
-http://www.monkeyfluids.com/feeds/posts/default 
 http://pdtblog.blogspot.com/feeds/comments/default 
 http://pdtblog.blogspot.com/feeds/posts/default?alt=rss 
-http://rss.mac.com/greatteacherjoe/iWeb/Robotronic%20Dynamite/Robotronic%20Dynamite!%20The%20Comic/rss.xml 
 http://imablogginghorse.blogspot.com/feeds/posts/default 
 http://www.rsspect.com/rss/threeps.xml 
 http://whaleocalypse.com/?feed=rss2 
 http://feeds.feedburner.com/CrackedRSS 
-http://feeds.feedburner.com/basicinst 
 http://www.brawlinthefamily.com/?feed=rss2 
 http://feeds.feedburner.com/Buttersafe 
 http://feeds.feedburner.com/CorpseRunComics 
 http://feeds.feedburner.com/Explosm 
 http://www.rsspect.com/rss/qwantz.xml 
-http://fanboys-online.com/rss/comic.xml 
 http://www.gocomics.com/foxtrot/rss.pxml 
 http://feeds2.feedburner.com/Kukuburi 
 http://feeds.feedburner.com/ineffableaether 
@@ -80,20 +72,17 @@ http://ourvaluedcustomers.blogspot.com/feeds/posts/default?alt=rss
 http://www.overcompensating.com/index.xml 
 http://www.penny-arcade.com/rss.xml 
 http://pbfcomics.com/feed/feed.xml 
-http://www.pvponline.com/rss/?section=article 
 http://www.questionablecontent.net/QCRSS.xml 
 http://feeds.feedburner.com/smbc-comics/PvLb 
 http://feeds.feedburner.com/abominable 
 http://drmcninja.com/feed/ 
 http://trenchescomic.com/feed 
 http://www.vgcats.com/vgcats.rdf.xml 
-http://feeds.feedburner.com/VirtualShackles 
 http://www.xkcd.com/rss.xml 
 http://www.alistapart.com/feed/rss.xml 
 http://kenlevine.blogspot.com/feeds/posts/default?alt=rss 
 http://www.improbableinsights.com/?feed=rss2 
 http://feedproxy.google.com/blogspot/dtKx 
-http://www.realitypanic.com/feed/atom/ 
 http://feeds.feedburner.com/ThatsNerdalicious 
 http://tinypenguininja.tumblr.com/rss 
 http://feeds.feedburner.com/wwdn 
@@ -102,16 +91,12 @@ http://feeds2.feedburner.com/AndroidCommunity
 http://feeds.feedburner.com/blogspot/hsDu 
 http://www.reddit.com/r/Android/.rss 
 http://feeds.feedburner.com/codinghorror/ 
-http://eddiekim.posterous.com/rss.xml 
-http://feeds.feedburner.com/errtheblog 
 http://feeds.feedburner.com/hasmanythrough 
 http://feeds.feedburner.com/HousingPanic 
 http://www.huffingtonpost.com/author/index.php?author=larry-david 
-http://neilsweb.com/feed 
 http://googlewebmastercentral.blogspot.com/atom.xml 
 http://feeds.feedburner.com/RailsInside 
 http://www.rbgrn.net/rss.xml 
-http://feeds.feedburner.com/ShanesBrainExtension 
 http://jeff-vogel.blogspot.com/feeds/posts/default 
 http://www.zerohedge.com/rss.xml 
 http://feeds.feedburner.com/codinghorror 
