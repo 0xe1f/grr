@@ -41,6 +41,18 @@ type Feed struct {
   Entry []*Entry
 }
 
+func (feed *Feed)LatestEntryModification() time.Time {
+  mostRecent := time.Time {}
+  for _, entry := range feed.Entry {
+    latestModification := entry.LatestModification()
+    if latestModification.After(mostRecent) {
+      mostRecent = latestModification
+    }
+  }
+
+  return mostRecent
+}
+
 type Entry struct {
   GUID string
   Author string
@@ -49,6 +61,14 @@ type Entry struct {
   Published time.Time
   Updated time.Time
   WWWURL string
+}
+
+func (entry *Entry)LatestModification() time.Time {
+  if entry.Updated.After(entry.Published) {
+    return entry.Updated
+  }
+
+  return entry.Published
 }
 
 type FeedMarshaler interface {
@@ -88,11 +108,11 @@ func UnmarshalStream(reader io.Reader) (*Feed, error) {
 
   var xmlFeed FeedMarshaler
   if genericFeed.XMLName.Space == "http://www.w3.org/1999/02/22-rdf-syntax-ns#" && genericFeed.XMLName.Local == "RDF" {
-    xmlFeed = &RSS1Feed{}
+    xmlFeed = &rss1Feed{}
   } else if genericFeed.XMLName.Local == "rss" {
-    xmlFeed = &RSS2Feed{}
+    xmlFeed = &rss2Feed{}
   } else if genericFeed.XMLName.Space == "http://www.w3.org/2005/Atom" && genericFeed.XMLName.Local == "feed" {
-    xmlFeed = &AtomFeed{}
+    xmlFeed = &atomFeed{}
   } else {
     return nil, errors.New("Unsupported type of feed (" +
       genericFeed.XMLName.Space + ":" + genericFeed.XMLName.Local + ")")
@@ -119,7 +139,7 @@ func parseTime(supportedFormats []string, timeSpec string) (time.Time, error) {
   if timeSpec != "" {
     for _, format := range supportedFormats {
       if parsedTime, err := time.Parse(format, timeSpec); err == nil {
-        return parsedTime, nil
+        return parsedTime.UTC(), nil
       }
     }
 

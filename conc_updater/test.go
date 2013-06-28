@@ -3,6 +3,7 @@ package main
 import (
   "os"
   "fmt"
+  "time"
   "log"
   "net/http"
   "encoding/json"
@@ -13,7 +14,6 @@ import (
   "errors"
 )
 
-// FIXME: sort out timezone information (esp. RSS)
 // FIXME: syndication info
 // HTML parsing: pull out rss link
 
@@ -30,6 +30,8 @@ func main() {
   }
 
   defer fi.Close()
+
+  startTime := time.Now()
 
   async := false
   i := 0
@@ -59,7 +61,7 @@ func main() {
     fmt.Scanln(&input)
   }
 
-  fmt.Println("done")
+  fmt.Println("done in ", time.Since(startTime))
 
   if err := scanner.Err(); err != nil {
     log.Fatal(err)
@@ -84,8 +86,9 @@ func DumpURLInfo(URL string) {
   }
 
   fmt.Println("OK!   ", URL)
+  // fmt.Println("LU:  ", feed.LatestEntryModification())
+  // feed.Entry = nil
 
-  // return
   bf, _ := json.MarshalIndent(feed, "", "  ")
   fmt.Println(string(bf))
 

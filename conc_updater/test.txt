@@ -1,11 +1,11 @@
+http://feeds.feedburner.com/oatmealfeed 
+http://feeds.feedburner.com/VirtualShackles 
+http://www.aripulkkinen.com/feed/ 
+http://buttersafe.com/feed/ 
 http://www.realitypanic.com/feed/atom/ 
 http://feeds.feedburner.com/basicinst 
-http://feeds.feedburner.com/VirtualShackles 
 http://espn.go.com/blog/feed?blog=los-angelesdodger-thoughts 
-http://www.aripulkkinen.com/feed/ 
 http://feeds.arstechnica.com/arstechnica/everything 
-http://buttersafe.com/feed/ 
-
 http://kenlevine.blogspot.com/feeds/posts/default
 http://feeds.feedburner.com/freakonomicsradio 
 http://googlecode.blogspot.com/feeds/posts/default 
@@ -15,7 +15,6 @@ http://www.msx.org/newsfeed.php
 http://feeds.feedburner.com/npr/mqiy 
 http://googlereader.blogspot.com/feeds/posts/default 
 http://rss.slashdot.org/Slashdot/slashdot 
-http://feeds.feedburner.com/oatmealfeed 
 http://feeds.theonion.com/theonion/daily 
 http://rss.thesmokinggun.com/rss.asp 
 http://www.thesuperficial.com/index.xml 

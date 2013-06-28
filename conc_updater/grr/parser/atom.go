@@ -28,70 +28,70 @@ import (
   "encoding/xml"
 )
 
-type AtomFeed struct {
+var supportedAtomTimeFormats = []string {
+  "2006-01-02T15:04:05Z07:00",
+}
+
+type atomFeed struct {
   XMLName xml.Name `xml:"feed"`
   Id string `xml:"id"`
   Title string `xml:"title"`
   Description string `xml:"subtitle"`
   Updated string `xml:"updated"`
-  Link []AtomLink `xml:"link"`
-  Entry []*AtomEntry `xml:"entry"`
+  Link []atomLink `xml:"link"`
+  Entry []*atomEntry `xml:"entry"`
 }
 
-type AtomLink struct {
+type atomLink struct {
   Type string `xml:"type,attr"`
   Rel string `xml:"rel,attr"`
   Href string `xml:"href,attr"`
 }
 
-type AtomAuthor struct {
+type atomAuthor struct {
   Name string `xml:"name"`
   URI string `xml:"uri"`
 }
 
-type AtomEntry struct {
+type atomEntry struct {
   Id string `xml:"id"`
   Published string `xml:"published"`
   Updated string `xml:"updated"`
-  Link []AtomLink `xml:"link"`
-  EntryTitle AtomText `xml:"title"`
-  Content AtomText `xml:"content"`
-  Summary AtomText `xml:"summary"`
-  Author AtomAuthor `xml:"author"`
+  Link []atomLink `xml:"link"`
+  EntryTitle atomText `xml:"title"`
+  Content atomText `xml:"content"`
+  Summary atomText `xml:"summary"`
+  Author atomAuthor `xml:"author"`
 }
 
-type AtomText struct {
+type atomText struct {
   Type string `xml:"type,attr"`
   Content string `xml:",chardata"`
 }
 
-var supportedAtomTimeFormats = []string {
-  time.RFC3339,
-}
-
-func (atomFeed *AtomFeed) Marshal() (feed Feed, err error) {
+func (nativeFeed *atomFeed) Marshal() (feed Feed, err error) {
   updated := time.Time {}
-  if atomFeed.Updated != "" {
-    updated, err = parseTime(supportedAtomTimeFormats, atomFeed.Updated)
+  if nativeFeed.Updated != "" {
+    updated, err = parseTime(supportedAtomTimeFormats, nativeFeed.Updated)
   }
 
   linkUrl := ""
-  for _, link := range atomFeed.Link {
+  for _, link := range nativeFeed.Link {
     if link.Rel == "alternate" {
       linkUrl = link.Href
     }
   }
 
   feed = Feed {
-    Title: atomFeed.Title,
-    Description: atomFeed.Description,
+    Title: nativeFeed.Title,
+    Description: nativeFeed.Description,
     Updated: updated,
     WWWURL: linkUrl,
   }
 
-  if atomFeed.Entry != nil {
-    feed.Entry = make([]*Entry, len(atomFeed.Entry))
-    for i, v := range atomFeed.Entry {
+  if nativeFeed.Entry != nil {
+    feed.Entry = make([]*Entry, len(nativeFeed.Entry))
+    for i, v := range nativeFeed.Entry {
       var entryError error
       feed.Entry[i], entryError = v.Marshal()
 
@@ -104,38 +104,38 @@ func (atomFeed *AtomFeed) Marshal() (feed Feed, err error) {
   return feed, err
 }
 
-func (atomEntry *AtomEntry) Marshal() (entry *Entry, err error) {
+func (nativeEntry *atomEntry) Marshal() (entry *Entry, err error) {
   linkUrl := ""
-  for _, link := range atomEntry.Link {
+  for _, link := range nativeEntry.Link {
     if link.Rel == "alternate" {
       linkUrl = link.Href
     }
   }
 
-  guid := atomEntry.Id
+  guid := nativeEntry.Id
   if guid == "" {
     guid = linkUrl
   }
 
-  content := atomEntry.Content.Content
-  if content == "" && atomEntry.Summary.Content != "" {
-    content = atomEntry.Summary.Content
+  content := nativeEntry.Content.Content
+  if content == "" && nativeEntry.Summary.Content != "" {
+    content = nativeEntry.Summary.Content
   }
 
   published := time.Time {}
-  if atomEntry.Published != "" {
-    published, err = parseTime(supportedAtomTimeFormats, atomEntry.Published)
+  if nativeEntry.Published != "" {
+    published, err = parseTime(supportedAtomTimeFormats, nativeEntry.Published)
   }
 
   updated := time.Time {}
-  if atomEntry.Updated != "" {
-    updated, err = parseTime(supportedAtomTimeFormats, atomEntry.Updated)
+  if nativeEntry.Updated != "" {
+    updated, err = parseTime(supportedAtomTimeFormats, nativeEntry.Updated)
   }
 
   entry = &Entry {
     GUID: guid,
-    Author: atomEntry.Author.Name,
-    Title: atomEntry.EntryTitle.Content,
+    Author: nativeEntry.Author.Name,
+    Title: nativeEntry.EntryTitle.Content,
     Content: content,
     Published: published,
     Updated: updated,

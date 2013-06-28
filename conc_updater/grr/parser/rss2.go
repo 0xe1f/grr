@@ -25,11 +25,12 @@ package parser
 
 import (
   "time"
+  "strings"
+  "errors"
   "encoding/xml"
 )
 
 var supportedRSS2TimeFormats = []string {
-  "Mon, 02 Jan 2006 15:04:05 MST",
   "Mon, 02 Jan 2006 15:04:05 -0700",
   "2006-01-02T15:04:05-07:00",
   "Mon, 02 Jan 2006 15:04:05 Z",
@@ -37,16 +38,20 @@ var supportedRSS2TimeFormats = []string {
   "Mon, 2 Jan 2006 15:04:05 -0700",
 }
 
-type RSS2Feed struct {
+var supportedRSS2TimeFormatsWithTimeZoneCodes = []string {
+  "Mon, 02 Jan 2006 15:04:05 MST",
+}
+
+type rss2Feed struct {
   XMLName xml.Name `xml:"rss"`
   Title string `xml:"channel>title"`
   Description string `xml:"channel>description"`
   Updated string `xml:"channel>lastBuildDate"`
-  Link string `xml:"channel>link"`
-  Entry []*RSS2Entry `xml:"channel>item"`
+  Link []*rssLink `xml:"channel>link"`
+  Entry []*rss2Entry `xml:"channel>item"`
 }
 
-type RSS2Entry struct {
+type rss2Entry struct {
   Id string `xml:"guid"`
   Published string `xml:"pubDate"`
   EntryTitle string `xml:"title"`
@@ -56,22 +61,29 @@ type RSS2Entry struct {
   Content string `xml:"description"`
 }
 
-func (rss2Feed *RSS2Feed) Marshal() (feed Feed, err error) {
+func (nativeFeed *rss2Feed) Marshal() (feed Feed, err error) {
   updated := time.Time {}
-  if rss2Feed.Updated != "" {
-    updated, err = parseTime(supportedRSS2TimeFormats, rss2Feed.Updated)
+  if nativeFeed.Updated != "" {
+    updated, err = parseRSS2Time(nativeFeed.Updated)
+  }
+
+  linkUrl := ""
+  for _, linkNode := range nativeFeed.Link {
+    if linkNode.XMLName.Space == "" {
+      linkUrl = linkNode.Content
+    }
   }
 
   feed = Feed {
-    Title: rss2Feed.Title,
-    Description: rss2Feed.Description,
+    Title: nativeFeed.Title,
+    Description: nativeFeed.Description,
     Updated: updated,
-    WWWURL: rss2Feed.Link,
+    WWWURL: linkUrl,
   }
 
-  if rss2Feed.Entry != nil {
-    feed.Entry = make([]*Entry, len(rss2Feed.Entry))
-    for i, v := range rss2Feed.Entry {
+  if nativeFeed.Entry != nil {
+    feed.Entry = make([]*Entry, len(nativeFeed.Entry))
+    for i, v := range nativeFeed.Entry {
       var entryError error
       feed.Entry[i], entryError = v.Marshal()
 
@@ -84,30 +96,64 @@ func (rss2Feed *RSS2Feed) Marshal() (feed Feed, err error) {
   return feed, err
 }
 
-func (rss2Entry *RSS2Entry) Marshal() (entry *Entry, err error) {
-  guid := rss2Entry.Id
+func (nativeEntry *rss2Entry) Marshal() (entry *Entry, err error) {
+  guid := nativeEntry.Id
   if guid == "" {
-    guid = rss2Entry.Link
+    guid = nativeEntry.Link
   }
 
-  content := rss2Entry.EncodedContent
+  content := nativeEntry.EncodedContent
   if content == "" {
-    content = rss2Entry.Content
+    content = nativeEntry.Content
   }
 
   published := time.Time {}
-  if rss2Entry.Published != "" {
-    published, err = parseTime(supportedRSS2TimeFormats, rss2Entry.Published)
+  if nativeEntry.Published != "" {
+    published, err = parseRSS2Time(nativeEntry.Published)
   }
 
   entry = &Entry {
     GUID: guid,
-    Author: rss2Entry.Author,
-    Title: rss2Entry.EntryTitle,
+    Author: nativeEntry.Author,
+    Title: nativeEntry.EntryTitle,
     Content: content,
     Published: published,
-    WWWURL: rss2Entry.Link,
+    WWWURL: nativeEntry.Link,
   }
 
   return entry, err
+}
+
+var tzCodes = []string { "AST", "EST", "EDT", "CST", "CDT", "MST", "MDT", "PST", "PDT", "AKST", "AKDT", "HAST", "HADT", "SST", "SDT", "CHST"}
+var tzOffsets = []string { "-0400", "-0500", "-0400", "-0600", "-0500", "-0700", "-0600", "-0800", "-0700", "-0900", "-0800", "-1000", "-0900", "-1100", "-1000", "+1000"}
+
+func parseRSS2Time(timeSpec string) (time.Time, error) {
+  if timeSpec != "" {
+    if parsedTime, err := parseTime(supportedRSS2TimeFormats, timeSpec); err == nil {
+      return parsedTime, err
+    }
+
+    // FIXME
+    // time.Parse doesn't deal with timezone codes predictably. 
+    // For that reason, we replace timezone codes with UTC offsets
+    // Note that this only works with USA TZ codes, so this is not a proper
+    // long-term solution
+
+    for i, tzCode := range tzCodes {
+      if strings.Contains(timeSpec, tzCode) {
+        timeSpec = strings.Replace(timeSpec, tzCode, tzOffsets[i], 1)
+        break
+      }
+    }
+
+    for _, format := range supportedRSS2TimeFormatsWithTimeZoneCodes {
+      if parsedTime, err := time.Parse(format, timeSpec); err == nil {
+        return parsedTime.UTC(), nil
+      }
+    }
+
+    return time.Time {}, errors.New("Unrecognized time format: " + timeSpec)
+  }
+
+  return time.Time {}, nil
 }
