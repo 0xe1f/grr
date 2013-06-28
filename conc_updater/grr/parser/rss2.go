@@ -38,10 +38,6 @@ var supportedRSS2TimeFormats = []string {
   "Mon, 2 Jan 2006 15:04:05 -0700",
 }
 
-var supportedRSS2TimeFormatsWithTimeZoneCodes = []string {
-  "Mon, 02 Jan 2006 15:04:05 MST",
-}
-
 type rss2Feed struct {
   XMLName xml.Name `xml:"rss"`
   Title string `xml:"channel>title"`
@@ -139,16 +135,18 @@ func parseRSS2Time(timeSpec string) (time.Time, error) {
     // Note that this only works with USA TZ codes, so this is not a proper
     // long-term solution
 
+    tryAgain := false
     for i, tzCode := range tzCodes {
       if strings.Contains(timeSpec, tzCode) {
         timeSpec = strings.Replace(timeSpec, tzCode, tzOffsets[i], 1)
+        tryAgain = true
         break
       }
     }
 
-    for _, format := range supportedRSS2TimeFormatsWithTimeZoneCodes {
-      if parsedTime, err := time.Parse(format, timeSpec); err == nil {
-        return parsedTime.UTC(), nil
+    if tryAgain {
+      if parsedTime, err := parseTime(supportedRSS2TimeFormats, timeSpec); err == nil {
+        return parsedTime, err
       }
     }
 
