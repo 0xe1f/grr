@@ -383,6 +383,7 @@ $().ready(function()
 
     if ($('#toast').is(':hidden'))
     {
+      // Don't fade in & out if the toast is already visible
       $('#toast')
         .fadeIn()
         .delay(8000)
@@ -872,7 +873,7 @@ $().ready(function()
     $('#entries .entry').remove();
 
     var feed = getSelectedFeed();
-    var feedHasLink = typeof feed.link !== 'undefined';
+    var feedHasLink = (typeof feed.link !== 'undefined') && (feed.link != null);
 
     if (!feedHasLink)
       $('.entries-header').text(feed.title);
