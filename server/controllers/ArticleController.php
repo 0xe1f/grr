@@ -40,10 +40,10 @@ class ArticleController extends JsonController
 
   private function flattenFeedTree($feed)
   {
-    $feedIds = array($feed["id"] => $feed["unread"]);
+    $feedIds = array($feed->id => $feed->unread);
 
-    if ($feed["feeds"])
-      foreach ($feed["feeds"] as $subfeed)
+    if ($feed->subs)
+      foreach ($feed->subs as $subfeed)
         foreach ($this->flattenFeedTree($subfeed) as $key => $value)
           $feedIds[$key] = $value;
 

@@ -379,11 +379,15 @@ $().ready(function()
   var showToast = function(message, isError)
   {
     $('#toast span').text(message);
-    $('#toast')
-      .attr('class', isError ? 'error' : 'info')
-      .fadeIn()
-      .delay(8000)
-      .fadeOut('slow'); 
+    $('#toast').attr('class', isError ? 'error' : 'info');
+
+    if ($('#toast').is(':hidden'))
+    {
+      $('#toast')
+        .fadeIn()
+        .delay(8000)
+        .fadeOut('slow'); 
+    }
   };
 
   var subscribe = function(parentFolder)
@@ -401,15 +405,8 @@ $().ready(function()
       },
       function(response)
       {
-        if (!response.error)
-        {
-          updateFeedDom(response.allItems);
-          showToast(l('Successfully subscribed to "%s"', [response.feed.title]), false);
-        }
-        else
-        {
-          showToast(response.error.message, true);
-        }
+        updateFeedDom(response.allItems);
+        showToast(l('Successfully subscribed to "%s"', [response.feed.title]), false);
       }, 'json');
     }
   };
@@ -427,49 +424,42 @@ $().ready(function()
     },
     function(response)
     {
-      if (!response.error)
+      var unreadCounts = response.unreadCounts;
+      var feedIds = $.map(unreadCounts, function(v, i) 
       {
-        var unreadCounts = response.unreadCounts;
-        var feedIds = $.map(unreadCounts, function(v, i) 
-        {
-          return i * 1;
-        });
+        return i * 1;
+      });
 
-        // Update the entries
+      // Update the entries
 
-        $.each($('#entries .entry'), function()
-        {
-          var entryDom = $(this);
-          var entry = entryDom.data('object');
-
-          if ($.inArray(entry.source_id, feedIds) > -1)
-          {
-            entry.is_unread = false;
-            entryDom.toggleClass('read', !entry.is_unread);
-          }
-        });
-
-        // Update the feeds
-        
-        $.each(feedIds, function()
-        {
-          var feedId = this;
-          var feedDom = $('.feed-' + feedId);
-          var feed = feedDom.data('object');
-
-          if (feed)
-            feed.unread = unreadCounts[feed.id];
-        });
-
-        synchronizeFeedDom();
-
-        // TODO: include more details (e.g. selected feed)
-        showToast(l('Items marked as read'));
-      }
-      else
+      $.each($('#entries .entry'), function()
       {
-        showToast(response.error.message, true);
-      }
+        var entryDom = $(this);
+        var entry = entryDom.data('object');
+
+        if ($.inArray(entry.source_id, feedIds) > -1)
+        {
+          entry.is_unread = false;
+          entryDom.toggleClass('read', !entry.is_unread);
+        }
+      });
+
+      // Update the feeds
+      
+      $.each(feedIds, function()
+      {
+        var feedId = this;
+        var feedDom = $('.feed-' + feedId);
+        var feed = feedDom.data('object');
+
+        if (feed)
+          feed.unread = unreadCounts[feed.id];
+      });
+
+      synchronizeFeedDom();
+
+      // TODO: include more details (e.g. selected feed)
+      showToast(l('Items marked as read'));
     }, 'json');
   };
 
@@ -639,15 +629,8 @@ $().ready(function()
     },
     function(response)
     {
-      if (!response.error)
-      {
-        updateFeedDom(response.allItems);
-        reloadItems();
-      }
-      else
-      {
-        showToast(response.error.message, true);
-      }
+      updateFeedDom(response.allItems);
+      reloadItems();
     });
   };
 
@@ -664,54 +647,47 @@ $().ready(function()
     }, args),
     function(response)
     {
-      if (!response.error)
+      var deltaUnread = 0;
+      if (entry.is_unread && !response.entry.is_unread)
+        deltaUnread--;
+      else if (!entry.is_unread && response.entry.is_unread)
+        deltaUnread++;
+
+      if (entry.is_liked && !response.entry.is_liked)
+        entry.like_count--;
+      else if (!entry.is_liked && response.entry.is_liked)
+        entry.like_count++;
+
+      if (deltaUnread != 0)
       {
-        var deltaUnread = 0;
-        if (entry.is_unread && !response.entry.is_unread)
-          deltaUnread--;
-        else if (!entry.is_unread && response.entry.is_unread)
-          deltaUnread++;
-
-        if (entry.is_liked && !response.entry.is_liked)
-          entry.like_count--;
-        else if (!entry.is_liked && response.entry.is_liked)
-          entry.like_count++;
-
-        if (deltaUnread != 0)
+        $.each($('.feed'), function()
         {
-          $.each($('.feed'), function()
+          var feedDom = $(this);
+          var feed = feedDom.data('object');
+
+          if (feed && feed.id == entry.source_id)
           {
-            var feedDom = $(this);
-            var feed = feedDom.data('object');
+            feed.unread += deltaUnread;
 
-            if (feed && feed.id == entry.source_id)
+            feedDom.parents('.feed').each(function()
             {
+              feedDom = $(this);
+              feed = feedDom.data('object');
+
               feed.unread += deltaUnread;
+            });
 
-              feedDom.parents('.feed').each(function()
-              {
-                feedDom = $(this);
-                feed = feedDom.data('object');
-
-                feed.unread += deltaUnread;
-              });
-
-              return false;
-            }
-          });
-        }
-
-        entry.is_unread = response.entry.is_unread;
-        entry.is_starred = response.entry.is_starred;
-        entry.is_liked = response.entry.is_liked;
-
-        refreshEntry(entryDom);
-        synchronizeFeedDom();
+            return false;
+          }
+        });
       }
-      else
-      {
-        showToast(response.error.message, true);
-      }
+
+      entry.is_unread = response.entry.is_unread;
+      entry.is_starred = response.entry.is_starred;
+      entry.is_liked = response.entry.is_liked;
+
+      refreshEntry(entryDom);
+      synchronizeFeedDom();
     }, 'json');
   };
 
@@ -747,16 +723,8 @@ $().ready(function()
       },
       function(response)
       {
-        if (!response.error)
-        {
-          entry.tags = response.entry.tags;
-
-          refreshEntry(entryDom);
-        }
-        else
-        {
-          showToast(response.error.message, true);
-        }
+        entry.tags = response.entry.tags;
+        refreshEntry(entryDom);
       }, 'json');
     }
   };
@@ -887,17 +855,10 @@ $().ready(function()
     },
     function(response)
     {
-      if (!response.error)
-      {
-        var canContinue = typeof response.continue !== 'undefined';
+      var canContinue = typeof response.continue !== 'undefined';
 
-        appendEntries(response.entries, canContinue);
-        $('#entries').data('continue', canContinue ? response.continue : null);
-      }
-      else
-      {
-        showToast(response.error.message, true);
-      }
+      appendEntries(response.entries, canContinue);
+      $('#entries').data('continue', canContinue ? response.continue : null);
     });
 
     return continueAfter;
@@ -930,17 +891,10 @@ $().ready(function()
     }, 
     function(response) 
     {
-      if (!response.error)
-      {
-        var canContinue = typeof response.continue !== 'undefined';
+      var canContinue = typeof response.continue !== 'undefined';
 
-        appendEntries(response.entries, canContinue);
-        $('#entries').data('continue', canContinue ? response.continue : null);
-      }
-      else
-      {
-        showToast(response.error.message, true);
-      }
+      appendEntries(response.entries, canContinue);
+      $('#entries').data('continue', canContinue ? response.continue : null);
     });
 
     updateUnreadCounts();
@@ -1038,15 +992,8 @@ $().ready(function()
       },
       function(response)
       {
-        if (!response.error)
-        {
-          updateFeedDom(response.allItems);
-          showToast(l('Subscription successfully renamed to "%s"', [response.feed.title]), false);
-        }
-        else
-        {
-          showToast(response.error.message, true);
-        }
+        updateFeedDom(response.allItems);
+        showToast(l('Subscription successfully renamed to "%s"', [response.feed.title]), false);
       }, 'json');
     }
   };
@@ -1063,15 +1010,8 @@ $().ready(function()
       },
       function(response)
       {
-        if (!response.error)
-        {
-          updateFeedDom(response.allItems);
-          showToast(l('"%s" successfully added', [response.folder.title]), false);
-        }
-        else
-        {
-          showToast(response.error.message, true);
-        }
+        updateFeedDom(response.allItems);
+        showToast(l('"%s" successfully added', [response.folder.title]), false);
       }, 'json');
     }
   };
@@ -1090,15 +1030,8 @@ $().ready(function()
       },
       function(response)
       {
-        if (!response.error)
-        {
-          updateFeedDom(response.allItems);
-          showToast(l('Successfully unsubscribed from "%s"', [feed.title]), false);
-        }
-        else
-        {
-          showToast(response.error.message, true);
-        }
+        updateFeedDom(response.allItems);
+        showToast(l('Successfully unsubscribed from "%s"', [feed.title]), false);
       }, 'json');
     }
   };
@@ -1147,6 +1080,24 @@ $().ready(function()
 
   if ($.cookie('floated-nav') === 'true')
     toggleNavMode(true);
+
+  // Set up the JSON error handler
+  $(document).ajaxError(function(event, jqxhr, settings, exception) 
+  {
+    var errorMessage;
+
+    try 
+    {
+      var errorJson = $.parseJSON(jqxhr.responseText)
+      errorMessage = errorJson.error.message;
+    }
+    catch (exception)
+    {
+      errorMessage = l("An unexpected error has occurred. Please try again later.");
+    }
+
+    showToast(errorMessage, true);
+  });
 
   (function()
   {

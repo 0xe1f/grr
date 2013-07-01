@@ -39,7 +39,7 @@ class JsonController extends Controller
   {
     $message = null;
     $code = 0;
-
+    
     if ($e instanceof JsonError)
     {
       $message = $e->getMessage();
@@ -54,7 +54,9 @@ class JsonController extends Controller
     if ($code != 0) 
       $error["code"] = $code;
 
+    header("{$_SERVER['SERVER_PROTOCOL']} 500 Internal Server Error", true, 500);
     header('Content-type: application/json');
+
     echo json_encode(array("error"   => $error));
   }
 

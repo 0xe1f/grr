@@ -79,7 +79,7 @@ class LoginController extends GatewayController
 
       if ($success === false)
       {
-        header('HTTP/1.0 401 Unauthorized', true, 401);
+        header("{$_SERVER['SERVER_PROTOCOL']} 401 Unauthorized", true, 401);
         $response = array("error" => $this->errorMessage);
       }
       else
