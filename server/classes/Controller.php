@@ -78,7 +78,9 @@ class Controller
     }
 
     $proto = (!empty($_SERVER['HTTPS']) ? 'https' : 'http');
-    return "{$proto}://{$_SERVER['SERVER_NAME']}/{$rootUri}?{$queryString}";
+    $port = $_SERVER['SERVER_PORT'];
+    $port = ( $port == '80' || $port == '443' ? '' : ':'.$port );
+    return "{$proto}://{$_SERVER['SERVER_NAME']}{$port}/{$rootUri}?{$queryString}";
   }
 
   function getCurrentUser()
