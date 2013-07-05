@@ -75,7 +75,7 @@ class RssParser extends FeedParser
       $article->published = time();
 
       if ($rss1)
-        $pubDate = current($item->xpath('dc:date'));
+        $pubDate = (string)current($item->xpath('dc:date'));
       else
         $pubDate = (string)$item->pubDate;
 
