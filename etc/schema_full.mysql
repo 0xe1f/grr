@@ -240,7 +240,7 @@ CREATE TABLE `stages` (
   PRIMARY KEY (`id`),
   KEY `fk_stages_user_id` (`user_id`),
   CONSTRAINT `fk_stages_user_id` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -255,8 +255,8 @@ CREATE TABLE `user_article_tags` (
   `user_article_id` int(11) NOT NULL,
   `tag` varchar(256) NOT NULL,
   PRIMARY KEY (`id`),
-  KEY `fk_user_article_tags_user_article_id` (`user_article_id`),
-  CONSTRAINT `fk_user_article_tags_user_article_id` FOREIGN KEY (`user_article_id`) REFERENCES `user_articles` (`id`)
+  KEY `fk_user_article_tags_article_id` (`user_article_id`),
+  CONSTRAINT `fk_user_article_tags_article_id` FOREIGN KEY (`user_article_id`) REFERENCES `user_articles` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -277,11 +277,12 @@ CREATE TABLE `user_articles` (
   `read_time` datetime DEFAULT NULL,
   `star_time` datetime DEFAULT NULL,
   `like_time` datetime DEFAULT NULL,
+  `tags` varchar(1024) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `ik_user_id_article_id` (`user_id`,`article_id`),
   KEY `fk_user_articles_user_id` (`user_id`),
   KEY `fk_user_articles_article_id` (`article_id`),
-  CONSTRAINT `fk_user_articles_article_id` FOREIGN KEY (`article_id`) REFERENCES `articles` (`id`),
+  CONSTRAINT `fk_user_articles_article_id` FOREIGN KEY (`article_id`) REFERENCES `articles` (`id`) ON DELETE CASCADE,
   CONSTRAINT `fk_user_articles_user_id` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -345,7 +346,7 @@ CREATE TABLE `welcome_tokens` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2013-06-24 20:59:15
+-- Dump completed on 2013-07-05  2:57:17
 -- MySQL dump 10.13  Distrib 5.6.10, for osx10.7 (x86_64)
 --
 -- Host: localhost    Database: grr
@@ -369,7 +370,7 @@ CREATE TABLE `welcome_tokens` (
 
 LOCK TABLES `roles` WRITE;
 /*!40000 ALTER TABLE `roles` DISABLE KEYS */;
-INSERT INTO `roles` VALUES (1,'admin','Administrator'),(2,'user','User');
+INSERT INTO `roles` VALUES (1,'user','User'),(2,'admin','Administrator');
 /*!40000 ALTER TABLE `roles` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -382,4 +383,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2013-06-24 20:59:15
+-- Dump completed on 2013-07-05  2:57:17

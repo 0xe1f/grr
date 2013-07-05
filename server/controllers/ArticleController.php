@@ -75,7 +75,18 @@ class ArticleController extends JsonController
 
     $tags = empty($tagsAsString) ? array() : explode(',', $tagsAsString); // Split the comma-delimited tags
     $tags = array_map('trim', $tags); // Trim each tag
-    $tags = array_unique($tags); // Remove all but unique tags 
+    $tags = array_unique($tags); // Remove all but unique tags
+
+    // Remove empty tag (if any)
+    foreach ($tags as $index => $tag)
+      if ($tag === "")
+      {
+        unset($tags[$index]);
+        $tags = array_values($tags); // Reorder array
+
+        // Unique prevents presence of more than one empty tag
+        break;
+      }
 
     $storage = Storage::getInstance();
     if (!$storage->setArticleTags($this->user->id, $userArticleId, $tags))
