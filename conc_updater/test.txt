@@ -1,3 +1,4 @@
+http://www.gentoo.org/rdf/en/gentoo-news.rdf
 http://feeds.feedburner.com/oatmealfeed 
 http://feeds.feedburner.com/VirtualShackles 
 http://www.aripulkkinen.com/feed/ 

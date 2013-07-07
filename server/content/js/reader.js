@@ -244,12 +244,20 @@ $().ready(function()
 
   var l = function(str, args)
   {
-    // Localization stub
+    var localized = null;
+    if (typeof grr_locale_current !== 'undefined' && grr_locale_current != null)
+      localized = grr_locale_current[str];
+
+    if (localized === null && typeof grr_locale_default !== 'undefined' && grr_locale_default != null)
+      localized = grr_locale_default[str];
+
+    if (localized == null)
+      localized = str; // No localizations
 
     if (args)
-      return vsprintf(str, args);
+      return vsprintf(localized, args);
 
-    return str;
+    return localized;
   };
 
   var toggleNavMode = function(floatedNavEnabled)

@@ -47,6 +47,15 @@ if (TIMEZONE === null ||
   die(l("Configuration is incomplete"));
 }
 
+// Locale information
+
+$GRR_SUPPORTED_LOCALES = array(
+  "en",
+);
+// Unless you really know what you're doing, this should be 'en'.
+// It reflects the language in the 'default' string maps
+$GRR_DEFAULT_LOCALE = "en";
+
 function l()
 {
   // Localization stub

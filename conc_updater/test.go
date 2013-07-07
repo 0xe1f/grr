@@ -89,9 +89,11 @@ func DumpURLInfo(URL string) {
   // fmt.Println("LU:  ", feed.LatestEntryModification())
   // feed.Entry = nil
 
-  bf, _ := json.MarshalIndent(feed, "", "  ")
-  fmt.Println(string(bf))
-
+  if false {
+    bf, _ := json.MarshalIndent(feed, "", "  ")
+    fmt.Println(string(bf))
+  }
+  
   fmt.Println("--- DONE")
 }
 
