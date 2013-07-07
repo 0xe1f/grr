@@ -56,7 +56,7 @@ To install:
 
 1. Copy the contents of the [server](server) directory to a www-accessible directory
 2. Copy the contents of the [shell](shell) directory to a private area not accessible via www
-3. Import the MySQL schema in [schema_full.mysql](etc/schema_full.mysql) to a MySQL database
+3. Import the MySQL schema in [mysql/schema_full.sql](etc/mysql/schema_full.sql) to a MySQL database
 4. Rename web application's [default.config.php](server/include/default.config.php) to 'config.php' and set all the necessary configuration information
 5. Rename shell application's [default.config.php](shell/default.config.php) to 'config.php' and set the timezone and database configuration
 6. Log in to the web application and create a new administrative account
