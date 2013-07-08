@@ -21,14 +21,41 @@
  ******************************************************************************
  */
 
-// Partial French translation
+// Client-side localization example
+// See LOCALIZATION.md for help
 
-var grr_locale_current = 
+// File should be named reader-<IETF language tag>.js
+// For instance:
+//   Portuguese (Brazil): reader-pt-br.js
+//   French: reader-fr.js
+//   French (Canada): reader-fr-ca.js
+// .. and so on...
+
+$.extend(grrStrings,
 {
-  'Like': 'Intéressant',
-  'Like (%s)': 'Intéressant (%s)',
-  'Share on Google+': 'Partager su Google+',
-  'Share': 'Partager',
-  'Keep unread': 'Marquer comme non lu',
-  'Edit tags: %s': 'Modifier les tags: %s',
-}
+  'Enter the feed URL': null,
+  'Successfully subscribed to "%s"': null,
+  'Successfully unsubscribed from "%s"': null,
+  'Items marked as read': null,
+  'Like': null,
+  'Like (%s)': null,
+  'New items': null,
+  'No new items': null,
+  '1 new item': null,
+  '%1$s new items': null,
+  'Separate multiple tags with commas': null,
+  'Share on Google+': null,
+  'Share': null,
+  'Keep unread': null,
+  'Edit tags: %s': null,
+  'Add tags': null,
+  'Continue': null,
+  'New name:': null,
+  'Subscription successfully renamed to "%s"': null,
+  'Name of folder:': null,
+  '"%s" successfully added': null,
+  'Unsubscribe from "%s"?': null,
+  'Unsubscribe from all feeds under "%s"?': null,
+  'An unexpected error has occurred. Please try again later.': null,
+  'Subscriptions': null,
+});

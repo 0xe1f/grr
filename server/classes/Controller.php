@@ -44,22 +44,8 @@ class Controller
     $this->routeTemplate = null;
     $this->undefined = array();
     $this->scriptName = null;
+    $this->currentLocale = $GLOBALS['grrCurrentLocale'];
 
-    // Get a sorted list of accepted locales
-    $acceptedLocales = $this->getAcceptedLocales();
-    $this->currentLocale = null; // Default locale
-
-    foreach ($acceptedLocales as $acceptedLocale)
-    {
-      if (in_array($acceptedLocale, $GLOBALS['GRR_SUPPORTED_LOCALES']))
-      {
-        if ($acceptedLocale != $GLOBALS['GRR_DEFAULT_LOCALE'])
-          $this->currentLocale = $acceptedLocale;
-
-        break;
-      }
-    }
-    
     date_default_timezone_set(TIMEZONE);
   }
 
@@ -71,59 +57,6 @@ class Controller
   public function isInDefaultLocale()
   {
     return $this->currentLocale == null;
-  }
-
-  private static function compareLocales($a, $b)
-  {
-    $q1 = (int)($a["q"] * 100);
-    $q2 = (int)($b["q"] * 100);
-
-    if ($q1 == $q2)
-    {
-      $index1 = $a["index"];
-      $index2 = $b["index"];
-
-      // Q-values are the same - compare by index
-      if ($index1 == $index2)
-        return 0;
-
-      return $index1 > $index2 ? -1 : 1;
-    }
-
-    // Compare by Q-value
-    return $q1 > $q2 ? -1 : 1;
-  } 
-
-  private function getAcceptedLocales()
-  {
-    $acceptedLocales = $_SERVER['HTTP_ACCEPT_LANGUAGE'];
-    if (!$acceptedLocales)
-      return array();
-
-    $localeSpecs = explode(",", $acceptedLocales);
-    $locales = array();
-    $index = 0;
-
-    foreach ($localeSpecs as $localeSpec)
-    {
-      $specParts = explode(";", $localeSpec);
-
-      $locale = array("name" => strtolower($specParts[0]), "index" => $index++, "q" => 1.0);
-
-      if (count($specParts) == 2 && strncmp($specParts[1], "q=", 2) == 0)
-        $locale["q"] = substr($specParts[1], 2); // Explicit Q-value
-
-      $locales[] = $locale;
-    }
-
-    // Sort the locales
-    uasort($locales, array('self', 'compareLocales'));
-    
-    // Collect the names, keep only uniques
-    $localeNames = array_unique(array_map('current', $locales));
-    $localeNames = array_values($localeNames); // Reset indices
-
-    return $localeNames;
   }
 
   function __get($name)

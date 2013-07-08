@@ -1,3 +1,4 @@
+<?
 /*****************************************************************************
  **
  ** grr >:(
@@ -21,8 +22,8 @@
  ******************************************************************************
  */
 
-var grrStrings = 
-{
+$grrStrings = array(
   // Default localization just uses the incoming string.
-  // See reader-example.js for actual strings
-}
+  // See example.php for actual strings
+);
+?>

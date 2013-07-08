@@ -325,7 +325,6 @@ class MySqlStorage extends Storage
     }
 
     $subscriptions->id = $rootId;
-    $subscriptions->title = l("Subscriptions");
     $subscriptions->type = "root";
 
     if ($matchingFeed != null && $restrictToFolderId != $rootId)

@@ -245,14 +245,11 @@ $().ready(function()
   var l = function(str, args)
   {
     var localized = null;
-    if (typeof grr_locale_current !== 'undefined' && grr_locale_current != null)
-      localized = grr_locale_current[str];
-
-    if (localized === null && typeof grr_locale_default !== 'undefined' && grr_locale_default != null)
-      localized = grr_locale_default[str];
+    if (typeof grrStrings !== 'undefined' && grrStrings != null)
+      localized = grrStrings[str];
 
     if (localized == null)
-      localized = str; // No localizations
+      localized = str; // No localization
 
     if (args)
       return vsprintf(localized, args);
@@ -514,24 +511,27 @@ $().ready(function()
     var feedCopy = jQuery.extend({}, feed);
     delete feedCopy.subs; // No need to carry the entire tree around
 
-    return $('<li />', { 'class' : 'feed feed-' + feed.id })
+    if (typeof feedCopy.title === 'undefined')
+      feedCopy.title = l('Subscriptions');
+
+    return $('<li />', { 'class' : 'feed feed-' + feedCopy.id })
       .data('object', feedCopy)
       .append($('<div />', { 'class' : 'feed-item' })
         .append($('<span />', { 'class' : 'chevron' })
           .click(function(e)
           {
             $('.menu').hide();
-            $('#menu-' + feed.type)
+            $('#menu-' + feedCopy.type)
               .css( { top: e.pageY, left: e.pageX })
               .data('object', feedCopy)
               .show();
 
             e.stopPropagation();
           }))
-        .append($('<div />', { 'class' : 'feed-icon icon-' + feed.type }))
+        .append($('<div />', { 'class' : 'feed-icon icon-' + feedCopy.type }))
         .append($('<span />', { 'class' : 'feed-title' })
-          .text(feed.title))
-        .attr('title', feed.title)
+          .text(feedCopy.title))
+        .attr('title', feedCopy.title)
         .append($('<span />', { 'class' : 'feed-unread-count' }))
         .click(function() 
         {
@@ -1070,14 +1070,11 @@ $().ready(function()
       url: '?c=feeds', 
       success: function(response) 
       {
-        if (!response.error)
+        updateFeedDom(response.allItems);
+        if (!itemsLoaded)
         {
-          updateFeedDom(response.allItems);
-          if (!itemsLoaded)
-          {
-            itemsLoaded = true;
-            reloadItems();
-          }
+          itemsLoaded = true;
+          reloadItems();
         }
       },
       complete: function() 

@@ -27,14 +27,14 @@
     <div id="header">
       <h1>grr <span class="grr">&gt;:(</span></h1>
       <div class="navbar">
-        <span class="logout">Signed in as <span class="username"><?= h($this->user->username) ?></span> 
-        <a href="<?= $this->url("login", array("logout" => "true")) ?>">Sign out</a></span>
-        <a class="import-subs" href="<?= $this->url("import") ?>">Import subscriptions</a>
+        <span class="logout"><?= l("Signed in as %s", $this->user->username) ?>
+        <a href="<?= $this->url("login", array("logout" => "true")) ?>"><?= l("Sign out") ?></a></span>
+        <a class="import-subs" href="<?= $this->url("import") ?>"><?= l("Import subscriptions") ?></a>
 <?
     if ($this->user->isAdmin())
     {
 ?>
-        <a class="admin" href="<?= $this->url("admin") ?>">Admin</a>
+        <a class="admin" href="<?= $this->url("admin") ?>"><?= l("Administer") ?></a>
 <?
     }
 ?>
