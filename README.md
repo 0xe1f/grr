@@ -31,6 +31,7 @@ Primary focus of _grr_ was to replicate the core functionality of [Google Reader
 
 Additional features include:
 
+* [Localization support](LOCALIZATION.md)
 * Infinite nesting for subscription categories
 * Article 'liking', along with 'like' counts (this feature was available on Google Reader at some point)
 * Client-side background synchronization
