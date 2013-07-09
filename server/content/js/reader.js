@@ -257,6 +257,90 @@ $().ready(function()
     return localized;
   };
 
+  var initHelp = function()
+  {
+    var categories = 
+    [
+      {
+        'title': l('Navigation'),
+        'shortcuts': 
+        [
+          { keys: l('j/k'),       action: l('open next/previous article') },
+          { keys: l('n/p'),       action: l('scan next/previous article') },
+          { keys: l('Shift+n/p'), action: l('scan next/previous subscription') },
+          { keys: l('Shift+o'),   action: l('open subscription or folder') },
+          { keys: l('g, then a'), action: l('open subscriptions') },
+        ]
+      },
+      {
+        'title': l('Application'),
+        'shortcuts': 
+        [
+          { keys: l('r'), action: l('refresh') },
+          { keys: l('u'), action: l('toggle navigation mode') },
+          { keys: l('a'), action: l('add subscription') },
+          { keys: l('?'), action: l('help') },
+        ]
+      },
+      {
+        'title': l('Articles'),
+        'shortcuts': 
+        [
+          { keys: l('m'),       action: l('mark as read/unread') },
+          { keys: l('s'),       action: l('star article') },
+          { keys: l('t'),       action: l('tag article') },
+          { keys: l('l'),       action: l('like article') },
+          { keys: l('v'),       action: l('open link') },
+          { keys: l('o'),       action: l('open article') },
+          { keys: l('Shift+a'), action: l('mark all as read') },
+        ]
+      }
+    ];
+
+    var maxColumns = 2; // Number of columns in the resulting table
+
+    // Build the table
+    var table = $('<table/>');
+    $('.shortcuts').append(table);
+
+    for (var i = 0, n = categories.length; i < n; i += maxColumns)
+    {
+      var keepGoing = true;
+      for (var k = -1; keepGoing; k++)
+      {
+        var row = $('<tr/>');
+        table.append(row);
+        keepGoing = false;
+
+        for (var j = 0; j < maxColumns && i + j < n; j++)
+        {
+          var category = categories[i + j];
+
+          if (k < 0) // Header
+          {
+            row.append($('<th/>', { 'colspan': 2 })
+              .text(category.title));
+
+            keepGoing = true;
+          }
+          else if (k < category.shortcuts.length)
+          {
+            row.append($('<td/>', { 'class': 'sh-keys' })
+              .text(category.shortcuts[k].keys + ':'))
+            .append($('<td/>', { 'class': 'sh-action' })
+              .text(category.shortcuts[k].action));
+
+            keepGoing = true;
+          }
+          else // Empty cell
+          {
+            row.append($('<td/>', { 'colspan': 2 }));
+          }
+        }
+      }
+    }
+  };
+
   var toggleNavMode = function(floatedNavEnabled)
   {
     $('body').toggleClass('floated-nav', floatedNavEnabled);
@@ -1115,4 +1199,6 @@ $().ready(function()
     selected.addClass('selected-menu-item');
     $(menu.data('dropdown')).text(selected.text());
   })();
+
+  initHelp();
 });
