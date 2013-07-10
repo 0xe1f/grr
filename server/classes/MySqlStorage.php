@@ -325,7 +325,6 @@ class MySqlStorage extends Storage
     }
 
     $subscriptions->id = $rootId;
-    $subscriptions->title = l("Subscriptions");
     $subscriptions->type = "root";
 
     if ($matchingFeed != null && $restrictToFolderId != $rootId)
@@ -1548,19 +1547,18 @@ class MySqlStorage extends Storage
                       a.author,
                       a.summary,
                       a.content,
-                      UNIX_TIMESTAMP(a.published) published,
+                      UNIX_TIMESTAMP(a.crawled) published,
                       ff.id source_id,
                       ff.title source,
                       f.html_url source_www,
                       ua.is_unread,
                       ua.is_starred,
                       ua.is_liked,
-                      GROUP_CONCAT(uat.tag SEPARATOR ',') tags,
+                      ua.tags,
                       (SELECT SUM(is_liked)
                          FROM user_articles ua_liked
                         WHERE ua_liked.article_id = ua.article_id) liked_count
                  FROM user_articles ua
-            LEFT JOIN user_article_tags uat ON uat.user_article_id = ua.id
            INNER JOIN articles a ON a.id = ua.article_id
            INNER JOIN feeds f ON f.id = a.feed_id
            INNER JOIN feed_folders ff ON ff.feed_id = f.id
@@ -1569,7 +1567,7 @@ class MySqlStorage extends Storage
                       AND ua.user_id = ?
                       {$filterClause}
              GROUP BY ua.id
-             ORDER BY a.published DESC, f.title
+             ORDER BY a.crawled DESC, f.title
                 LIMIT ?
                                  ");
       $stmt->bind_param('iii', 
@@ -1586,34 +1584,33 @@ class MySqlStorage extends Storage
                       a.author,
                       a.summary,
                       a.content,
-                      UNIX_TIMESTAMP(a.published) published,
+                      UNIX_TIMESTAMP(a.crawled) published,
                       ff.id source_id,
                       ff.title source,
                       f.html_url source_www,
                       ua.is_unread,
                       ua.is_starred,
                       ua.is_liked,
-                      GROUP_CONCAT(uat.tag SEPARATOR ',') tags,
+                      ua.tags,
                       (SELECT SUM(is_liked)
                          FROM user_articles ua_liked
                         WHERE ua_liked.article_id = ua.article_id) liked_count
                  FROM user_articles ua
-            LEFT JOIN user_article_tags uat ON uat.user_article_id = ua.id
            INNER JOIN articles a ON a.id = ua.article_id
            INNER JOIN feeds f ON f.id = a.feed_id
            INNER JOIN feed_folders ff ON ff.feed_id = f.id
            INNER JOIN feed_folder_trees fft ON fft.descendant_id = ff.id 
 
-           INNER JOIN (SELECT a2.published 
+           INNER JOIN (SELECT a2.crawled 
                          FROM user_articles ua2 
                    INNER JOIN articles a2 ON a2.id = ua2.article_id 
-                        WHERE ua2.id = ? AND ua2.user_id = ?) o ON a.published = o.published AND ua.id < ? OR a.published < o.published
+                        WHERE ua2.id = ? AND ua2.user_id = ?) o ON a.crawled = o.crawled AND ua.id < ? OR a.crawled < o.crawled
 
                 WHERE fft.ancestor_id = ? 
                       AND ua.user_id = ?
                       {$filterClause}
              GROUP BY ua.id
-             ORDER BY a.published DESC, f.title
+             ORDER BY a.crawled DESC, f.title
                 LIMIT ?
                                  ");
 
@@ -1764,6 +1761,22 @@ class MySqlStorage extends Storage
         if (!$stmt->execute())
           $result = false;
       }
+
+      $stmt->close();
+
+      // Update the UA table
+
+      $stmt = $this->db->prepare("
+              UPDATE user_articles 
+                 SET tags = ?
+               WHERE id = ?
+                     AND user_id = ?
+                     ");
+
+      $stmt->bind_param('sii', $delimitedTags, $userArticleId, $userId);
+      $delimitedTags = implode(",", $tags);
+
+      $result = $stmt->execute();
 
       $stmt->close();
     }

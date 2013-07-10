@@ -1,7 +1,7 @@
 grr >:(
 =======
 
-**grr** is an attempt to replace the gaping hole that the impending departure of [Google Reader] [1] will leave in my daily routine. Its (initially temporary) name is an abbreviation for _Google Reader Replacement_, but seeing as how it also doubles as a decent onomatopoeic representation of my feelings towards the discontinuation of one of Google's most useful products, it's now the app's de-facto name.
+**grr** is an attempt to replace the gaping hole that the departure of [Google Reader] [1] has left in my daily routine. Its (initially temporary) name is an abbreviation for _Google Reader Replacement_, but seeing as how it also doubles as a decent onomatopoeic representation of my feelings towards the discontinuation of one of Google's most useful products, it's now the app's de-facto name.
 
 _grr_ consists of two components - the web server application, with which the user interacts, and the shell application, which routinely updates feeds in the background.
 
@@ -31,6 +31,7 @@ Primary focus of _grr_ was to replicate the core functionality of [Google Reader
 
 Additional features include:
 
+* [Localization support](LOCALIZATION.md)
 * Infinite nesting for subscription categories
 * Article 'liking', along with 'like' counts (this feature was available on Google Reader at some point)
 * Client-side background synchronization
@@ -56,7 +57,7 @@ To install:
 
 1. Copy the contents of the [server](server) directory to a www-accessible directory
 2. Copy the contents of the [shell](shell) directory to a private area not accessible via www
-3. Import the MySQL schema in [schema_full.mysql](etc/schema_full.mysql) to a MySQL database
+3. Import the MySQL schema in [mysql/schema_full.sql](etc/mysql/schema_full.sql) to a MySQL database
 4. Rename web application's [default.config.php](server/include/default.config.php) to 'config.php' and set all the necessary configuration information
 5. Rename shell application's [default.config.php](shell/default.config.php) to 'config.php' and set the timezone and database configuration
 6. Log in to the web application and create a new administrative account

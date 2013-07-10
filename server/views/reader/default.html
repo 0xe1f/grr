@@ -9,6 +9,16 @@
     <script src="content/js/jquery.hotkeys.js" type="text/javascript"></script>
     <script src="content/js/jquery.cookie.js" type="text/javascript"></script>
     <script src="content/js/spin.min.js" type="text/javascript"></script>
+    <script src="content/js/locales/reader-default.js" type="text/javascript"></script>
+<?
+  if (!$this->isInDefaultLocale())
+  {
+    // Include client-side localization map
+?>
+    <script src="content/js/locales/reader-<?= $this->getCurrentLocale() ?>.js" type="text/javascript"></script>
+<?
+  }
+?>
     <script src="content/js/reader.js" type="text/javascript"></script>
     <title>&gt;:(</title>
   </head>
@@ -17,14 +27,14 @@
     <div id="header">
       <h1>grr <span class="grr">&gt;:(</span></h1>
       <div class="navbar">
-        <span class="logout">Signed in as <span class="username"><?= h($this->user->username) ?></span> 
-        <a href="<?= $this->url("login", array("logout" => "true")) ?>">Sign out</a></span>
-        <a class="import-subs" href="<?= $this->url("import") ?>">Import subscriptions</a>
+        <span class="logout"><?= l("Signed in as %s", $this->user->username) ?>
+        <a href="<?= $this->url("login", array("logout" => "true")) ?>"><?= l("Sign out") ?></a></span>
+        <a class="import-subs" href="<?= $this->url("import") ?>"><?= l("Import subscriptions") ?></a>
 <?
     if ($this->user->isAdmin())
     {
 ?>
-        <a class="admin" href="<?= $this->url("admin") ?>">Admin</a>
+        <a class="admin" href="<?= $this->url("admin") ?>"><?= l("Administer") ?></a>
 <?
     }
 ?>
@@ -71,69 +81,6 @@
       <li class="menu-unsub"><?= l("Unsubscribe from all") ?></li>
     </ul>
     <div class="shortcuts">
-      <table>
-        <tr>
-          <th colspan="2">Navigation</th>
-          <th colspan="2">Application</th>
-        </tr>
-        <tr>
-          <td class="sh-keys">j/k:</td>
-          <td class="sh-action">next/previous article</td>
-          <td class="sh-keys">r:</td>
-          <td class="sh-action">refresh</td>
-        </tr>
-        <tr>
-          <td class="sh-keys">n/p:</td>
-          <td class="sh-action">scan next/previous article</td>
-          <td class="sh-keys">u:</td>
-          <td class="sh-action">toggle navigation mode</td>
-        </tr>
-        <tr>
-          <td class="sh-keys">Shift+n/p:</td>
-          <td class="sh-action">scan next/previous subscription</td>
-          <td class="sh-keys">a:</td>
-          <td class="sh-action">add a subscription</td>
-        </tr>
-        <tr>
-          <td class="sh-keys">Shift+o:</td>
-          <td class="sh-action">open subscription or folder</td>
-        </tr>
-        <tr>
-          <td class="sh-keys">g then a:</td>
-          <td class="sh-action">open Subscriptions</td>
-        </tr>
-        <tr>
-          <th colspan="2">Articles</th>
-        </tr>
-        <tr>
-          <td class="sh-keys">m:</td>
-          <td class="sh-action">mark as read/unread</td>
-        </tr>
-        <tr>
-          <td class="sh-keys">s:</td>
-          <td class="sh-action">star article</td>
-        </tr>
-        <tr>
-          <td class="sh-keys">t:</td>
-          <td class="sh-action">tag article</td>
-        </tr>
-        <tr>
-          <td class="sh-keys">l:</td>
-          <td class="sh-action">like article</td>
-        </tr>
-        <tr>
-          <td class="sh-keys">v:</td>
-          <td class="sh-action">open link</td>
-        </tr>
-        <tr>
-          <td class="sh-keys">o:</td>
-          <td class="sh-action">open article</td>
-        </tr>
-        <tr>
-          <td class="sh-keys">shift+a:</td>
-          <td class="sh-action">mark all as read</td>
-        </tr>
-      </table>
     </div>
   </body>
 </html>

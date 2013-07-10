@@ -1,0 +1,4 @@
+CREATE TABLE metadata (schema_version INT NOT NULL) CHARSET = UTF8;
+INSERT INTO metadata VALUES (12);
+
+ALTER TABLE user_articles CHANGE COLUMN tags tags VARCHAR(1024) NOT NULL DEFAULT '';

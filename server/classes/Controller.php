@@ -33,6 +33,7 @@ class Controller
   protected $routeTemplate;
   protected $scriptName;
   protected $undefined;
+  protected $currentLocale;
 
   function __construct()
   {
@@ -43,8 +44,19 @@ class Controller
     $this->routeTemplate = null;
     $this->undefined = array();
     $this->scriptName = null;
-    
+    $this->currentLocale = $GLOBALS['grrCurrentLocale'];
+
     date_default_timezone_set(TIMEZONE);
+  }
+
+  public function getCurrentLocale()
+  {
+    return $this->currentLocale;
+  }
+
+  public function isInDefaultLocale()
+  {
+    return $this->currentLocale == null;
   }
 
   function __get($name)
@@ -79,7 +91,8 @@ class Controller
 
     $proto = (!empty($_SERVER['HTTPS']) ? 'https' : 'http');
     $port = $_SERVER['SERVER_PORT'];
-    $port = ( ( $port == '80' && $proto == 'http' ) || ( $port == '443' && $proto = 'https' ) ? '' : ':'.$port );
+    $port = ( ( $port == '80' && $proto == 'http' ) || ( $port == '443' && $proto == 'https' ) ? '' : ':'.$port );
+
     return "{$proto}://{$_SERVER['SERVER_NAME']}{$port}/{$rootUri}?{$queryString}";
   }
 
