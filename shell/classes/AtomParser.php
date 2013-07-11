@@ -74,6 +74,14 @@ class AtomParser extends FeedParser
         $article->link_url = (string)$link->href;
       }
 
+      // If still no link_url, try first link of any type
+      if (!$article->link_url)
+      {
+        $links = $entry->xpath('atom:link');
+        $link = $links[0]->attributes();
+        $article->link_url = (string)$link->href;
+      }
+
       // If a post has no GUID, use its link as a GUID instead
       if (!$article->guid)
         $article->guid = $article->link_url;
