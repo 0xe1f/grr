@@ -53,7 +53,7 @@ class AtomParser extends FeedParser
 
       $article = new Article();
       $article->guid = (string)$entry->id;
-      $article->published = time();
+      $article->published = 0;
 
       $pubDate = (string)$entry->published;
       if (!$pubDate)
