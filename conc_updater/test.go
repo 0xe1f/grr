@@ -6,7 +6,7 @@ import (
   "time"
   "log"
   "net/http"
-  "encoding/json"
+  // "encoding/json"
   "path"
   "./grr/parser"
   "bufio"
@@ -16,6 +16,10 @@ import (
 
 // FIXME: syndication info
 // HTML parsing: pull out rss link
+
+type DataFeed struct {
+  Title string;
+}
 
 func main() {
   if len(os.Args) < 2 {
@@ -33,9 +37,11 @@ func main() {
 
   startTime := time.Now()
 
-  async := false
-  i := 0
+  n := 0
   scanner := bufio.NewScanner(fi)
+
+  c := make(chan *parser.Feed)
+
   for scanner.Scan() {
     URL := strings.TrimSpace(scanner.Text())
 
@@ -47,18 +53,15 @@ func main() {
       continue // Skip "comments"
     }
 
-    if async {
-      go DumpURLInfo(URL)
-    } else {
-      DumpURLInfo(URL)
-    }
-
-    i++
+    n++
+    go DumpURLInfo(URL, c)
   }
 
-  if async {
-    var input string
-    fmt.Scanln(&input)
+  for i := 0; i < n; i++ {
+    feed := <-c;
+    if false {
+      fmt.Println(feed)
+    }
   }
 
   fmt.Println("done in ", time.Since(startTime))
@@ -77,27 +80,24 @@ func redirectPolicyFunc(req *http.Request, via []*http.Request) error {
   return nil
 }
 
-func DumpURLInfo(URL string) {
-  feed, err := Parse(URL)
+func DumpURLInfo(URL string, c chan<- *parser.Feed) {
+  startTime := time.Now()
 
-  if err != nil {
-    fmt.Println("ERR ", URL, " : ", err)
-    return
+  feed, format, err := Parse(URL)
+
+  // bf, _ := json.MarshalIndent(feed, "", "  ")
+  // fmt.Println(string(bf))
+
+  if err == nil {
+    fmt.Printf("OK:  %5s  %s (%s)\n", format, URL, time.Since(startTime))
+    c<- feed
+  } else {
+    fmt.Printf("ERR: %5s  %s (%s): %s\n", format, URL, time.Since(startTime), err)
+    c<- nil
   }
-
-  fmt.Println("OK!   ", URL)
-  // fmt.Println("LU:  ", feed.LatestEntryModification())
-  // feed.Entry = nil
-
-  if false {
-    bf, _ := json.MarshalIndent(feed, "", "  ")
-    fmt.Println(string(bf))
-  }
-  
-  fmt.Println("--- DONE")
 }
 
-func Parse(URL string) (*parser.Feed, error) {
+func Parse(URL string) (*parser.Feed, string, error) {
   client := &http.Client {
     CheckRedirect: redirectPolicyFunc,
   }
@@ -105,7 +105,7 @@ func Parse(URL string) (*parser.Feed, error) {
   resp, err := client.Get(URL)
   
   if err != nil {
-    return nil, err
+    return nil, "", err
   }
 
   defer resp.Body.Close()

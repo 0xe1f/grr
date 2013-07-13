@@ -39,6 +39,7 @@ type Feed struct {
   Updated time.Time
   WWWURL string
   Entry []*Entry
+  Format string
 }
 
 func (feed *Feed)LatestEntryModification() time.Time {
@@ -88,13 +89,15 @@ func charsetReader(charset string, r io.Reader) (io.Reader, error) {
   return nil, errors.New("Unsupported character set encoding: " + charset)
 }
 
-func UnmarshalStream(reader io.Reader) (*Feed, error) {
+func UnmarshalStream(reader io.Reader) (*Feed, string, error) {
+  format := ""
+
   // Read the stream into memory (we'll need to parse it twice)
   var contentReader *bytes.Reader
   if buffer, err := ioutil.ReadAll(reader); err == nil {
     contentReader = bytes.NewReader(buffer)
   } else {
-    return nil, err
+    return nil, format, err
   }
 
   genericFeed := GenericFeed{}
@@ -103,18 +106,22 @@ func UnmarshalStream(reader io.Reader) (*Feed, error) {
   decoder.CharsetReader = charsetReader
 
   if err := decoder.Decode(&genericFeed); err != nil {
-     return nil, err
+     return nil, format, err
   }
 
   var xmlFeed FeedMarshaler
+
   if genericFeed.XMLName.Space == "http://www.w3.org/1999/02/22-rdf-syntax-ns#" && genericFeed.XMLName.Local == "RDF" {
     xmlFeed = &rss1Feed{}
+    format = "RSS1"
   } else if genericFeed.XMLName.Local == "rss" {
     xmlFeed = &rss2Feed{}
+    format = "RSS2"
   } else if genericFeed.XMLName.Space == "http://www.w3.org/2005/Atom" && genericFeed.XMLName.Local == "feed" {
     xmlFeed = &atomFeed{}
+    format = "Atom"
   } else {
-    return nil, errors.New("Unsupported type of feed (" +
+    return nil, format, errors.New("Unsupported type of feed (" +
       genericFeed.XMLName.Space + ":" + genericFeed.XMLName.Local + ")")
   }
 
@@ -124,15 +131,15 @@ func UnmarshalStream(reader io.Reader) (*Feed, error) {
   decoder.CharsetReader = charsetReader
 
   if err := decoder.Decode(xmlFeed); err != nil {
-    return nil, err
+    return nil, format, err
   }
   
   feed, err := xmlFeed.Marshal()
   if err != nil {
-    return nil, err
+    return nil, format, err
   }
 
-  return &feed, nil
+  return &feed, format, nil
 }
 
 func parseTime(supportedFormats []string, timeSpec string) (time.Time, error) {

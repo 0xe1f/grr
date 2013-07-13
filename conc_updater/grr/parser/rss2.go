@@ -36,6 +36,7 @@ var supportedRSS2TimeFormats = []string {
   "Mon, 02 Jan 2006 15:04:05 Z",
   "Mon, 02 Jan 2006 15:04:05",
   "Mon, 2 Jan 2006 15:04:05 -0700",
+  "Mon, 2 Jan 2006 15:04:05",
 }
 
 type rss2Feed struct {
@@ -127,6 +128,14 @@ func parseRSS2Time(timeSpec string) (time.Time, error) {
   if timeSpec != "" {
     if parsedTime, err := parseTime(supportedRSS2TimeFormats, timeSpec); err == nil {
       return parsedTime, err
+    }
+
+    // HACK territory
+    // GMT/UTC as TZ code are OK
+    if strings.HasSuffix(timeSpec, " GMT") || strings.HasSuffix(timeSpec, " UTC") {
+      if parsedTime, err := time.Parse("Mon, 2 Jan 2006 15:04:05 MST", timeSpec); err == nil {
+        return parsedTime.UTC(), nil
+      }
     }
 
     // FIXME

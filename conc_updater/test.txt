@@ -1,3 +1,6 @@
+http://www.debian.org/News/news
+https://developer.apple.com/news/rss/news.rss
+https://www.sparkfun.com/feeds/news
 http://www.gentoo.org/rdf/en/gentoo-news.rdf
 http://feeds.feedburner.com/oatmealfeed 
 http://feeds.feedburner.com/VirtualShackles 

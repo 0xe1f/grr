@@ -1,4 +1,4 @@
-server/include/config.php
-shell/config.php
+config.php
+config.go
 .DS_Store
 etc/dump.sh
