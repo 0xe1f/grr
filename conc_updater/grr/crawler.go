@@ -34,17 +34,19 @@ import (
 import "database/sql"
 import _ "github.com/go-sql-driver/mysql"
 
-type parserResult struct {
+type feedInfo struct {
+  FeedId int64
+  URL string
   Feed *parser.Feed
   Format string
   Error error
-}
+} 
 
 type crawl struct {
   Connection *sql.DB
   Started time.Time
   StagingId int64
-  ResultChannel chan<- parserResult
+  ResultChannel chan<- *feedInfo
 }
 
 // FIXME: syndication info
@@ -61,7 +63,8 @@ func Crawl() {
 
   defer con.Close()
 
-  ch := make(chan parserResult)
+  ch := make(chan *feedInfo)
+
   crawl := crawl {
     Connection: con,
     Started: time.Now(),
@@ -89,7 +92,12 @@ func Crawl() {
     for rows.Next() {
       if rowErr := rows.Scan(&id, &feedUrl, &lastBuilt, &lastUpdated, &nextUpdate); rowErr == nil {
         feedsParsed++
-        go dumpURLInfo(feedUrl.String, crawl.ResultChannel)
+        // go dumpURLInfo(feedUrl.String, crawl.ResultChannel)
+        info := &feedInfo {
+          FeedId: id,
+          URL: feedUrl.String,
+        }
+        go crawl.parseFeed(info)
       } else {
         fmt.Println("rows.Scan error: ", rowErr)
       }
@@ -97,9 +105,9 @@ func Crawl() {
 
     // Wait for the parsers to complete
     for i := 0; i < feedsParsed; i++ {
-      chanResult := <-ch
+      info := <-ch
       if false {
-        fmt.Println(chanResult.Feed)
+        fmt.Println(info.Feed)
       }
     }
   } else {
@@ -123,7 +131,7 @@ func (crawl *crawl) initializeStaging() error {
 
   if result, err = crawl.Connection.Exec("INSERT INTO stages(user_id, started) VALUES (NULL, FROM_UNIXTIME(?))", crawl.Started.Unix()); err == nil {
     var id int64
-    if id, err = result.RowsAffected(); err == nil {
+    if id, err = result.LastInsertId(); err == nil {
       crawl.StagingId = id
     }
   }
@@ -131,117 +139,59 @@ func (crawl *crawl) initializeStaging() error {
   return err
 }
 
-func (crawl *crawl) stageFeed(feed parser.Feed) {
-  /*
-    $stageFeedStatement = $this->db->prepare("
-           INSERT INTO staged_feeds (feed_url,
-                                     feed_hash,
-                                     html_url,
-                                     title,
-                                     summary,
-                                     last_built,
-                                     last_updated,
-                                     next_update,
-                                     stage_id)
-                VALUES (?,?,?,?,?,FROM_UNIXTIME(?),UTC_TIMESTAMP(),FROM_UNIXTIME(?),?)
-                                     ");
+func (crawl *crawl) stageFeed(info *feedInfo) {
+  var result sql.Result 
+  var err error = nil
 
-    $stageFeedStatement->bind_param('sssssiii',
-      $feed->url,
-      sha1($feed->url),
-      $feed->link, 
-      $feed->getTitle(),
-      $feed->getSummary(),
-      $feed->getLastBuildDate(),
-      $feed->getNextUpdate($lastUpdated),
-      $this->stageId);
+  feed := info.Feed
 
-    if (!$stageFeedStatement->execute())
-    {
-      echo "  Error staging feed: {$this->db->error}\n";
+  // FIXME: nextUpdate is NIL!
+  // FIXME: I'm still trying to figure out how to deal with MB strings in Go
+  //        For some reason, mysql isn't happy with the length produced by
+  //        substr(feed.go). Remove SUBSTRING() from the SQL queries; do all 
+  //        string truncation in code
 
-      // Continue with article staging anyway
-    }
+  // Stage the feeds
+  if _, err = crawl.Connection.Exec(`
+      INSERT INTO staged_feeds (feed_url,feed_hash,html_url,title,summary,last_built,last_updated,next_update,stage_id)
+      VALUES (?,SHA1(?),?,?,?,FROM_UNIXTIME(?),UTC_TIMESTAMP(),FROM_UNIXTIME(?),?)`, 
+      info.URL, info.URL, feed.WWWURL, feed.Title, feed.Description, feed.Updated.Unix(), nil, crawl.StagingId); err != nil {
+    // Not a fatal error
+    fmt.Println("stageFeed: Error staging feed ", info.URL, ": ", err)
+  }
 
-    $stageFeedStatement->close();
-
-    $stageArticleStatement = $this->db->prepare("
-           INSERT INTO staged_articles (feed_id,
-                                        guid,
-                                        link_url,
-                                        title,
-                                        author,
-                                        summary,
-                                        content,
-                                        published,
-                                        crawled,
-                                        stage_id)
-                VALUES (?,?,?,?,?,?,?,FROM_UNIXTIME(?),FROM_UNIXTIME(?),?)
-                                     ");
-
-    $stageArticleStatement->bind_param('issssssiii',
-      $feedId,
-      $articleGuid,
-      $articleLinkUrl, 
-      $articleTitle,
-      $articleAuthor,
-      $articleSummary,
-      $articleText,
-      $articlePublished,
-      $this->started,
-      $this->stageId);
-
-    foreach ($feed->articles as $article)
-    {
-      $articleGuid = $article->guid;
-      $articleLinkUrl = $article->link_url;
-      $articleTitle = $article->getTitle();
-      $articleAuthor = $article->getAuthor();
-      $articleSummary = $article->getSummary();
-      $articleText = $article->text;
-      $articlePublished = $article->published;
-
-      if (!$stageArticleStatement->execute())
-      {
-        echo "Staging error: {$this->db->error}\n";
-        continue;
+  // Stage the articles
+  for _, entry := range feed.Entry {
+    if result, err = crawl.Connection.Exec(`
+        INSERT INTO staged_articles (feed_id,guid,link_url,title,author,summary,content,published,crawled,stage_id)
+        VALUES (?,?,?,SUBSTRING(?,1,256),?,SUBSTRING(?,1,512),?,FROM_UNIXTIME(?),FROM_UNIXTIME(?),?)`,
+        info.FeedId, entry.GUID, entry.WWWURL, 
+        entry.PlainTextTitle(), entry.PlainTextAuthor(), entry.PlainTextSummary(), 
+        entry.Content, entry.Published.Unix(), crawl.Started.Unix(), crawl.StagingId); err != nil {
+      fmt.Println("stageFeed: Error staging articles ", info.URL, ": ", err)
+      if false { // FIXME
+        fmt.Println(result)
       }
     }
-
-    $stageArticleStatement->close();
-
-    $this->secondsSpentStaging += (microtime(true) - $now);
-  */
+  }
 }
 
-func (crawl *crawl) parseFeed(URL string) {
+func (crawl *crawl) parseFeed(info *feedInfo) {
   startTime := time.Now()
 
-  chanResult := parserResult {}
-  chanResult.Feed, chanResult.Format, chanResult.Error = parse(URL)
+  info.Feed, info.Format, info.Error = parse(info.URL)
 
-  if chanResult.Error == nil {
-    fmt.Printf("OK:  %5s  %s (%s)\n", chanResult.Format, URL, time.Since(startTime))
+  if info.Error == nil {
+    fmt.Printf("OK:  %5s  %s (%s)\n", info.Format, info.URL, time.Since(startTime))
   } else {
-    fmt.Printf("ERR: %5s  %s (%s): %s\n", chanResult.Format, URL, time.Since(startTime), chanResult.Error)
+    fmt.Printf("ERR: %5s  %s (%s): %s\n", info.Format, info.URL, time.Since(startTime), info.Error)
   }
 
-  crawl.ResultChannel<- chanResult
-}
-
-func dumpURLInfo(URL string, c chan<- parserResult) {
-  startTime := time.Now()
-
-  chanResult := parserResult {}
-  chanResult.Feed, chanResult.Format, chanResult.Error = parse(URL)
-
-  if chanResult.Error == nil {
-    fmt.Printf("OK:  %5s  %s (%s)\n", chanResult.Format, URL, time.Since(startTime))
-  } else {
-    fmt.Printf("ERR: %5s  %s (%s): %s\n", chanResult.Format, URL, time.Since(startTime), chanResult.Error)
+  if info.Feed != nil {
+    crawl.stageFeed(info)
   }
 
-  c<- chanResult
+  crawl.ResultChannel<- info
 }
 
 func parse(URL string) (*parser.Feed, string, error) {

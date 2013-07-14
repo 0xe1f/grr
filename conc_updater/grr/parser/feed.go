@@ -31,6 +31,7 @@ import (
   "bytes"
   "errors"
   "strings"
+  "../html/template"
 )
 
 type Feed struct {
@@ -64,6 +65,19 @@ type Entry struct {
   WWWURL string
 }
 
+func (entry *Entry)PlainTextTitle() string {
+  return template.StripTags(entry.Title)
+}
+
+func (entry *Entry)PlainTextAuthor() string {
+  return template.StripTags(entry.Author)
+}
+
+func (entry *Entry)PlainTextSummary() string {
+  plainText := strings.TrimSpace(template.StripTags(entry.Content))
+  return substr(plainText, 0, 512)
+}
+
 func (entry *Entry)LatestModification() time.Time {
   if entry.Updated.After(entry.Published) {
     return entry.Updated
@@ -79,7 +93,6 @@ type FeedMarshaler interface {
 type GenericFeed struct {
   XMLName xml.Name
 }
-
 
 func charsetReader(charset string, r io.Reader) (io.Reader, error) {
   // FIXME: This hardly does anything useful at the moment
@@ -154,4 +167,14 @@ func parseTime(supportedFormats []string, timeSpec string) (time.Time, error) {
   }
 
   return time.Time {}, nil
+}
+
+func substr(s string, pos int, length int) string {
+  runes := []rune(s)
+  l := pos + length
+  if l > len(runes) {
+    l = len(runes)
+  }
+  
+  return string(runes[pos:l])
 }
