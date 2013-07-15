@@ -23,10 +23,11 @@
  
 package grr
 
-// Uncomment these lines to set database configuration
-// Edit DatabaseDataSource as appropriate
- 
-// For connections using 'localhost', leave <host> empty
+// * For connections using 'localhost', leave <host> empty
+// * Don't change the 'charset' and 'time_zone' parameters, unless
+//   you really know what you're doing.
+
+// Uncomment the following:
 
 // var DatabaseDriver string = "mysql"
-// var DatabaseDataSource string = "<username>:<password>@<host>/<database>"
+// var DatabaseDataSource string = "<username>:<password>@<host>/<database>?charset=utf8&time_zone='+0:00'"
