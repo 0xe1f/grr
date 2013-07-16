@@ -21,18 +21,32 @@
  ******************************************************************************
  */
 
-var grrStrings = 
-{
-  // Default localization just uses the incoming string.
-  // See reader-example.js for actual strings
-}
-
-var defaultDateTimeFormatter = function(date, sameDay)
+var dateTimeFormatter = function(date, sameDay)
 {
 	if (sameDay)
-		return date.toLocaleTimeString();
-	else
-		return date.toLocaleDateString();
-};
+	{
+		// Return time string (e.g. "10:30 AM")
 
-var dateTimeFormatter = defaultDateTimeFormatter;
+		var hours = date.getHours();
+
+		var ampm = (hours < 12) ? "AM" : "PM";
+		var twelveHourHours = hours;
+		if (hours == 0)
+			twelveHourHours = 12;
+		else if (hours > 12)
+			twelveHourHours -= 12;
+
+		var minutes = date.getMinutes() + "";
+		if (minutes.length < 2)
+			minutes = "0" + minutes;
+
+		return twelveHourHours + ":" + minutes + " " + ampm;
+	}
+	else
+	{
+		// Return date string (e.g. "Jan 5, 2010")
+		
+		var months = [ "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" ];
+		return months[date.getMonth()] + " " + date.getDate() + ", " + date.getFullYear();
+	}
+};

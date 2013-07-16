@@ -359,14 +359,13 @@ $().ready(function()
   var getPublishedDate = function(unixTimestamp)
   {
     var now = new Date();
-    var then = new Date(unixTimestamp * 1000);
+    var date = new Date(unixTimestamp * 1000);
+    
+    var sameDay = now.getDate() == date.getDate() 
+      && now.getMonth() == date.getMonth() 
+      && now.getFullYear() == date.getFullYear();
 
-    if (now.getDate() == then.getDate() 
-      && now.getMonth() == then.getMonth() 
-      && now.getYear() == then.getYear())
-      return then.toLocaleTimeString();
-    else 
-      return then.toLocaleDateString();
+    return dateTimeFormatter(date, sameDay);
   };
 
   // which: < 0 to select previous; > 0 to select next

@@ -31,6 +31,25 @@
 //   French (Canada): reader-fr-ca.js
 // .. and so on...
 
+var dateTimeFormatter = function(date, sameDay)
+{
+  // Parameters:
+
+  //   date: JavaScript Date object containing date/time information
+  //   sameDay: 'true' if the date component represents today's date
+
+  // This function generates a localized date/time string.
+  // It returns a string representing:
+  //   - date if 'sameDay' is 'false' (e.g. 'Jan 5, 2010'), or
+  //   - time if 'sameday' is 'true' (e.g. '10:30 PM')
+
+  // See reader-en-us for a more sophisticated example. 
+  // The default implementation uses JavaScript's default date/time 
+  // formatters, which aren't ideal.
+
+  return defaultDateTimeFormatter(date, sameDay);
+};
+
 $.extend(grrStrings,
 {
   'Enter the feed URL': null,

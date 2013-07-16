@@ -269,11 +269,12 @@ func (crawl *crawl) initializeStaging() error {
 func (crawl *crawl) stageFeed(info *feedInfo) {
   feed := info.Feed
 
-  // FIXME: nextUpdate is NIL!
+  // Compute time until next update
+  nextUpdate := crawl.Started.Add(feed.DurationBetweenUpdates()).UTC()
 
   // Stage the feeds
   if _, err := crawl.StageFeed.Exec(info.URL, info.URL, feed.WWWURL, feed.Title, 
-      feed.Description, feed.Updated.Unix(), nil, crawl.StagingId); err != nil {
+      feed.Description, feed.Updated.Unix(), nextUpdate.Unix(), crawl.StagingId); err != nil {
     // Not a fatal error
     fmt.Println("stageFeed: Error staging feed ", info.URL, ": ", err)
   }
@@ -295,9 +296,9 @@ func (crawl *crawl) parseFeed(info *feedInfo) {
   info.Feed, info.Format, info.Error = parse(info.URL)
 
   if info.Error == nil {
-    fmt.Printf("OK:  %5s  %s (%s)\n", info.Format, info.URL, time.Since(startTime))
+    fmt.Printf("OK:  %5s %10s  %s (%s)\n", info.Format, info.Feed.DurationBetweenUpdates(), info.URL, time.Since(startTime))
   } else {
-    fmt.Printf("ERR: %5s  %s (%s): %s\n", info.Format, info.URL, time.Since(startTime), info.Error)
+    fmt.Printf("ERR: %5s %10s  %s (%s): %s\n", info.Format, "", info.URL, time.Since(startTime), info.Error)
   }
 
   if info.Feed != nil {

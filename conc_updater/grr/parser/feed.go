@@ -32,6 +32,7 @@ import (
   "errors"
   "strings"
   "../html/template"
+  "sort"
 )
 
 type Feed struct {
@@ -41,6 +42,7 @@ type Feed struct {
   WWWURL string
   Entry []*Entry
   Format string
+  HourlyUpdateFrequency float32
 }
 
 func (feed *Feed)LatestEntryModification() time.Time {
@@ -53,6 +55,61 @@ func (feed *Feed)LatestEntryModification() time.Time {
   }
 
   return mostRecent
+}
+
+type SortableTimes []time.Time 
+
+func (s SortableTimes) Len() int {
+  return len(s)
+}
+
+func (s SortableTimes) Swap(i int, j int) {
+  s[i], s[j] = s[j], s[i]
+}
+
+func (s SortableTimes) Less(i int, j int) bool {
+  return s[i].Before(s[j])
+}
+
+func (feed *Feed)DurationBetweenUpdates() time.Duration {
+  if feed.HourlyUpdateFrequency != 0 {
+    // Set explicitly
+    return time.Duration(feed.HourlyUpdateFrequency) * time.Hour
+  }
+
+  // Compute frequency by analyzing entries in the feed
+  pubDates := make(SortableTimes, len(feed.Entry))
+  for i, entry := range feed.Entry {
+    pubDates[i] = entry.LatestModification()
+  }
+
+  // Sort dates in ascending order
+  sort.Sort(pubDates)
+
+  // Compute the average difference between them
+  durationBetweenUpdates := time.Duration(0)
+
+  if len(pubDates) > 1 {
+    deltaSum := 0.0
+    for i, n := 1, len(pubDates); i < n; i++ {
+      deltaSum += float64(pubDates[i].Sub(pubDates[i - 1]).Hours())
+    }
+
+    durationBetweenUpdates = time.Duration(deltaSum / float64(len(pubDates) - 1)) * time.Hour
+  }
+
+  // Clamp the frequency
+
+  minFrequency := time.Duration(30) * time.Minute // 30 minutes
+  maxFrequency := time.Duration(24) * time.Hour   // 1 day
+
+  if durationBetweenUpdates > maxFrequency {
+    return maxFrequency
+  } else if durationBetweenUpdates < minFrequency {
+    return minFrequency
+  }
+
+  return durationBetweenUpdates
 }
 
 type Entry struct {
@@ -99,7 +156,7 @@ func charsetReader(charset string, r io.Reader) (io.Reader, error) {
   if strings.ToLower(charset) == "iso-8859-1" {
     return r, nil
   }
-  return nil, errors.New("Unsupported character set encoding: " + charset)
+  return nil, errors.New("Unsupported encoding: " + charset)
 }
 
 func UnmarshalStream(reader io.Reader) (*Feed, string, error) {
@@ -175,6 +232,6 @@ func substr(s string, pos int, length int) string {
   if l > len(runes) {
     l = len(runes)
   }
-  
+
   return string(runes[pos:l])
 }

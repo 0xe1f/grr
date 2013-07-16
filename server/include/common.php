@@ -51,6 +51,7 @@ if (TIMEZONE === null ||
 // Order here is unimportant - client controls order of preference
 $GRR_SUPPORTED_LOCALES = array(
   "en",
+  "en-us",
 );
 // This should be 'en'. 
 // It reflects the language in the 'default' string maps
@@ -147,7 +148,12 @@ foreach ($acceptedLocales as $acceptedLocale)
 }
 
 require('include/locales/default.php');
+
 if ($grrCurrentLocale != null)
-  require("include/locales/{$grrCurrentLocale}.php");
+{
+  $localeFile = "include/locales/{$grrCurrentLocale}.php";
+  if (file_exists($localeFile))
+    include($localeFile);
+}
 
 ?>
