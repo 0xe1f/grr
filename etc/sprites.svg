@@ -133,17 +133,17 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="0.53286244"
-     inkscape:cx="2471.995"
-     inkscape:cy="-3830.5117"
+     inkscape:zoom="0.065465047"
+     inkscape:cx="3694.5434"
+     inkscape:cy="-9051.8042"
      inkscape:document-units="px"
-     inkscape:current-layer="g5243"
+     inkscape:current-layer="layer1"
      showgrid="false"
      showguides="true"
      inkscape:guide-bbox="true"
-     inkscape:window-width="1280"
-     inkscape:window-height="756"
-     inkscape:window-x="57"
+     inkscape:window-width="1474"
+     inkscape:window-height="1168"
+     inkscape:window-x="177"
      inkscape:window-y="0"
      inkscape:window-maximized="0">
     <sodipodi:guide
@@ -199,6 +199,49 @@
      inkscape:label="Layer 1"
      inkscape:groupmode="layer"
      id="layer1">
+    <g
+       inkscape:export-ydpi="2.8047948"
+       inkscape:export-xdpi="2.8047948"
+       inkscape:export-filename="/Users/jkarapetyan/Desktop/rss.png"
+       transform="matrix(5.3564403,0,0,5.3564403,6719.0867,-4852.2741)"
+       id="g3379">
+      <rect
+         inkscape:export-ydpi="2.8047948"
+         inkscape:export-xdpi="2.8047948"
+         inkscape:export-filename="/Users/jkarapetyan/Sites/grr/etc/path4518.png"
+         style="fill:#f4a55a;fill-opacity:1;fill-rule:evenodd;stroke:none"
+         id="rect3381"
+         width="315.82443"
+         height="315.82443"
+         x="-1300"
+         y="2036.5377"
+         rx="57.698696"
+         ry="57.698696" />
+    </g>
+    <path
+       inkscape:export-ydpi="31.073"
+       inkscape:export-xdpi="31.073"
+       inkscape:export-filename="/Users/akop/Desktop/grr_logo.png"
+       d="m 829.324,6563.0119 -28.2261,-402.346 122.6254,122.6254 14.815,273.7698 274.2307,15.2759 121.7034,121.7034 -402.3459,-28.226 -102.8025,-102.8025"
+       style="font-size:1736.74633789px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#ffffff;fill-opacity:1;stroke:none;font-family:Gill Sans;-inkscape-font-specification:Gill Sans Bold"
+       id="path3422"
+       inkscape:connector-curvature="0" />
+    <path
+       inkscape:export-ydpi="31.073"
+       inkscape:export-xdpi="31.073"
+       inkscape:export-filename="/Users/akop/Desktop/grr_logo.png"
+       d="m 736.4329,7046.3679 c -27.9673,-27.9677 -41.9509,-61.3131 -41.9508,-100.0365 0,-38.7243 13.6761,-71.7624 41.0288,-99.1145 27.3524,-27.353 60.2368,-40.8755 98.6535,-40.5678 38.4162,0.307 71.3007,14.1368 98.6536,41.4898 28.5815,28.5814 42.4114,62.3879 41.4898,101.4195 -0.9225,39.0306 -14.445,71.6077 -40.5678,97.7316 -16.9036,16.9026 -37.4948,28.5812 -61.7737,35.0359 -23.9721,6.7605 -48.0977,6.9142 -72.3766,0.4608 -23.9721,-6.1472 -45.0243,-18.2867 -63.1568,-36.4188 M 447.8483,6759.6274 c -27.6597,-27.6602 -41.6433,-60.6983 -41.9508,-99.1145 -0.3072,-37.8021 13.3691,-70.5329 41.0288,-98.1926 27.3527,-27.3527 60.5444,-41.1825 99.5755,-41.4898 39.0312,-0.3074 72.223,13.2152 99.5756,40.5678 27.6598,27.6597 41.1824,60.8516 40.5677,99.5756 -0.3074,39.0308 -14.1373,72.2226 -41.4897,99.5754 -17.2107,17.2102 -37.9555,29.0425 -62.2348,35.4969 -24.5864,6.7609 -48.712,6.9146 -72.3765,0.461 -23.6646,-6.4544 -44.5631,-18.7476 -62.6958,-36.8798"
+       style="font-size:1736.74633789px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#ffffff;fill-opacity:1;stroke:none;font-family:Gill Sans;-inkscape-font-specification:Gill Sans Bold"
+       id="path3424"
+       inkscape:connector-curvature="0" />
+    <path
+       inkscape:export-ydpi="31.073"
+       inkscape:export-xdpi="31.073"
+       inkscape:export-filename="/Users/akop/Desktop/grr_logo.png"
+       d="m -154.2023,6779.8988 81.8041,-81.8041 c 34.3466,2.5336 71.3581,7.3193 111.0344,14.357 39.1631,6.937 85.7598,19.6552 139.7903,38.1548 53.5169,18.3989 110.0841,45.4257 169.7019,81.0808 59.4113,35.8615 117.084,81.7595 173.0186,137.6941 72.2226,72.2226 128.0281,147.0332 167.4165,224.4315 39.3876,77.3976 65.6007,144.3059 78.6391,200.7256 13.1384,56.932 23.0854,114.5981 29.841,172.998 l -81.8041,81.8041 c -14.3584,-60.6318 -30.2279,-116.3706 -47.6088,-167.2162 -17.3815,-50.8472 -47.5295,-111.3619 -90.4443,-181.5443 -42.8145,-69.6698 -100.0257,-140.3085 -171.6339,-211.9162 -72.8376,-72.838 -143.9373,-130.5102 -213.2992,-173.017 -69.5682,-42.3005 -128.9543,-71.7332 -178.1586,-88.2982 -49.511,-16.8723 -105.6099,-32.689 -168.297,-47.4499"
+       style="font-size:1736.74633789px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#ffffff;fill-opacity:1;stroke:none;font-family:Gill Sans;-inkscape-font-specification:Gill Sans Bold"
+       id="path3426"
+       inkscape:connector-curvature="0" />
     <rect
        style="fill:#ffb380;fill-opacity:1;stroke:#baa300;stroke-width:2.50000024;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;stroke-dasharray:none"
        id="rect3766"
@@ -1288,5 +1331,78 @@
          inkscape:export-xdpi="2.4237792"
          inkscape:export-ydpi="2.4237792" />
     </g>
+    <g
+       id="g3442"
+       transform="translate(200,52.6434)"
+       inkscape:export-filename="/Users/akop/Desktop/logo.png"
+       inkscape:export-xdpi="2.2372561"
+       inkscape:export-ydpi="2.2372561">
+      <path
+         inkscape:export-ydpi="31.073"
+         inkscape:export-xdpi="31.073"
+         inkscape:export-filename="/Users/akop/Desktop/grr_logo.png"
+         d="m 4868.4105,6542.4247 -150.9477,0 c 53.1418,46.3591 79.713,103.1764 79.7139,170.4521 -9e-4,35.6174 -7.633,69.8208 -22.8965,102.6105 -14.6999,32.7905 -36.7484,61.9059 -66.1456,87.3462 -28.8335,25.4409 -64.733,46.3587 -107.6987,62.7535 -42.4016,15.8299 -91.0215,25.4408 -145.8595,28.8327 -70.6689,2.8269 -106.003,21.7661 -106.0026,56.8174 -4e-4,13.5685 4.5223,23.462 13.5683,29.6807 9.0451,6.2189 23.1788,11.0244 42.4011,14.4163 19.7866,2.8269 52.8594,6.219 99.2184,10.1763 52.5766,4.5229 101.4791,12.4377 146.7076,23.7446 45.2269,11.307 87.3453,35.0516 126.355,71.2337 39.0081,36.1822 58.5125,87.9114 58.5135,155.1878 0,53.7078 -14.7,101.1969 -44.0971,142.4675 -28.8336,41.27 -75.7573,73.4947 -140.7714,96.6743 -65.0156,23.1789 -150.9483,34.7685 -257.7983,34.7689 -153.7748,-4e-4 -266.8441,-20.6356 -339.2083,-61.9055 -71.7992,-41.2707 -107.6987,-96.392 -107.6986,-165.3641 -1e-4,-18.6566 4.5227,-40.1398 13.5683,-64.4495 9.6108,-24.3101 29.398,-47.7719 59.3615,-70.3858 30.5286,-22.6139 74.6256,-37.8782 132.2912,-45.7931 -20.3527,-7.3495 -37.8785,-21.4831 -52.5773,-42.401 -14.6992,-21.4831 -22.0487,-43.8143 -22.0485,-66.9936 -2e-4,-29.9633 10.176,-59.644 30.5287,-89.0422 20.9176,-29.3978 54.5557,-48.3369 100.9145,-56.8174 -64.4498,-16.9601 -120.1365,-48.9022 -167.0601,-95.8263 -46.9239,-46.9234 -70.3858,-107.6982 -70.3857,-182.3245 -1e-4,-56.5341 10.7415,-106.0019 32.2248,-148.4036 22.0484,-42.4003 52.2944,-76.8864 90.7382,-103.4585 38.4434,-26.5705 83.1057,-46.075 133.9872,-58.5134 50.8809,-13.0022 106.5675,-19.5037 167.0601,-19.5045 l 474.0436,0 0,184.0205 m -337.5123,145.8595 c -6e-4,-43.5311 -14.9823,-78.2999 -44.945,-104.3065 -29.3987,-26.5707 -62.4714,-39.8563 -99.2185,-39.857 -46.9242,7e-4 -83.9544,15.8304 -111.0907,47.4892 -26.5716,31.66 -39.8573,65.0155 -39.8569,100.0664 -4e-4,24.3104 5.6531,46.9243 16.9604,67.8417 11.8719,20.9182 28.2669,37.8786 49.1852,50.8812 21.4827,12.438 46.9233,18.6568 76.3218,18.6565 44.0966,3e-4 80.5614,-13.8506 109.3947,-41.5531 28.8321,-27.7015 43.2484,-60.7743 43.249,-99.2184 m 61.0575,694.529 c -7e-4,-37.8784 -20.3531,-62.471 -61.0575,-73.7778 -40.1402,-10.7417 -81.6932,-16.1125 -124.659,-16.1124 -70.6688,-1e-4 -121.8327,7.3494 -153.4917,22.0485 -31.0944,15.2643 -46.6415,39.2915 -46.6412,72.0818 -3e-4,64.4493 65.0146,96.6741 195.0448,96.6743 58.2302,-2e-4 104.5886,-8.4804 139.0754,-25.4406 34.4855,-16.3953 51.7285,-41.5532 51.7292,-75.4738"
+         style="font-size:1736.74633789px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Gill Sans;-inkscape-font-specification:Gill Sans Bold"
+         id="path3370"
+         inkscape:connector-curvature="0" />
+      <path
+         inkscape:export-ydpi="31.073"
+         inkscape:export-xdpi="31.073"
+         inkscape:export-filename="/Users/akop/Desktop/grr_logo.png"
+         d="m 5735.9356,6405.0453 -112.7867,306.1355 c -46.3592,-44.0965 -93.283,-66.1451 -140.7715,-66.1456 -42.9669,5e-4 -80.2798,14.6996 -111.9387,44.097 -31.0946,28.8333 -61.0579,82.5412 -89.8902,161.124 l 0,371.433 -305.2874,0 0,-863.285 305.2874,0 0,208.6131 c 19.2214,-51.4459 53.1422,-101.4791 101.7625,-150.0997 48.6193,-49.1843 105.7193,-73.7769 171.3002,-73.7778 34.4854,9e-4 64.4488,5.089 89.8902,15.2644 26.0051,10.1771 56.8165,25.7241 92.4342,46.6411"
+         style="font-size:1736.74633789px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Gill Sans;-inkscape-font-specification:Gill Sans Bold"
+         id="path3372"
+         inkscape:connector-curvature="0" />
+      <path
+         inkscape:export-ydpi="31.073"
+         inkscape:export-xdpi="31.073"
+         inkscape:export-filename="/Users/akop/Desktop/grr_logo.png"
+         d="m 6594.1325,6405.0453 -112.7867,306.1355 c -46.3592,-44.0965 -93.283,-66.1451 -140.7715,-66.1456 -42.9669,5e-4 -80.2798,14.6996 -111.9387,44.097 -31.0946,28.8333 -61.0579,82.5412 -89.8902,161.124 l 0,371.433 -305.2874,0 0,-863.285 305.2874,0 0,208.6131 c 19.2214,-51.4459 53.1422,-101.4791 101.7625,-150.0997 48.6193,-49.1843 105.7193,-73.7769 171.3002,-73.7778 34.4854,9e-4 64.4488,5.089 89.8902,15.2644 26.0051,10.1771 56.8165,25.7241 92.4342,46.6411"
+         style="font-size:1736.74633789px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Gill Sans;-inkscape-font-specification:Gill Sans Bold"
+         id="path3374"
+         inkscape:connector-curvature="0" />
+    </g>
+    <g
+       id="g3451"
+       inkscape:export-filename="/Users/akop/Desktop/logo.png"
+       inkscape:export-xdpi="2.2372561"
+       inkscape:export-ydpi="2.2372561">
+      <path
+         inkscape:export-ydpi="31.073"
+         inkscape:export-xdpi="31.073"
+         inkscape:export-filename="/Users/akop/Desktop/grr_logo.png"
+         d="m 2913.7733,6659.0084 -396.0257,-344.103 225.5735,0 265.4305,238.1781 266.2786,-238.1781 223.8774,0 -396.0256,344.103 -189.1086,0"
+         style="font-size:1736.74633789px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#800000;fill-opacity:1;stroke:none;font-family:Gill Sans;-inkscape-font-specification:Gill Sans Bold"
+         id="path3356"
+         inkscape:connector-curvature="0" />
+      <path
+         id="path3449"
+         d="m 3272.91,7189.0213 c -51.4472,-4e-4 -94.9789,-17.8088 -130.5952,-53.4253 -35.6174,-35.6172 -53.4258,-78.5835 -53.4253,-128.8991 -5e-4,-50.3161 17.8079,-92.9997 53.4253,-128.0511 35.6163,-35.0516 78.5826,-52.5774 128.8992,-52.5773 52.5765,-1e-4 96.3909,18.3737 131.4432,55.1213 35.0506,36.7475 52.5764,79.1484 52.5773,127.2031 -9e-4,31.0939 -8.1984,60.7746 -24.5926,89.0422 -15.8306,28.267 -37.8791,50.5982 -66.1456,66.9936 -27.7028,16.3947 -58.2315,24.5922 -91.5863,24.5926"
+         style="font-size:1736.74633789px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#800000;fill-opacity:1;stroke:none;font-family:Gill Sans;-inkscape-font-specification:Gill Sans Bold" />
+      <path
+         id="path3358"
+         d="m 2743.7451,7190.7174 c -50.8813,-4e-4 -94.1303,-17.5262 -129.7471,-52.5773 -35.0516,-34.4865 -52.5773,-77.1702 -52.5773,-128.0511 0,-50.3161 17.8084,-93.5651 53.4253,-129.7472 35.6168,-36.1823 78.5831,-54.2734 128.8991,-54.2733 50.881,-1e-4 93.8474,18.091 128.8992,54.2733 35.6165,36.1821 53.4249,79.4311 53.4253,129.7472 -4e-4,31.6591 -8.1979,61.6225 -24.5926,89.8902 -16.3954,28.8323 -38.4439,51.1635 -66.1456,66.9936 -27.7023,15.8293 -58.231,23.7442 -91.5863,23.7446"
+         style="font-size:1736.74633789px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#800000;fill-opacity:1;stroke:none;font-family:Gill Sans;-inkscape-font-specification:Gill Sans Bold" />
+      <path
+         inkscape:export-ydpi="31.073"
+         inkscape:export-xdpi="31.073"
+         inkscape:export-filename="/Users/akop/Desktop/grr_logo.png"
+         d="m 2208.6441,7763.1084 0,-150.4813 c 33.9212,-29.2606 72.3648,-58.9008 115.3308,-88.9208 42.4013,-29.6405 96.9572,-60.8007 163.668,-93.4808 66.1457,-32.3004 143.0328,-59.4706 230.6616,-81.5107 87.6286,-21.6603 182.8895,-32.4903 285.783,-32.4903 132.856,0 252.9922,17.4801 360.4088,52.4405 107.4151,34.9602 193.0651,72.3904 256.9502,112.291 64.4485,40.28 126.6367,84.1704 186.5646,131.6711 l 0,150.4813 c -68.9735,-42.5608 -134.8364,-79.2311 -197.5888,-110.0109 -62.7545,-30.7807 -146.1431,-58.7109 -250.1661,-83.7908 -103.4592,-24.7005 -221.0513,-37.0506 -352.7766,-37.0503 -133.9875,-3e-4 -252.4276,12.3498 -355.3207,37.0503 -102.8931,25.0799 -184.5857,52.6301 -245.078,82.6507 -61.0572,30.0199 -127.2027,67.0701 -198.4368,111.151"
+         style="font-size:1736.74633789px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#800000;fill-opacity:1;stroke:none;font-family:Gill Sans;-inkscape-font-specification:Gill Sans Bold"
+         id="path3360"
+         inkscape:connector-curvature="0" />
+    </g>
+    <text
+       sodipodi:linespacing="125%"
+       id="text3365"
+       y="9658.3057"
+       x="516.35028"
+       style="font-size:1736.74633789px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Gill Sans;-inkscape-font-specification:Gill Sans Bold"
+       xml:space="preserve"><tspan
+         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-family:Gill Sans;-inkscape-font-specification:Gill Sans Bold"
+         y="9658.3057"
+         x="516.35028"
+         id="tspan3367"
+         sodipodi:role="line">grr</tspan></text>
   </g>
 </svg>

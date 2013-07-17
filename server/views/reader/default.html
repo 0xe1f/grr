@@ -1,8 +1,9 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
-  <head>
+  <head profile="http://www.w3.org/2005/10/profile">
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
     <link href="content/css/reader.css" type="text/css" rel="stylesheet"/>
+    <link rel="icon" type="image/png" href="content/favicon.png" />
     <script src="content/js/sprintf.min.js" type="text/javascript"></script>
     <script src="content/js/jquery-1.9.1.min.js" type="text/javascript"></script>
     <script src="content/js/jquery.scrollintoview.min.js" type="text/javascript"></script>
@@ -25,7 +26,7 @@
   <body>
     <div id="toast"><span></span></div>
     <div id="header">
-      <h1>grr <span class="grr">&gt;:(</span></h1>
+      <img src="content/logo.png" class="houmu-rogo" />
       <div class="navbar">
         <span class="logout"><?= l("Signed in as %s", $this->user->username) ?>
         <a href="<?= $this->url("login", array("logout" => "true")) ?>"><?= l("Sign out") ?></a></span>
@@ -60,27 +61,5 @@
       </div>
     </div>
     <div id="floating-nav"></div>
-    <ul id="menu-root" class="menu">
-      <li class="menu-new-folder"><?= l("New folder...") ?></li>
-      <li class="menu-sub"><?= l("Subscribe...") ?></li>
-    </ul>
-    <ul id="menu-filter" class="menu" data-dropdown="button.filter">
-      <li class="menu-all-items group-filter" data-value="all"><?= l("All items") ?></li>
-      <li class="menu-new-items group-filter" data-value="new"><?= l("New items") ?></li>
-      <li class="menu-starred-items group-filter" data-value="star"><?= l("Starred") ?></li>
-    </ul>
-    <ul id="menu-feed" class="menu">
-      <li class="menu-rename-sub"><?= l("Rename subscription...") ?></li>
-      <li class="menu-unsub"><?= l("Unsubscribe") ?></li>
-    </ul>
-    <ul id="menu-folder" class="menu">
-      <li class="menu-new-folder"><?= l("New folder...") ?></li>
-      <li class="menu-sub"><?= l("Subscribe...") ?></li>
-      <div class="divider"></div>
-      <li class="menu-rename-sub"><?= l("Rename subscription...") ?></li>
-      <li class="menu-unsub"><?= l("Unsubscribe from all") ?></li>
-    </ul>
-    <div class="shortcuts">
-    </div>
   </body>
 </html>

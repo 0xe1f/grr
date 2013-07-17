@@ -88,7 +88,6 @@ func (feed *Feed)DurationBetweenUpdates() time.Duration {
 
   // Compute the average difference between them
   durationBetweenUpdates := time.Duration(0)
-
   if len(pubDates) > 1 {
     deltaSum := 0.0
     for i, n := 1, len(pubDates); i < n; i++ {
@@ -99,7 +98,6 @@ func (feed *Feed)DurationBetweenUpdates() time.Duration {
   }
 
   // Clamp the frequency
-
   minFrequency := time.Duration(30) * time.Minute // 30 minutes
   maxFrequency := time.Duration(24) * time.Hour   // 1 day
 

@@ -140,6 +140,18 @@ CREATE TABLE `feeds` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
+-- Table structure for table `metadata`
+--
+
+DROP TABLE IF EXISTS `metadata`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `metadata` (
+  `schema_version` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
 -- Table structure for table `roles`
 --
 
@@ -192,7 +204,7 @@ CREATE TABLE `staged_articles` (
   `author` varchar(128) DEFAULT NULL,
   `summary` varchar(512) NOT NULL,
   `content` text NOT NULL,
-  `published` datetime NOT NULL,
+  `published` datetime DEFAULT NULL,
   `crawled` datetime NOT NULL,
   `stage_id` int(11) NOT NULL,
   PRIMARY KEY (`id`),
@@ -277,7 +289,7 @@ CREATE TABLE `user_articles` (
   `read_time` datetime DEFAULT NULL,
   `star_time` datetime DEFAULT NULL,
   `like_time` datetime DEFAULT NULL,
-  `tags` varchar(1024) NOT NULL,
+  `tags` varchar(1024) NOT NULL DEFAULT '',
   PRIMARY KEY (`id`),
   UNIQUE KEY `ik_user_id_article_id` (`user_id`,`article_id`),
   KEY `fk_user_articles_user_id` (`user_id`),
@@ -346,7 +358,7 @@ CREATE TABLE `welcome_tokens` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2013-07-05  2:57:17
+-- Dump completed on 2013-07-17  0:09:00
 -- MySQL dump 10.13  Distrib 5.6.10, for osx10.7 (x86_64)
 --
 -- Host: localhost    Database: grr
@@ -383,4 +395,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2013-07-05  2:57:17
+-- Dump completed on 2013-07-17  0:09:00
