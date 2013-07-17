@@ -555,6 +555,7 @@ button.dropdown
 .select-article.down
 {
   margin-left: 0;
+  box-shadow: 0 1px 1px #aaa;
   border-top-left-radius: 0;
   border-bottom-left-radius: 0;
   background: url(../sprites.png) no-repeat 5px -240px #eee;
