@@ -5,7 +5,7 @@ grr >:(
 
 _grr_ consists of two components - the web application, with which the user interacts, and the background updater, which routinely updates feeds in the background.
 
-![Screenshot](http://i.imgur.com/iIwWEZK.png "Screenshot")
+![Screenshot](http://i.imgur.com/ny7ApSO.jpg "Screenshot")
 
 Clients
 -------
