@@ -89,7 +89,10 @@ class Controller
         $rootUri = substr($rootUri, 1);
     }
 
-    $proto = (!empty($_SERVER['HTTPS']) ? 'https' : 'http');
+    $proto = "http";
+    if (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] != 'off')
+      $proto = "https";
+    
     $port = $_SERVER['SERVER_PORT'];
     $port = ( ( $port == '80' && $proto == 'http' ) || ( $port == '443' && $proto == 'https' ) ? '' : ':'.$port );
 

@@ -38,6 +38,9 @@
   define('MYSQL_PASSWORD', null); // example: 'password'
   define('MYSQL_DATABASE', null); // example: 'grr'
 
+  define('MYSQL_PORT',   null); // 'null' to use default port
+  define('MYSQL_SOCKET', null); // 'null' to use default socket
+
   // Hostname of the server where the script resides.
   // Required for OpenID; should NOT be $_SERVER['HTTP_HOST']
   // See openid.php for more information

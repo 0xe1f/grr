@@ -2,3 +2,4 @@ config.php
 config.go
 .DS_Store
 etc/dump.sh
+server/app.yaml

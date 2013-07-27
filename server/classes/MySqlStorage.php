@@ -34,7 +34,7 @@ class MySqlStorage extends Storage
 
   public function __construct()
   {
-    $this->db = new mysqli(MYSQL_HOSTNAME, MYSQL_USERNAME, MYSQL_PASSWORD, MYSQL_DATABASE);
+    $this->db = new mysqli(MYSQL_HOSTNAME, MYSQL_USERNAME, MYSQL_PASSWORD, MYSQL_DATABASE, MYSQL_PORT, MYSQL_SOCKET);
     if ($this->db->connect_error)
       die('Connection error: '.mysqli_connect_error());
 

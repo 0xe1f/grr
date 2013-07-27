@@ -34,4 +34,7 @@
   define('MYSQL_USERNAME', null); // example: 'user'
   define('MYSQL_PASSWORD', null); // example: 'password'
   define('MYSQL_DATABASE', null); // example: 'grr'
+
+  define('MYSQL_PORT',   null); // 'null' to use default port
+  define('MYSQL_SOCKET', null); // 'null' to use default socket
 ?>
