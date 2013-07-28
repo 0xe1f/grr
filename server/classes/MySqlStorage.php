@@ -1558,16 +1558,15 @@ class MySqlStorage extends Storage
                       (SELECT SUM(is_liked)
                          FROM user_articles ua_liked
                         WHERE ua_liked.article_id = ua.article_id) liked_count
-                 FROM user_articles ua
-           INNER JOIN articles a ON a.id = ua.article_id
-           INNER JOIN feeds f ON f.id = a.feed_id
-           INNER JOIN feed_folders ff ON ff.feed_id = f.id
+                 FROM articles a
+           INNER JOIN user_articles ua FORCE INDEX FOR JOIN (fk_user_articles_article_id) ON a.id = ua.article_id
+           INNER JOIN feeds f ON f.id = ua.feed_id
+           INNER JOIN feed_folders ff ON ff.feed_id = f.id AND ff.user_id = ua.user_id
            INNER JOIN feed_folder_trees fft ON fft.descendant_id = ff.id 
                 WHERE fft.ancestor_id = ? 
                       AND ua.user_id = ?
                       {$filterClause}
-             GROUP BY ua.id
-             ORDER BY a.crawled DESC, f.title
+             ORDER BY a.crawled DESC, a.id DESC
                 LIMIT ?
                                  ");
       $stmt->bind_param('iii', 
@@ -1595,10 +1594,10 @@ class MySqlStorage extends Storage
                       (SELECT SUM(is_liked)
                          FROM user_articles ua_liked
                         WHERE ua_liked.article_id = ua.article_id) liked_count
-                 FROM user_articles ua
-           INNER JOIN articles a ON a.id = ua.article_id
-           INNER JOIN feeds f ON f.id = a.feed_id
-           INNER JOIN feed_folders ff ON ff.feed_id = f.id
+                 FROM articles a
+           INNER JOIN user_articles ua FORCE INDEX FOR JOIN (fk_user_articles_article_id) ON a.id = ua.article_id
+           INNER JOIN feeds f ON f.id = ua.feed_id
+           INNER JOIN feed_folders ff ON ff.feed_id = f.id AND ff.user_id = ua.user_id
            INNER JOIN feed_folder_trees fft ON fft.descendant_id = ff.id 
 
            INNER JOIN (SELECT a2.crawled 
@@ -1606,11 +1605,10 @@ class MySqlStorage extends Storage
                    INNER JOIN articles a2 ON a2.id = ua2.article_id 
                         WHERE ua2.id = ? AND ua2.user_id = ?) o ON a.crawled = o.crawled AND ua.id < ? OR a.crawled < o.crawled
 
-                WHERE fft.ancestor_id = ? 
+                WHERE fft.ancestor_id = ?
                       AND ua.user_id = ?
                       {$filterClause}
-             GROUP BY ua.id
-             ORDER BY a.crawled DESC, f.title
+             ORDER BY a.crawled DESC, a.id DESC
                 LIMIT ?
                                  ");
 

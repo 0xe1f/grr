@@ -36,6 +36,7 @@ CREATE TABLE `articles` (
   `crawled` datetime NOT NULL,
   PRIMARY KEY (`id`),
   KEY `fk_feed_id` (`feed_id`),
+  KEY `crawled` (`crawled`),
   CONSTRAINT `fk_feed_id` FOREIGN KEY (`feed_id`) REFERENCES `feeds` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -90,6 +91,7 @@ CREATE TABLE `feed_folders` (
   `feed_id` int(11) DEFAULT NULL,
   `title` varchar(128) DEFAULT NULL,
   PRIMARY KEY (`id`),
+  UNIQUE KEY `ux_feed_id_user_id` (`feed_id`,`user_id`),
   KEY `fk_feed_folders_user_id` (`user_id`),
   KEY `fk_feed_folders_feed_id` (`feed_id`),
   CONSTRAINT `fk_feed_folders_feed_id` FOREIGN KEY (`feed_id`) REFERENCES `feeds` (`id`),
@@ -283,6 +285,7 @@ CREATE TABLE `user_articles` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `user_id` int(11) NOT NULL,
   `article_id` int(11) NOT NULL,
+  `feed_id` int(11) NOT NULL,
   `is_unread` tinyint(1) NOT NULL DEFAULT '1',
   `is_starred` tinyint(1) NOT NULL DEFAULT '0',
   `is_liked` tinyint(1) NOT NULL DEFAULT '0',
@@ -294,6 +297,8 @@ CREATE TABLE `user_articles` (
   UNIQUE KEY `ik_user_id_article_id` (`user_id`,`article_id`),
   KEY `fk_user_articles_user_id` (`user_id`),
   KEY `fk_user_articles_article_id` (`article_id`),
+  KEY `fk_user_articles_feed_id` (`feed_id`),
+  CONSTRAINT `fk_user_articles_feed_id` FOREIGN KEY (`feed_id`) REFERENCES `feeds` (`id`) ON DELETE CASCADE,
   CONSTRAINT `fk_user_articles_article_id` FOREIGN KEY (`article_id`) REFERENCES `articles` (`id`) ON DELETE CASCADE,
   CONSTRAINT `fk_user_articles_user_id` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -358,7 +363,7 @@ CREATE TABLE `welcome_tokens` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2013-07-17  0:09:00
+-- Dump completed on 2013-07-28  1:13:58
 -- MySQL dump 10.13  Distrib 5.6.10, for osx10.7 (x86_64)
 --
 -- Host: localhost    Database: grr
@@ -385,6 +390,16 @@ LOCK TABLES `roles` WRITE;
 INSERT INTO `roles` VALUES (1,'user','User'),(2,'admin','Administrator');
 /*!40000 ALTER TABLE `roles` ENABLE KEYS */;
 UNLOCK TABLES;
+
+--
+-- Dumping data for table `metadata`
+--
+
+LOCK TABLES `metadata` WRITE;
+/*!40000 ALTER TABLE `metadata` DISABLE KEYS */;
+INSERT INTO `metadata` VALUES (13);
+/*!40000 ALTER TABLE `metadata` ENABLE KEYS */;
+UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
@@ -395,4 +410,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2013-07-17  0:09:00
+-- Dump completed on 2013-07-28  1:13:58
