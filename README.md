@@ -1,3 +1,5 @@
+**NOTE** I'm no longer working on this project. Try [Gofr](https://github.com/pokebyte/Gofr) for App Engine, which I also wrote. Gofr scales considerably better for larger sets of data, and includes mobile browser support, high-density screen support, sharing, and other nifty features.
+
 grr >:(
 =======
 

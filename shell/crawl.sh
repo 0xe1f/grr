@@ -3,7 +3,7 @@
 /*****************************************************************************
  **
  ** grr >:(
- ** https://github.com/melllvar/grr
+ ** https://github.com/pokebyte/grr
  ** Copyright (C) 2013 Akop Karapetyan
  **
  ** This program is free software; you can redistribute it and/or modify
