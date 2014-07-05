@@ -9,11 +9,6 @@ _grr_ consists of two components - the web application, with which the user inte
 
 ![Screenshot](http://i.imgur.com/ny7ApSO.jpg "Screenshot")
 
-Clients
--------
-
-There's an [official Android client] [9] for _grr_.
-
 Features
 --------
 
@@ -96,7 +91,6 @@ _grr_ is currently in a late-beta stage, and as a result:
   [6]: http://openid.net/ "OpenID"
   [7]: https://www.google.com/takeout/ "Google Takeout"
   [8]: http://httpd.apache.org/ "Apache"
-  [9]: https://github.com/melllvar/angrroid "angrroid"
   [10]: http://golang.org/ "Go"
   [11]: https://code.google.com/p/go-mysql-driver/ "go-mysql-driver"
   [12]: https://developers.google.com/appengine/ "App Engine"
