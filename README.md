@@ -3,7 +3,7 @@
 grr >:(
 =======
 
-**grr** is an attempt to replace the gaping hole that the departure of [Google Reader] [1] has left in my daily routine. Its (initially temporary) name is an abbreviation for _Google Reader Replacement_, but seeing as how it also doubles as a decent onomatopoeic representation of my feelings towards the discontinuation of one of Google's most useful products, it's now the app's de-facto name.
+**grr** was an attempt to replace the gaping hole that the departure of [Google Reader] [1] left in my daily routine. Its name is an abbreviation for _Google Reader Replacement_, as well as an accurate representation of my sentiments towards the discontinuation of one of Google's most useful products.
 
 _grr_ consists of two components - the web application, with which the user interacts, and the background updater, which routinely updates feeds in the background.
 
@@ -70,17 +70,12 @@ Creating User Accounts
 
 Depending on configuration, _grr_ can allow anyone to create a new account (see the "CREATE_UNKNOWN_ACCOUNTS" setting in the configuration, disabled by default), or require a "welcome token" link to create a new account. Welcome token links can be generated in the Administrator section of the application and are valid for 2 weeks.
 
-Help Needed
------------
-
-Want to see support for your language/region? _grr_ can now be extended to support any language/locale - [see documentation](LOCALIZATION.md) for more information and examples.
-
 Limitations
 -----------
 
-_grr_ is currently in a late-beta stage, and as a result:
+_grr_ was never polished, and as a result:
 
-* The design of the web application is atrocious, because _dammit Jim, I'm a programmer, not a designer!_
+* The design of the web application is atrocious
 * Administrative features were mostly an afterthought and could certainly do with a redesign/overhaul
 
   [1]: http://www.google.com/reader/  "Google Reader"
