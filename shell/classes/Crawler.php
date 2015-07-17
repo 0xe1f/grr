@@ -198,7 +198,7 @@ class Crawler
 
     $updateStatement = $this->db->prepare("
                UPDATE articles a
-           INNER JOIN staged_articles sa ON sa.feed_id = a.feed_id AND sa.guid = a.guid
+           INNER JOIN staged_articles sa ON sa.feed_id = a.feed_id AND sa.guid = a.guid AND sa.title = a.title
                   SET a.link_url = sa.link_url,
                       a.title = sa.title,
                       a.author = sa.author,
